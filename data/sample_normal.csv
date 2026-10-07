@@ -1,0 +1,5 @@
+id,user_id,ts,type,amount,counterparty,device_id,sim_changed_days_ago
+1,u123,2026-10-06 09:00:00,incoming_salary,60000,employer_ooo,dev_A,90
+2,u123,2026-10-06 12:10:00,purchase,1200,magnit_store,dev_A,90
+3,u123,2026-10-06 18:40:00,purchase,800,apteka_36,dev_A,90
+4,u123,2026-10-07 09:15:00,purchase,1500,pyaterochka,dev_A,90

@@ -1,0 +1,9 @@
+id,user_id,ts,type,amount,counterparty,device_id,sim_changed_days_ago
+1,u777,2026-10-07 13:00:00,incoming_salary,15000,stroika_ooo,dev_X,1
+2,u777,2026-10-07 14:02:00,incoming_p2p,3000,sender_1,dev_X,1
+3,u777,2026-10-07 14:07:00,incoming_p2p,2500,sender_2,dev_X,1
+4,u777,2026-10-07 14:12:00,incoming_p2p,4000,sender_3,dev_X,1
+5,u777,2026-10-07 14:20:00,incoming_p2p,1800,sender_4,dev_X,1
+6,u777,2026-10-07 14:25:00,incoming_p2p,3500,sender_5,dev_X,1
+7,u777,2026-10-07 14:40:00,outgoing_p2p,9000,mule_wallet_1,dev_X,1
+8,u777,2026-10-07 14:45:00,cash_withdraw,5000,atm_7788,dev_X,1
