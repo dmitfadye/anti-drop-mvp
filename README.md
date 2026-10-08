@@ -81,3 +81,18 @@ requirements-lock.txt  Точный пин 56 пакетов (uv pip freeze)
 3. Открыть `/docs` → показать контракт API (работает офлайн).
 4. Квиз → учебный приз (деньги не начисляются).
 5. Тренажёр номера: без галочки OTP — запрет; один номер в разных форматах («+7 916…» vs «+7916…») — тоже запрет.
+
+
+## P0 risk quality and reproducible evaluation
+
+The isolated `anti_drop_ml` package adds strict RiskSnapshotV1/RiskDecisionV1 contracts, a thin adapter to existing rules, Wilson 95% intervals, threshold PR curves, legitimate-negative reporting, closed PII-rejecting event schemas and an approximate per-arm A/B power helper. Existing demo endpoints remain compatible. New endpoint: `POST /api/v1/risk/evaluate`; naive timestamps, duplicate IDs, future events, zero transfers and mixed subjects return 422. Score is not probability.
+
+```sh
+python -m anti_drop_ml.make_labeling_template --output-dir fixtures/episodes
+python -m anti_drop_ml.evaluation.runner --dataset fixtures/episodes/labeled_episodes.jsonl --output-dir reports/evaluation --positive-level RED --rule-version 2026-10-08.p1
+python -m unittest discover -s tests -v
+```
+
+Add `--positive-threshold 60` for a different decision threshold. All 21 provided labeled episodes are synthetic placeholders, development-only: they measure the pipeline, not banking accuracy. An intentional family-collection/rent false positive demonstrates the importance of legitimate negatives. Independent human-reviewed holdout, legal/native-language review and a bank data owner remain necessary.
+
+See [P0 architecture and commands](docs/ml_p0_quality_layer.md), [labeling workflow](docs/labeling_guideline.md), [limitations](docs/limitations.md), [actual example report](reports/evaluation/report.md), and [legitimate-negative report](reports/evaluation/legitimate_negatives_report.md). Versioned JSON Schemas are in `docs/schemas/`.

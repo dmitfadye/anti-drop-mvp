@@ -12,6 +12,8 @@
 """
 from __future__ import annotations
 
+TEMPLATE_VERSION = "warning-templates-2026.10.08.p1"
+
 SUPPORTED_LANGS = {
     "ru": "Русский",
     "en": "English",

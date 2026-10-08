@@ -1,0 +1,251 @@
+{
+  "$defs": {
+    "RiskTransactionV1": {
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "source_event_id": {
+          "anyOf": [
+            {
+              "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Event Id"
+        },
+        "subject_ref": {
+          "anyOf": [
+            {
+              "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subject Ref"
+        },
+        "occurred_at": {
+          "format": "date-time",
+          "title": "Occurred At",
+          "type": "string"
+        },
+        "direction": {
+          "enum": [
+            "in",
+            "out"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "transfer",
+            "cash_deposit",
+            "cash_withdrawal",
+            "salary",
+            "family_collection",
+            "other"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "amount_minor": {
+          "maximum": 100000000000000,
+          "minimum": 0,
+          "title": "Amount Minor",
+          "type": "integer"
+        },
+        "currency": {
+          "const": "RUB",
+          "title": "Currency",
+          "type": "string"
+        },
+        "counterparty_ref": {
+          "anyOf": [
+            {
+              "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Counterparty Ref"
+        },
+        "device_id": {
+          "anyOf": [
+            {
+              "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Device Id"
+        },
+        "sim_changed_days_ago": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sim Changed Days Ago"
+        }
+      },
+      "required": [
+        "event_id",
+        "occurred_at",
+        "direction",
+        "type",
+        "amount_minor",
+        "currency"
+      ],
+      "title": "RiskTransactionV1",
+      "type": "object"
+    },
+    "SnapshotMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset_version": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "pattern": "^[a-zA-Z0-9._-]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dataset Version"
+        },
+        "label_source": {
+          "default": "unknown",
+          "enum": [
+            "human_reviewed",
+            "synthetic_placeholder",
+            "bank_adjudicated",
+            "unknown"
+          ],
+          "title": "Label Source",
+          "type": "string"
+        },
+        "is_holdout": {
+          "default": false,
+          "title": "Is Holdout",
+          "type": "boolean"
+        },
+        "episode_class": {
+          "default": "unknown",
+          "enum": [
+            "normal",
+            "risk",
+            "legitimate_negative",
+            "edge",
+            "unknown"
+          ],
+          "title": "Episode Class",
+          "type": "string"
+        },
+        "episode_id": {
+          "anyOf": [
+            {
+              "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Episode Id"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "enum": [
+                "risk",
+                "normal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        }
+      },
+      "title": "SnapshotMetadata",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "RiskSnapshotV1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "subject_ref": {
+      "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+      "title": "Subject Ref",
+      "type": "string"
+    },
+    "analysis_at": {
+      "format": "date-time",
+      "title": "Analysis At",
+      "type": "string"
+    },
+    "timezone_policy": {
+      "const": "normalize_to_utc",
+      "title": "Timezone Policy",
+      "type": "string"
+    },
+    "allow_future_events": {
+      "default": false,
+      "title": "Allow Future Events",
+      "type": "boolean"
+    },
+    "transactions": {
+      "items": {
+        "$ref": "#/$defs/RiskTransactionV1"
+      },
+      "maxItems": 5000,
+      "title": "Transactions",
+      "type": "array"
+    },
+    "metadata": {
+      "$ref": "#/$defs/SnapshotMetadata"
+    }
+  },
+  "required": [
+    "schema_version",
+    "subject_ref",
+    "analysis_at",
+    "timezone_policy",
+    "transactions"
+  ],
+  "title": "RiskSnapshotV1",
+  "type": "object"
+}

@@ -15,6 +15,9 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.responses import JSONResponse
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -36,6 +39,8 @@ from src.detector import analyze_transactions
 from src.policy import RULES_VERSION, UTC
 from src.quiz import QUIZ, STORIES, check_quiz
 from src.sim_security import start_number_change
+from anti_drop_ml.adapter import evaluate_snapshot
+from anti_drop_ml.contracts import RiskDecisionV1, RiskSnapshotV1
 
 BASE_DIR = Path(__file__).resolve().parent
 VERSION = "0.3.0"
@@ -49,6 +54,14 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(request, exc):
+    if request.url.path == '/api/v1/risk/evaluate':
+        # Do not echo a mistakenly submitted raw payload through validation errors.
+        return JSONResponse(status_code=422, content={'detail': [{'type': error['type'], 'loc': error['loc']} for error in exc.errors()]})
+    return await request_validation_exception_handler(request, exc)
 
 
 @app.middleware("http")
@@ -130,6 +143,11 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
         alert=alert,
         rules_version=res["metrics"].get("rules_version", RULES_VERSION),
     )
+
+
+@app.post("/api/v1/risk/evaluate", response_model=RiskDecisionV1, summary="Strict synthetic risk snapshot (score is not probability)")
+def evaluate_risk(req: RiskSnapshotV1) -> RiskDecisionV1:
+    return evaluate_snapshot(req)
 
 
 @app.post("/api/quiz", response_model=QuizResponse, summary="Проверить квиз (учебный приз, без выплат)")

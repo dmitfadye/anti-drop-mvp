@@ -81,7 +81,7 @@ def analyze_transactions(
     parsed.sort(key=lambda p: p[0])
 
     reasons: list[str] = []
-    metrics: dict[str, Any] = {"rules_version": policy.version}
+    metrics: dict[str, Any] = {"rules_version": policy.version, "score_contributions": {}}
     fired = False  # сработало ли хоть одно скоримое правило
 
     if bad_ts:
@@ -125,6 +125,7 @@ def analyze_transactions(
 
     if len(small_in) >= policy.transit_count_red and len(senders) >= policy.transit_senders_red:
         score += 45
+        metrics["score_contributions"]["multiple_small_inbound"] = 45
         fired = True
         reasons.append(
             f"🔴 Транзитный поток: {len(small_in)} мелких входящих от {len(senders)} разных отправителей "
@@ -132,6 +133,7 @@ def analyze_transactions(
         )
     elif len(small_in) >= policy.transit_count_yellow and len(senders) >= policy.transit_senders_yellow:
         score += 25
+        metrics["score_contributions"]["multiple_small_inbound"] = 25
         fired = True
         reasons.append(
             f"🟡 Подозрительный приток: {len(small_in)} мелких входящих от {len(senders)} отправителей за час. "
@@ -149,6 +151,7 @@ def analyze_transactions(
             metrics["flow_through_ratio_60m"] = round(flow_ratio, 2)
             if flow_ratio >= policy.flow_ratio and len(small_in) >= 3:
                 score += 25
+                metrics["score_contributions"]["large_outbound_after_inbound"] = 25
                 fired = True
                 reasons.append(
                     f"🔴 Сквозной транзит: после поступлений выведено {out_sum:.0f} ₽ из {in_sum:.0f} ₽ "
@@ -164,6 +167,7 @@ def analyze_transactions(
     metrics["cash_24h"] = round(day_cash, 2)
     if day_in > 0 and (day_cash / day_in) >= policy.cashout_ratio and day_in >= policy.cashout_min_in:
         score += 25
+        metrics["score_contributions"]["cashout_ratio"] = 25
         fired = True
         reasons.append(
             f"🔴 Обнал: снято наличными {day_cash:.0f} ₽ из {day_in:.0f} ₽ входящих за 24ч "
@@ -175,6 +179,7 @@ def analyze_transactions(
     metrics["fanout_60m_receivers"] = len(receivers)
     if len(receivers) >= policy.fanout_count:
         score += 25
+        metrics["score_contributions"]["fanout_transfers"] = 25
         fired = True
         reasons.append(
             f"🔴 Веерная рассылка: {len(receivers)} разных получателей за час — похоже на распыление чужих денег."
@@ -185,6 +190,7 @@ def analyze_transactions(
     metrics["night_60m_count"] = night_n
     if night_n >= 3:
         score += 10
+        metrics["score_contributions"]["night_activity"] = 10
         fired = True
         reasons.append(f"🟡 Ночная активность: {night_n} операций между 00:00–06:00 по Москве — нетипичное время.")
 
@@ -193,6 +199,7 @@ def analyze_transactions(
     metrics["sim_changed_recently"] = sim_fresh
     if sim_fresh and (len(small_in) >= 2 or len(receivers) >= 2):
         score += 15
+        metrics["score_contributions"]["sim_changed_recently"] = 15
         fired = True
         reasons.append(
             f"🔴 Смена SIM/устройства за последние {policy.sim_fresh_days} дня + всплеск переводов — "
@@ -207,6 +214,7 @@ def analyze_transactions(
         new_devices = {str(t.get("device_id", "")) for _, t in recent} - old_devices - {""}
         if new_devices and len(recent) >= 3:
             score += 10
+            metrics["score_contributions"]["device_novelty_with_baseline"] = 10
             fired = True
             reasons.append("🟡 Новое устройство + активность — убедитесь, что это вы.")
     else:
