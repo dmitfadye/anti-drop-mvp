@@ -165,6 +165,9 @@ class TestEvaluation(unittest.TestCase):
             self.assertEqual(manifest['holdout_status'], 'development_only')
             threshold_metrics = run_evaluation(path, root/'threshold', positive_threshold=100)
             self.assertLessEqual(threshold_metrics['overall']['alert_rate']['value'], metrics['overall']['alert_rate']['value'])
+            threshold_manifest = json.loads((root/'threshold/evaluation_manifest.json').read_text())
+            self.assertEqual(threshold_manifest['threshold_version'], 'evaluation-score-ge-100-v1')
+            self.assertEqual(threshold_manifest['detector_threshold_version'], THRESHOLD_VERSION)
             with self.assertRaises(ValueError): run_evaluation(path, root/'bad', rule_version='fictional')
             with self.assertRaises(ValueError): run_evaluation(path, root/'bad', holdout_only=True)
 
