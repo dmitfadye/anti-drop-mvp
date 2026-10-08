@@ -48,7 +48,8 @@ for (const width of [390, 768, 1024, 1440, 1728]) {
     await expect(
       page.getByText(/Демонстрационные данные · показатели/),
     ).toBeVisible();
-    await page.screenshot({ path: `test-results/overview-${width}.png` });
+    await page.evaluate(() => document.fonts.ready);
+    await page.screenshot({ path: `test-results/overview-${width}.png`, animations: 'disabled' });
     await page.screenshot({
       path: `test-results/workspace-${width}.png`,
       fullPage: true,
@@ -102,4 +103,35 @@ test('keyboard, search, notifications, resize and reduced motion', async ({
   await expect(
     page.getByRole('link', { name: 'Онбординг + квиз', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
+});
+
+test('approved overview, popover dismissal, theme and feature links', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  await page.setViewportSize({ width: 1672, height: 941 });
+  await page.goto('/');
+  await page.evaluate(() => document.fonts.ready);
+  const notice = page.getByRole('button', { name: 'Уведомления' });
+  await notice.click();
+  await expect(page.getByRole('status')).toBeVisible();
+  await page.screenshot({ path: 'test-results/approved-overview-1672.png', animations: 'disabled' });
+  await page.keyboard.press('Escape');
+  await expect(notice).toBeFocused();
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await notice.click();
+  await page.getByRole('heading', { level: 1 }).click();
+  await expect(page.getByRole('status')).toHaveCount(0);
+  const theme = page.getByRole('button', { name: 'Мягкая синяя тема' });
+  await theme.click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'blue');
+  await theme.click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  const shortcuts = page.locator('[class*="overview__shortcuts"]');
+  await shortcuts.getByRole('link').first().click();
+  await expect(page).toHaveURL(/#monitoring$/);
+  await page.goto('/');
+  await shortcuts.getByRole('link').last().click();
+  await expect(page).toHaveURL(/#learning$/);
+  expect(errors).toEqual([]);
 });

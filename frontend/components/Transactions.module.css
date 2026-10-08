@@ -134,3 +134,28 @@
 :global(html[data-compact='true']) .transactions td {
   padding-block: 6px;
 }
+
+.transactions--compact { table-layout: fixed; font-size: 14px; }
+.transactions--compact th { padding: 12px 20px; font-size: 12px; }
+.transactions--compact th:nth-child(1) { width: 14.5%; }
+.transactions--compact th:nth-child(2) { width: 24%; }
+.transactions--compact th:nth-child(3) { width: 15.5%; }
+.transactions--compact th:nth-child(4) { width: 14.5%; }
+.transactions--compact th:nth-child(5) { width: 22%; }
+.transactions--compact th:nth-child(6) { width: 9.5%; }
+.transactions--compact td { height: 65px; padding: 10px 20px; }
+.transactions--compact .transactions__description { gap: 24px; }
+.transactions--compact .transactions__icon { width: 44px; height: 40px; }
+.transactions--compact .transactions__amount { font-size: 16px; font-weight: 700; }
+.transactions--compact .transactions__risk { min-width: 97px; font-size: 13px; padding: 5px 16px; }
+.transactions--compact .transactions__status { font-size: 13px; padding: 5px 19px; color: var(--color-primary); }
+.transactions--compact tr:nth-child(3) .transactions__status { color: var(--color-secondary); }
+.transactions--compact .transactions__more { min-width: 44px; min-height: 44px; }
+@media (max-width: 1400px) {
+  .transactions--compact td, .transactions--compact th { padding-inline: 12px; }
+  .transactions--compact .transactions__description { gap: 12px; }
+  .transactions--compact .transactions__status { padding-inline: 12px; }
+}
+@media (max-width: 1200px) {
+  .transactions--compact { min-width: 820px; table-layout: auto; }
+}

@@ -7,8 +7,8 @@ function Bars({ green = false }: { green?: boolean }) {
       className={`${styles['overview__bars']} ${green ? styles['overview__bars--green'] : ''}`}
       aria-hidden="true"
     >
-      {[10, 17, 24, 32, 42].map((height, i) => (
-        <span key={height} style={{ height, opacity: 0.35 + i * 0.16 }} />
+      {[1, 2, 3, 4, 5].map((bar) => (
+        <span key={bar} />
       ))}
     </div>
   );
@@ -105,12 +105,15 @@ export function Overview() {
         ].map(([title, description, id, icon]) => (
           <a key={id} href={`#${id}`} className={styles['overview__shortcut']}>
             <div className={styles['overview__icon']}>
-              <Icon name={icon as 'shield' | 'cap'} size={36} />
+              <Icon name={icon as 'shield' | 'cap'} size={42} />
             </div>
             <div>
               <h2>{title}</h2>
               <p>{description}</p>
             </div>
+            <span className={styles['overview__shortcut-arrow']} aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 5 7 7-7 7" /></svg>
+            </span>
           </a>
         ))}
       </div>

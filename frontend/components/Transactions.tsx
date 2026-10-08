@@ -119,7 +119,7 @@ export function Transactions({
         tabIndex={0}
         aria-label="Учебные операции, прокручиваемая таблица"
       >
-        <table className={styles['transactions']}>
+        <table className={`${styles['transactions']} ${compact ? styles['transactions--compact'] : ''}`}>
           <thead>
             <tr>
               <th scope="col">Время</th>

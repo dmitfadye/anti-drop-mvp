@@ -1,3 +1,5 @@
+> Historical collage specification. For the current overview and shared shell, use APPROVED_VISUAL_SPEC.md.
+
 ﻿# Visual specification
 
 Approved direction: user-supplied AntiDrop references in the conversation, 2026-10-08. The third collage (four large screens) is the primary reference. Individual source images and original viewport sizes are unavailable on disk. Measurements are proportional estimates, not recovered source CSS.

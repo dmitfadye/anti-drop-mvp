@@ -2,19 +2,11 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 
-const asket = localFont({
-  src: '../public/fonts/Asket-Extended-Light.otf',
-  weight: '300',
+const onest = localFont({
+  src: '../public/fonts/Onest-Variable.ttf',
+  weight: '100 900',
   style: 'normal',
-  variable: '--font-asket',
-  display: 'swap',
-  preload: true,
-});
-const display = localFont({
-  src: '../public/fonts/Asket-Extrabold.otf',
-  weight: '800',
-  style: 'normal',
-  variable: '--font-display',
+  variable: '--font-onest',
   display: 'swap',
   preload: true,
 });
@@ -31,7 +23,7 @@ export default function RootLayout({
   return (
     <html
       lang="ru"
-      className={`${asket.variable} ${display.variable}`}
+      className={onest.variable}
     >
       <body>{children}</body>
     </html>

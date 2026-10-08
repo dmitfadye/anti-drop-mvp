@@ -29,8 +29,9 @@
 - Toolbar search covers supported sections only; preserve demo and affiliation disclosures.
 
 # Approved implementation (2026-10-08)
-- The user authorized implementing the supplied AntiDrop screens; do not request concept approval again for these references.
-- Primary visual reference is the third collage; see ../docs/frontend/VISUAL_SPEC.md.
-- Work in frontend-test-brach. Preserve hash links and backend contracts.
-- Use local Asket assets; disclose the missing Halvar and normal-width Asket instead of silently claiming exact typography.
-- Keep third-party font attribution. Verify screenshots after fonts and transitions settle.
+- Latest reference is the single overview screenshot in the user conversation, approximately 1672 x 941. It supersedes the earlier collages.
+- User explicitly authorized proceeding from the inline image without a source file or further questions.
+- See ../docs/frontend/APPROVED_VISUAL_SPEC.md; do not redesign other screens.
+- Work exclusively in frontend-test-brach; preserve hash navigation and backend contracts.
+- Use locally hosted Onest with its SIL OFL license, strict TypeScript and BEM CSS Modules.
+- Verify actual browser screenshots at reference size and 1440, 1024, 768, 390px; run typecheck, lint, build and Playwright.

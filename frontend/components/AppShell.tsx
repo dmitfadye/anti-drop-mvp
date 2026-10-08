@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import styles from './AppShell.module.css';
-import { Shield } from './Shield';
 import { Icon as UiIcon } from './Icon';
 import { useSection } from './useSection';
 import { usePreferences } from './preferences';
@@ -64,6 +63,31 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [notice, setNotice] = useState(false);
+  const [blueTheme, setBlueTheme] = useState(false);
+  const notification = useRef<HTMLDivElement>(null);
+  const notificationButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    document.documentElement.dataset.theme = blueTheme ? 'blue' : 'light';
+  }, [blueTheme]);
+  useEffect(() => {
+    if (!notice) return;
+    const dismiss = (event: PointerEvent) => {
+      if (!notification.current?.contains(event.target as Node) &&
+          !notificationButton.current?.contains(event.target as Node)) setNotice(false);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setNotice(false);
+        notificationButton.current?.focus();
+      }
+    };
+    document.addEventListener('pointerdown', dismiss);
+    document.addEventListener('keydown', escape);
+    return () => {
+      document.removeEventListener('pointerdown', dismiss);
+      document.removeEventListener('keydown', escape);
+    };
+  }, [notice]);
   const nav = useRef<HTMLElement>(null);
   const indicator = useRef<HTMLDivElement>(null);
   const menu = useRef<HTMLButtonElement>(null);
@@ -168,7 +192,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           Закрыть меню ×
         </button>
         <a className={styles['sidebar__brand']} href="#overview">
-          <Shield />
+          <span className={styles['sidebar__brand-mark']} aria-hidden="true" />
           <span>
             antidrop<span> × ВТБ</span>
           </span>
@@ -296,6 +320,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <div className={styles['topbar__actions']}>
             <button
+              ref={notificationButton}
               className={styles['topbar__icon']}
               aria-label="Уведомления"
               aria-expanded={notice}
@@ -310,13 +335,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <UiIcon name="help" />
             </a>
-            <a
+            <button
               className={styles['topbar__icon']}
-              href="#settings"
-              aria-label="Настройки интерфейса"
+              aria-label="Мягкая синяя тема"
+              aria-pressed={blueTheme}
+              title="Переключить светлую и мягкую синюю тему"
+              onClick={() => setBlueTheme(!blueTheme)}
             >
               <UiIcon name="sun" />
-            </a>
+            </button>
             <a className={styles['topbar__demo-button']} href="#monitoring">
               Демо-режим
             </a>
@@ -329,8 +356,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             </a>
           </div>
           {notice && (
-            <div className={styles['topbar__notice']} role="status">
-              Новых уведомлений нет. Банковские счета не подключены.
+            <div ref={notification} className={styles['topbar__notice']} role="status">
+              <UiIcon name="info" size={25} />
+              <span>Новых уведомлений нет.<br />Банковские счета не подключены.</span>
             </div>
           )}
         </header>
