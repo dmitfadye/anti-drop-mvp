@@ -20,16 +20,13 @@ for (const width of [390, 768, 1024, 1440]) {
   });
 }
 
-test('keyboard skip link and native disclosure', async ({ page }) => {
+test('keyboard skip link and monitoring navigation', async ({ page }) => {
   await page.goto('/');
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Перейти к содержимому' })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('main')).toBeFocused();
-  const disclosure = page.locator('summary');
-  await disclosure.focus();
+  await page.getByRole('link', { name: 'Мониторинг', exact: true }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByText('Сейчас доступны обзор и описание подхода.', { exact: false })).toBeVisible();
-  await page.keyboard.press('Enter');
-  await expect(page.getByText('Сейчас доступны обзор и описание подхода.', { exact: false })).toBeHidden();
+  await expect(page).toHaveURL(/#monitoring$/);
 });

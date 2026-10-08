@@ -1,6 +1,6 @@
 # Frontend scope
 
-- This directory is an independent Stage 1 App Router frontend.
+- This directory is an independent App Router frontend with demo MVP scenarios.
 - Preserve the legacy Python backend and static application.
 - Use strict TypeScript and Server Components by default.
 - Add client boundaries only for real interactive requirements.
