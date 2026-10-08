@@ -1,0 +1,452 @@
+{
+  "schema_version": "EvaluationMetricsV1",
+  "overall": {
+    "total_episodes": 21,
+    "TP": 2,
+    "FP": 1,
+    "TN": 18,
+    "FN": 0,
+    "recall": {
+      "value": 1.0,
+      "numerator": 2,
+      "denominator": 2,
+      "wilson_95_ci": [
+        0.34237195288961925,
+        1.0
+      ]
+    },
+    "precision": {
+      "value": 0.6666666666666666,
+      "numerator": 2,
+      "denominator": 3,
+      "wilson_95_ci": [
+        0.2076549551264879,
+        0.9385096847238394
+      ]
+    },
+    "fpr": {
+      "value": 0.05263157894736842,
+      "numerator": 1,
+      "denominator": 19,
+      "wilson_95_ci": [
+        0.009351752490529969,
+        0.2463921533654521
+      ]
+    },
+    "fnr": {
+      "value": 0.0,
+      "numerator": 0,
+      "denominator": 2,
+      "wilson_95_ci": [
+        0.0,
+        0.6576280471103807
+      ]
+    },
+    "alert_rate": {
+      "value": 0.14285714285714285,
+      "numerator": 3,
+      "denominator": 21,
+      "wilson_95_ci": [
+        0.04980921798213492,
+        0.346364941492295
+      ]
+    },
+    "legitimate_negative_alert_rate": {
+      "value": 0.1111111111111111,
+      "numerator": 1,
+      "denominator": 9,
+      "wilson_95_ci": [
+        0.019890371327130535,
+        0.4350062147680601
+      ]
+    }
+  },
+  "breakdown": {
+    "episode_class": {
+      "normal": {
+        "total_episodes": 2,
+        "TP": 0,
+        "FP": 0,
+        "TN": 2,
+        "FN": 0,
+        "recall": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.0,
+            0.6576280471103807
+          ]
+        },
+        "fnr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.0,
+            0.6576280471103807
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      },
+      "risk": {
+        "total_episodes": 2,
+        "TP": 2,
+        "FP": 0,
+        "TN": 0,
+        "FN": 0,
+        "recall": {
+          "value": 1.0,
+          "numerator": 2,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.34237195288961925,
+            1.0
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 2,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.34237195288961925,
+            1.0
+          ]
+        },
+        "fpr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fnr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.0,
+            0.6576280471103807
+          ]
+        },
+        "alert_rate": {
+          "value": 1.0,
+          "numerator": 2,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.34237195288961925,
+            1.0
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      },
+      "legitimate_negative": {
+        "total_episodes": 9,
+        "TP": 0,
+        "FP": 1,
+        "TN": 8,
+        "FN": 0,
+        "recall": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "precision": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "fpr": {
+          "value": 0.1111111111111111,
+          "numerator": 1,
+          "denominator": 9,
+          "wilson_95_ci": [
+            0.019890371327130535,
+            0.4350062147680601
+          ]
+        },
+        "fnr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "alert_rate": {
+          "value": 0.1111111111111111,
+          "numerator": 1,
+          "denominator": 9,
+          "wilson_95_ci": [
+            0.019890371327130535,
+            0.4350062147680601
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.1111111111111111,
+          "numerator": 1,
+          "denominator": 9,
+          "wilson_95_ci": [
+            0.019890371327130535,
+            0.4350062147680601
+          ]
+        }
+      },
+      "edge": {
+        "total_episodes": 8,
+        "TP": 0,
+        "FP": 0,
+        "TN": 8,
+        "FN": 0,
+        "recall": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 8,
+          "wilson_95_ci": [
+            0.0,
+            0.3244156195108769
+          ]
+        },
+        "fnr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 8,
+          "wilson_95_ci": [
+            0.0,
+            0.3244156195108769
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      }
+    },
+    "label_source": {
+      "synthetic_placeholder": {
+        "total_episodes": 21,
+        "TP": 2,
+        "FP": 1,
+        "TN": 18,
+        "FN": 0,
+        "recall": {
+          "value": 1.0,
+          "numerator": 2,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.34237195288961925,
+            1.0
+          ]
+        },
+        "precision": {
+          "value": 0.6666666666666666,
+          "numerator": 2,
+          "denominator": 3,
+          "wilson_95_ci": [
+            0.2076549551264879,
+            0.9385096847238394
+          ]
+        },
+        "fpr": {
+          "value": 0.05263157894736842,
+          "numerator": 1,
+          "denominator": 19,
+          "wilson_95_ci": [
+            0.009351752490529969,
+            0.2463921533654521
+          ]
+        },
+        "fnr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.0,
+            0.6576280471103807
+          ]
+        },
+        "alert_rate": {
+          "value": 0.14285714285714285,
+          "numerator": 3,
+          "denominator": 21,
+          "wilson_95_ci": [
+            0.04980921798213492,
+            0.346364941492295
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.1111111111111111,
+          "numerator": 1,
+          "denominator": 9,
+          "wilson_95_ci": [
+            0.019890371327130535,
+            0.4350062147680601
+          ]
+        }
+      }
+    },
+    "is_holdout": {
+      "false": {
+        "total_episodes": 21,
+        "TP": 2,
+        "FP": 1,
+        "TN": 18,
+        "FN": 0,
+        "recall": {
+          "value": 1.0,
+          "numerator": 2,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.34237195288961925,
+            1.0
+          ]
+        },
+        "precision": {
+          "value": 0.6666666666666666,
+          "numerator": 2,
+          "denominator": 3,
+          "wilson_95_ci": [
+            0.2076549551264879,
+            0.9385096847238394
+          ]
+        },
+        "fpr": {
+          "value": 0.05263157894736842,
+          "numerator": 1,
+          "denominator": 19,
+          "wilson_95_ci": [
+            0.009351752490529969,
+            0.2463921533654521
+          ]
+        },
+        "fnr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.0,
+            0.6576280471103807
+          ]
+        },
+        "alert_rate": {
+          "value": 0.14285714285714285,
+          "numerator": 3,
+          "denominator": 21,
+          "wilson_95_ci": [
+            0.04980921798213492,
+            0.346364941492295
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.1111111111111111,
+          "numerator": 1,
+          "denominator": 9,
+          "wilson_95_ci": [
+            0.019890371327130535,
+            0.4350062147680601
+          ]
+        }
+      },
+      "true": {
+        "total_episodes": 0,
+        "TP": 0,
+        "FP": 0,
+        "TN": 0,
+        "FN": 0,
+        "recall": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fpr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fnr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      }
+    }
+  },
+  "warnings": [
+    "Rule score is not probability. Warnings are not legal conclusions. No banking actions are performed.",
+    "Wilson intervals assume independent episodes; repeated subjects and synthetic labels do not establish bank accuracy.",
+    "PR threshold sweeps are descriptive; do not tune on a holdout used to report performance.",
+    "UNVALIDATED LABELS: synthetic_placeholder/unknown labels are pipeline fixtures, NOT validated banking accuracy.",
+    "Not an exclusively held-out evaluation. Independent human-reviewed holdout is required."
+  ]
+}

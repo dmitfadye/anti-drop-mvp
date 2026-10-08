@@ -1,0 +1,8 @@
+segment_type,segment,total_episodes,TP,FP,TN,FN,recall,precision,fpr,alert_rate
+episode_class,normal,2,0,0,2,0,,,0.0,0.0
+episode_class,risk,2,2,0,0,0,1.0,1.0,,1.0
+episode_class,legitimate_negative,9,0,1,8,0,,0.0,0.1111111111111111,0.1111111111111111
+episode_class,edge,8,0,0,8,0,,,0.0,0.0
+label_source,synthetic_placeholder,21,2,1,18,0,1.0,0.6666666666666666,0.05263157894736842,0.14285714285714285
+is_holdout,false,21,2,1,18,0,1.0,0.6666666666666666,0.05263157894736842,0.14285714285714285
+is_holdout,true,0,0,0,0,0,,,,

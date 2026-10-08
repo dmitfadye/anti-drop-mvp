@@ -1,0 +1,25 @@
+{
+  "dataset_version": "synthetic-episodes-v1",
+  "dataset_sha256": "1808612f55a4ba3d1565f4621f7cb4fc8ead8d0ac1666aea18701bb0935d3385",
+  "rule_version": "2026-10-08.p1",
+  "threshold_version": "thresholds-2026.10.08-red50-yellow25",
+  "detector_threshold_version": "thresholds-2026.10.08-red50-yellow25",
+  "adapter_version": "snapshot-adapter-v1",
+  "template_version": "warning-templates-2026.10.08.p1",
+  "positive_definition": "level == RED",
+  "number_of_episodes": 21,
+  "label_sources": [
+    "synthetic_placeholder"
+  ],
+  "holdout_status": "development_only",
+  "warnings": [
+    "Rule score is not probability. Warnings are not legal conclusions. No banking actions are performed.",
+    "Wilson intervals assume independent episodes; repeated subjects and synthetic labels do not establish bank accuracy.",
+    "PR threshold sweeps are descriptive; do not tune on a holdout used to report performance.",
+    "UNVALIDATED LABELS: synthetic_placeholder/unknown labels are pipeline fixtures, NOT validated banking accuracy.",
+    "Not an exclusively held-out evaluation. Independent human-reviewed holdout is required."
+  ],
+  "git_commit": "56daaf35c77b705b047ee283a998468d37776f42",
+  "git_worktree_dirty": true,
+  "timestamp": "2026-10-08T13:12:46.386282+00:00"
+}
