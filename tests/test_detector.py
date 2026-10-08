@@ -30,17 +30,28 @@ class TestDetector(unittest.TestCase):
     def test_empty(self):
         self.assertEqual(analyze_transactions([])["level"], "GREEN")
 
-    def test_cashout_is_red(self):
+    def test_cashout_alone_is_yellow_exact(self):
+        # Изолированный обнал: ровно 25 баллов -> YELLOW (было: слабая проверка в обе стороны).
         txns = [T("2026-10-07 10:00:00", "incoming_p2p", 20000, "a"),
                 T("2026-10-07 11:00:00", "cash_withdraw", 18000, "atm")]
         res = analyze_transactions(txns)
-        self.assertIn(res["level"], ("RED", "YELLOW"))
+        self.assertEqual(res["level"], "YELLOW")
+        self.assertEqual(res["score"], 25)
 
     def test_quiz_cashback(self):
         ok = check_quiz([1, 1, 1, 1, 0])
-        self.assertTrue(ok["passed"] and ok["cashback"] == 100)
+        self.assertTrue(ok["passed"])
+        self.assertEqual(ok["cashback"], 100)
+        self.assertEqual(ok["reward_status"], "simulated")  # T18: выплата не производится
         bad = check_quiz([0, 0, 0, 0, 1])
-        self.assertFalse(bad["passed"] and bad["cashback"] == 100)
+        self.assertFalse(bad["passed"])
+        self.assertEqual(bad["cashback"], 0)
+
+    def test_sim_same_number_canonical_formats(self):
+        # T13/T16: один номер в разных форматах — совпадение, а не «смена».
+        bad = start_number_change("+7 916 000-00-01", "+79160000001", otp_ok_old=True, otp_ok_new=True)
+        self.assertFalse(bad["ok"])
+        self.assertTrue(any("совпадают" in e for e in bad["errors"]))
 
     def test_sim_change_requires_both_otp(self):
         bad = start_number_change("+79160000001", "+79160000002", otp_ok_old=False, otp_ok_new=True)

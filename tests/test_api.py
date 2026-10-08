@@ -34,7 +34,7 @@ class TestAPI(unittest.TestCase):
     def test_index_serves_tailwind_page(self):
         r = client.get("/")
         self.assertEqual(r.status_code, 200)
-        self.assertIn("tailwindcss", r.text)
+        self.assertIn("/static/tailwind.css", r.text)
         self.assertIn("Анти-Дроп", r.text)
 
     def test_content_hides_answers(self):
