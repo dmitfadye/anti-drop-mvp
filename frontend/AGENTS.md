@@ -24,3 +24,6 @@
 - Stage explicit paths only and inspect the staged diff.
 - Follow docs/SCREEN_WORKFLOW.md for future screens.
 - Obtain visual concept approval before coding a new screen.
+
+- Keep one shared sidebar capsule; remeasure after hash, size, font and drawer changes.
+- Toolbar search covers supported sections only; preserve demo and affiliation disclosures.
