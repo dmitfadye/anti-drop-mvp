@@ -1,0 +1,53 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "case_id": {
+      "format": "uuid",
+      "title": "Case Id",
+      "type": "string"
+    },
+    "evaluation_id": {
+      "title": "Evaluation Id",
+      "type": "string"
+    },
+    "status": {
+      "const": "registered-sandbox",
+      "title": "Status",
+      "type": "string"
+    },
+    "selected_language": {
+      "title": "Selected Language",
+      "type": "string"
+    },
+    "contact_reason": {
+      "title": "Contact Reason",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "sandbox": {
+      "const": true,
+      "default": true,
+      "title": "Sandbox",
+      "type": "boolean"
+    },
+    "next_step": {
+      "default": "Тестовое обращение зарегистрировано. Реальное обращение в банк не отправлялось.",
+      "title": "Next Step",
+      "type": "string"
+    }
+  },
+  "required": [
+    "case_id",
+    "evaluation_id",
+    "status",
+    "selected_language",
+    "contact_reason",
+    "created_at"
+  ],
+  "title": "SandboxCaseResponse",
+  "type": "object"
+}

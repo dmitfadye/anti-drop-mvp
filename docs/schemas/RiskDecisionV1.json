@@ -89,7 +89,8 @@
       "enum": [
         "GREEN",
         "YELLOW",
-        "RED"
+        "RED",
+        "INSUFFICIENT_DATA"
       ],
       "title": "Level",
       "type": "string"
@@ -161,6 +162,29 @@
         "rejected_input"
       ],
       "title": "Status",
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 30,
+      "title": "Warnings",
+      "type": "array"
+    },
+    "sandbox": {
+      "const": true,
+      "default": true,
+      "title": "Sandbox",
+      "type": "boolean"
+    },
+    "source_type": {
+      "default": "synthetic",
+      "enum": [
+        "synthetic",
+        "sandbox"
+      ],
+      "title": "Source Type",
       "type": "string"
     }
   },

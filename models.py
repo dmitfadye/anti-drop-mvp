@@ -10,14 +10,15 @@
   но бесконечности/NaN запрещены.
 """
 from datetime import datetime
+from decimal import Decimal
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, StrictInt, field_validator, model_validator
 
 from src.policy import PROJECT_TZ, UTC
 
 TxnType = Literal["incoming_p2p", "outgoing_p2p", "cash_withdraw", "purchase", "incoming_salary"]
-Level = Literal["GREEN", "YELLOW", "RED"]
+Level = Literal["GREEN", "YELLOW", "RED", "INSUFFICIENT_DATA"]
 
 
 def _normalize_ts(v: object) -> datetime:
@@ -30,7 +31,13 @@ def _normalize_ts(v: object) -> datetime:
             raise ValueError("ts: ожидаю ISO дату-время, например '2026-10-07 14:02:00'") from None
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=PROJECT_TZ)
-    return dt.astimezone(UTC)
+    try:
+        normalized = dt.astimezone(UTC)
+    except (OverflowError, ValueError):
+        raise ValueError('timestamp outside supported UTC range') from None
+    if not 2000 <= normalized.year <= 2100:
+        raise ValueError('supported UTC timestamp years: 2000 through 2100')
+    return normalized
 
 
 class Transaction(BaseModel):
@@ -38,10 +45,10 @@ class Transaction(BaseModel):
     user_id: str = Field(default="anon", max_length=64)
     ts: datetime = Field(description="ISO дата-время. Наивные метки считаются московским временем.")
     type: TxnType = "purchase"
-    amount: float = Field(ge=0, allow_inf_nan=False, examples=[3000])
+    amount: Decimal = Field(ge=0, le=10**12, allow_inf_nan=False, max_digits=15, decimal_places=2, examples=[3000])
     counterparty: str = Field(default="", max_length=256)
     device_id: str = Field(default="", max_length=256)
-    sim_changed_days_ago: int | None = Field(default=None, ge=0, description="Дней с замены SIM; null = неизвестно")
+    sim_changed_days_ago: StrictInt | None = Field(default=None, ge=0, description="Дней с замены SIM; null = неизвестно")
 
     @field_validator("ts", mode="before")
     @classmethod

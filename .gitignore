@@ -38,3 +38,20 @@ next-env.d.ts
 Thumbs.db
 .idea/
 .vscode/
+
+# Backend verification and local persistence
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+*.p12
+*.pfx
+secrets/
+backups/
+*.db
+*.sqlite
+*.sqlite3
+blob-report/
+.tmp/
+.temp/
+!.env.template

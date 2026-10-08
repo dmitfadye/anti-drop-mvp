@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-DATASET_VERSION = 'synthetic-episodes-v1'
+DATASET_VERSION = 'synthetic-episodes-v2'
 AT = datetime(2026, 10, 8, 12, tzinfo=timezone.utc)
 
 
@@ -34,6 +34,9 @@ def build_fixtures() -> tuple[list[dict], list[dict], list[dict]]:
 
     inbound = [transaction(i, minutes=40-i*5) for i in range(5)]
     add('ordinary_transfer', [transaction()], category='normal')
+    add('own_account_movement', [{**transaction(i, direction='out', amount=1000000), 'counterparty_ref': ref('cp', 'own')} for i in range(2)])
+    add('legitimate_high_frequency', [transaction(i, minutes=i, kind='other', direction='out', amount=10000) for i in range(12)])
+    add('insufficient_data', [], category='edge')
     add('salary', [transaction(kind='salary', amount=6000000)], category='normal')
     add('family_collection', [transaction(i, minutes=40-i*5, kind='family_collection') for i in range(5)])
     # A benign purpose can have the same observable flow as risk: expose the false positive.

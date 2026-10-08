@@ -5,6 +5,21 @@
     "label_basis": "handcrafted synthetic scenario intent, not detector output"
   },
   {
+    "episode_id": "ep_18396bd57b4bb9b0",
+    "scenario": "own_account_movement",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_3e4d29df7a5ed3e3",
+    "scenario": "legitimate_high_frequency",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_ee44e4cd9458146b",
+    "scenario": "insufficient_data",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
     "episode_id": "ep_6384e43c02b1fbdf",
     "scenario": "salary",
     "label_basis": "handcrafted synthetic scenario intent, not detector output"

@@ -18,7 +18,13 @@ def aware_utc(value: object) -> datetime:
             raise ValueError('expected a valid timezone-aware ISO-8601 datetime') from None
     if not isinstance(value, datetime) or value.tzinfo is None or value.utcoffset() is None:
         raise ValueError('timezone-aware ISO-8601 datetime required; naive dates are rejected')
-    return value.astimezone(timezone.utc)
+    try:
+        normalized = value.astimezone(timezone.utc)
+    except (OverflowError, ValueError):
+        raise ValueError('timestamp outside supported UTC range') from None
+    if not 2000 <= normalized.year <= 2100:
+        raise ValueError('supported UTC timestamp years: 2000 through 2100')
+    return normalized
 
 
 class ClosedModel(BaseModel):
@@ -35,6 +41,7 @@ class SnapshotMetadata(ClosedModel):
 
 
 class RiskTransactionV1(ClosedModel):
+    source: Ref = 'src_00000000'
     event_id: Ref
     source_event_id: Ref | None = None
     subject_ref: Ref | None = None
@@ -64,6 +71,7 @@ class RiskSnapshotV1(ClosedModel):
     schema_version: Literal['RiskSnapshotV1']
     subject_ref: Ref
     analysis_at: datetime
+    source_type: Literal['synthetic', 'sandbox'] = 'synthetic'
     timezone_policy: Literal['normalize_to_utc']
     allow_future_events: StrictBool = False
     transactions: list[RiskTransactionV1] = Field(max_length=5000)
@@ -74,7 +82,7 @@ class RiskSnapshotV1(ClosedModel):
     @model_validator(mode='after')
     def snapshot_rules(self):
         for key in ('event_id', 'source_event_id'):
-            values = [getattr(t, key) for t in self.transactions if getattr(t, key) is not None]
+            values = [(t.source, getattr(t, key)) for t in self.transactions if getattr(t, key) is not None]
             if len(values) != len(set(values)):
                 raise ValueError(f'duplicate {key}')
         if any(t.subject_ref is not None and t.subject_ref != self.subject_ref for t in self.transactions):
@@ -104,7 +112,7 @@ class RiskDecisionV1(ClosedModel):
     analysis_at: datetime
     rule_version: str
     threshold_version: str
-    level: Literal['GREEN', 'YELLOW', 'RED']
+    level: Literal['GREEN', 'YELLOW', 'RED', 'INSUFFICIENT_DATA']
     score: Annotated[StrictInt, Field(ge=0, le=100)]
     score_interpretation: Literal['deterministic_rule_score_not_probability'] = 'deterministic_rule_score_not_probability'
     reason_codes: list[ReasonCode]
@@ -112,5 +120,8 @@ class RiskDecisionV1(ClosedModel):
     window_used: WindowUsed
     data_quality: DataQuality
     status: Literal['ok', 'insufficient_data', 'rejected_input']
+    warnings: list[str] = Field(default_factory=list, max_length=30)
+    sandbox: Literal[True] = True
+    source_type: Literal['synthetic', 'sandbox'] = 'synthetic'
 
     _time = field_validator('analysis_at', mode='before')(aware_utc)

@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from decimal import Decimal, InvalidOperation
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -50,7 +51,11 @@ def parse_ts(ts: Any) -> datetime | None:
         return None
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=PROJECT_TZ)
-    return dt.astimezone(UTC)
+    try:
+        normalized = dt.astimezone(UTC)
+    except (OverflowError, ValueError):
+        return None
+    return normalized if 2000 <= normalized.year <= 2100 else None
 
 
 def _is_fresh_sim(value: Any, max_days: int) -> bool:
@@ -70,6 +75,8 @@ def analyze_transactions(
     policy: Policy = DEFAULT_POLICY,
 ) -> dict[str, Any]:
     """Главная функция. Возвращает {score 0-100, level, reasons[], metrics{}}."""
+    if len({t.get('user_id', 'anon') for t in transactions}) > 1:
+        raise ValueError('mixed subjects must be rejected before risk calculation')
     parsed: list[tuple[datetime, dict[str, Any]]] = []
     bad_ts = 0
     for t in transactions:
@@ -87,7 +94,7 @@ def analyze_transactions(
     if bad_ts:
         metrics["excluded_bad_ts"] = bad_ts
     if not parsed:
-        return {"score": 0, "level": "GREEN", "reasons": ["Нет транзакций для анализа."], "metrics": metrics}
+        return {"score": 0, "level": "INSUFFICIENT_DATA", "reasons": ["Недостаточно данных для анализа."], "metrics": metrics}
 
     if now is None:
         now_dt = parsed[-1][0]
@@ -102,22 +109,29 @@ def analyze_transactions(
         reasons.append(f"ℹ️ Операций с датой позже точки анализа ({len(future)} шт.) исключено — они не учитывались.")
 
     if not txns:
-        return {"score": 0, "level": "GREEN", "reasons": reasons or ["Нет транзакций для анализа."], "metrics": metrics}
+        return {"score": 0, "level": "INSUFFICIENT_DATA", "reasons": reasons or ["Недостаточно данных для анализа."], "metrics": metrics}
 
     score = 0
     window_start = now_dt - timedelta(minutes=policy.transit_window_min)
     recent = [(dt, t) for dt, t in txns if dt >= window_start]
 
-    def amt(t: dict[str, Any]) -> float:
+    def amt(t: dict[str, Any]) -> Decimal:
         try:
-            return float(t.get("amount", 0))
-        except (TypeError, ValueError):
-            return 0.0
+            value = Decimal(str(t.get("amount", 0)))
+            return value if value.is_finite() else Decimal(0)
+        except (TypeError, ValueError, InvalidOperation):
+            return Decimal(0)
+
+    zero_total = sum(amt(t) <= 0 for _, t in txns)
+    metrics['excluded_zero_count'] = zero_total
+    txns = [(dt, t) for dt, t in txns if amt(t) > 0]
+    recent = [(dt, t) for dt, t in recent if amt(t) > 0]
+    if not txns:
+        return {'score': 0, 'level': 'INSUFFICIENT_DATA', 'reasons': ['Недостаточно положительных финансовых операций.'], 'metrics': metrics}
 
     # 1. Транзитный поток (T07: нулевые суммы не считаются переводами).
     small_in = [(dt, t) for dt, t in recent if t.get("type") == "incoming_p2p" and 0 < amt(t) <= policy.small_txn_max]
-    zero_n = sum(1 for _, t in recent if t.get("type") in ("incoming_p2p", "outgoing_p2p") and amt(t) <= 0)
-    metrics["excluded_zero_count"] = zero_n
+    metrics["excluded_zero_count"] = zero_total
     senders = {str(t.get("counterparty", "?")) for _, t in small_in}
     metrics["small_incoming_60m_count"] = len(small_in)
     metrics["small_incoming_60m_senders"] = len(senders)
@@ -129,7 +143,7 @@ def analyze_transactions(
         fired = True
         reasons.append(
             f"🔴 Транзитный поток: {len(small_in)} мелких входящих от {len(senders)} разных отправителей "
-            f"за {policy.transit_window_min} мин на {metrics['small_incoming_60m_sum']} ₽ — похоже на почерк вербовщика в дропы."
+            f"за {policy.transit_window_min} мин на {metrics['small_incoming_60m_sum']} ₽ — проверьте назначение поступлений перед дальнейшим переводом."
         )
     elif len(small_in) >= policy.transit_count_yellow and len(senders) >= policy.transit_senders_yellow:
         score += 25
@@ -149,13 +163,13 @@ def analyze_transactions(
         if in_sum > 0 and out_sum > 0:
             flow_ratio = out_sum / in_sum
             metrics["flow_through_ratio_60m"] = round(flow_ratio, 2)
-            if flow_ratio >= policy.flow_ratio and len(small_in) >= 3:
+            if flow_ratio >= Decimal(str(policy.flow_ratio)) and len(small_in) >= 3:
                 score += 25
                 metrics["score_contributions"]["large_outbound_after_inbound"] = 25
                 fired = True
                 reasons.append(
                     f"🔴 Сквозной транзит: после поступлений выведено {out_sum:.0f} ₽ из {in_sum:.0f} ₽ "
-                    f"({flow_ratio:.0%}) за час. Возможно ограничение операций по 115-ФЗ — решение принимает банк."
+                    f"({flow_ratio:.0%}) за час. Проверьте получателя и назначение; при сомнениях свяжитесь с банком самостоятельно."
                 )
 
     # 3. Обнал после входящих за 24ч.
@@ -165,13 +179,13 @@ def analyze_transactions(
     day_cash = sum(amt(t) for _, t in day if t.get("type") == "cash_withdraw" and amt(t) > 0)
     metrics["incoming_24h"] = round(day_in, 2)
     metrics["cash_24h"] = round(day_cash, 2)
-    if day_in > 0 and (day_cash / day_in) >= policy.cashout_ratio and day_in >= policy.cashout_min_in:
+    if day_in > 0 and (day_cash / day_in) >= Decimal(str(policy.cashout_ratio)) and day_in >= policy.cashout_min_in:
         score += 25
         metrics["score_contributions"]["cashout_ratio"] = 25
         fired = True
         reasons.append(
             f"🔴 Обнал: снято наличными {day_cash:.0f} ₽ из {day_in:.0f} ₽ входящих за 24ч "
-            f"({day_cash / day_in:.0%}) — похоже на финал дроп-схемы."
+            f"({day_cash / day_in:.0%}) — убедитесь, что снятие соответствует вашим намерениям."
         )
 
     # 4. Веерные исходящие.
@@ -182,7 +196,7 @@ def analyze_transactions(
         metrics["score_contributions"]["fanout_transfers"] = 25
         fired = True
         reasons.append(
-            f"🔴 Веерная рассылка: {len(receivers)} разных получателей за час — похоже на распыление чужих денег."
+            f"🔴 Веерная рассылка: {len(receivers)} разных получателей за час — проверьте получателей и основания переводов."
         )
 
     # 5. Ночная активность.
@@ -223,7 +237,7 @@ def analyze_transactions(
     score = min(100, score)
     level = "RED" if score >= policy.score_red else ("YELLOW" if score >= policy.score_yellow else "GREEN")
     if not fired:
-        reasons.append("✅ Всё спокойно: транзитных потоков и веерных рассылок не найдено.")
+        reasons.append("Настроенные правила риска не сработали на доступных данных. Это не гарантия безопасности.")
 
     metrics["score"] = score
     metrics["level"] = level

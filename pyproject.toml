@@ -1,13 +1,21 @@
 [project]
 name = "anti-drop-mvp"
-version = "0.2.0"
-description = "Анти-Дроп: защита нерезидентов от вербовки в дропы (FastAPI + Pydantic + TailwindCSS)"
+version = "0.4.0"
+description = "Explainable synthetic risk communication and persistent sandbox assistance"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-  "fastapi[standard]>=0.115",
+  "fastapi>=0.115",
   "uvicorn[standard]>=0.30",
   "pydantic>=2.0",
   "httpx>=0.27",
   "tzdata>=2026.5; sys_platform == 'win32'",
+  "sqlalchemy>=2.0,<3",
+  "psycopg[binary]>=3.2,<4",
+  "alembic>=1.13,<2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8,<10",
 ]

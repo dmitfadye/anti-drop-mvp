@@ -1,98 +1,41 @@
-# Анти-Дроп: Защита и Адаптация
-### Сервис финансовой безопасности для нерезидентов | Финтех-хакатон MVP
+# AntiDrop 0.4: persistent synthetic sandbox
 
-**Проблема:** иностранцы — частая мишень вербовщиков в «дропы». Человек принимает «транзит», а дальше возможны ограничение операций по 115-ФЗ и проверка по ст. 187 УК РФ — часто он даже не понимает, что оказался в чужой схеме.
+Explainable risk education MVP. No real VTB contact, transfers, SMS or blocking. Rule points are not probabilities.
 
-**Решение:** онбординг с обучением + объяснимый мониторинг + экстренный алерт «Стоп-Дроп» на родном языке + учебный тренажёр смены номера.
+## Local demo
 
-**Стек:** FastAPI + Pydantic v2 (бэкенд, валидация, локальный Swagger) • TailwindCSS локальной сборки (без CDN) • stdlib-ядро детектора без ML-зависимостей.
+Prerequisites: Python3.12+, uv, Docker Desktop/Compose. From this worktree:
 
-> 🧪 **Демо-режим.** Это учебный демонстратор на синтетике: поддержка не вызывается, деньги не двигаются и не начисляются, SMS не отправляются. Все имитации явно помечены в UI и API (`demo: true`).
-
-## Быстрый старт
-
-```bash
-cd anti-drop-mvp
-uv sync  # или: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-
-.venv/bin/uvicorn main:app --reload
-# дашборд → http://localhost:8000 (работает без интернета)
-# Swagger  → http://localhost:8000/docs (локальные ассеты)
-
-# тесты (ядро + API + регрессия аудита, 41 шт.):
-.venv/bin/python -m unittest discover -s tests -v
-
-# CLI-демо детектора:
-.venv/bin/python src/demo.py
-
-# Пересобрать CSS после правок index.html (нужен npm-пакет @tailwindcss/cli):
-printf '@import "tailwindcss";\n' > /tmp/tw-input.css && ./node_modules/.bin/tailwindcss -i /tmp/tw-input.css -o static/tailwind.css --minify
+```powershell
+uv sync --locked
+uv run python scripts/init_sandbox.py
+docker compose up --build -d --wait --wait-timeout 120
+uv run python scripts/demo_sandbox.py
+docker compose restart postgres api
+docker compose up -d --wait --wait-timeout 60
+uv run python scripts/demo_sandbox.py --verify-existing
 ```
 
-## API
+Initializer writes ignored .env/.local credentials, refuses overwrite. Never share them. API/docs: http://127.0.0.1:8010/docs. PG has no published port. Named volume survives restart; do not use down -v if data must remain. First build needs network; evaluation has no external inference calls.
 
-| Метод | Путь | Что делает |
-|---|---|---|
-| `GET` | `/` | Дашборд (локальный Tailwind, без внешних запросов) |
-| `GET` | `/docs` | Swagger UI из локальных файлов |
-| `GET` | `/api/health` | Статус + `rules_version` + `server_time_utc` + `demo_mode` |
-| `GET` | `/api/langs` | 7 языков алертов |
-| `GET` | `/api/content` | Сторис + квиз **без** правильных ответов (проверка на сервере) |
-| `POST` | `/api/analyze` | `{transactions[], lang, subject_id?, analysis_at?}` → `{score, level, reasons[], metrics, alert?, rules_version}`. Смешение `user_id`, дубли `id`, мусор во времени/суммах → `422` |
-| `POST` | `/api/quiz` | `{answers[]}` → `{score, passed, cashback, reward_status: "simulated"}` (выплат нет) |
-| `POST` | `/api/sim` | Учебный тренажёр смены номера (SMS нет) → запрет или кулдаун |
-| `POST` | `/api/cases` | Учебный кейс обращения: устойчивый `case_id`, повтор по `idempotency_key` не плодит дубликаты |
-| `GET` | `/api/cases/{id}` | Статус кейса (хранилище — память процесса) |
+Demo persists a synthetic RED85 explanation and test case, retries the key and retrieves the same case after DB/API restart. No bank ticket is sent.
 
-Контракт анализа: **один запрос — один клиент**. Несколько `user_id` без `subject_id` отклоняются. Время: ISO, наивные метки считаются московскими, всё приводится к UTC; операции позже `analysis_at` исключаются (метрика `excluded_future_count`), нулевые суммы не считаются переводами.
+For an old volume predating the runtime role, execute `docker compose exec postgres psql -U antidrop -d antidrop -f /docker-entrypoint-initdb.d/001_runtime_role.sql` before migrations. Fresh volumes initialize automatically.
 
-## Структура
+## Verification
 
-```
-main.py            FastAPI (uvicorn main:app); request-id, локальный Swagger, без CORS-*
-models.py          Pydantic-схемы: datetime-TZ, один субъект, уникальные id, лимиты строк
-static/index.html  Фронт: esc()-рендер, обработка ошибок/загрузки, aria-live, учебные кейсы
-static/tailwind.css Локальная сборка Tailwind v4 (пересобрать после правок HTML)
-static/swagger/    Локальный Swagger UI (без CDN)
-src/policy.py      Версионированные пороги правил (RULES_VERSION=2026-10-08.p1)
-src/detector.py    Эвристики: транзит, веер, обнал, ночь, SIM+всплеск; скоринг 0–100
-src/alerts.py      «Стоп-Дроп» на 7 языках, нейтральная юридическая лексика
-src/quiz.py        3 микро-сторис + квиз (учебный приз, выплат нет)
-src/sim_security.py Каноническое сравнение номеров + 24ч кулдаун (тренажёр)
-src/cases.py       Sandbox-кейсы: детерминированный case_id + идемпотентность
-app_stdlib.py      LEGACY фолбэк без зависимостей (только диагностика ядра, не для демо)
-data/              2 CSV-сценария: норма vs дроп-атака
-tests/             test_detector.py + test_api.py + test_audit.py (регрессия T02–T22)
-requirements-lock.txt  Точный пин 56 пакетов (uv pip freeze)
-```
+`uv run pytest -q`. To run all nine persistence tests, set TEST_DATABASE_URL to a dedicated PostgreSQL database whose name starts with antidrop_test. Never use customer/production DB. Without it those checks explicitly skip. On2026-10-08:83 passed on PG 18; Docker demo on PG 16. One upstream Starlette/httpx deprecation warning. See [verification](docs/architecture/VERIFICATION.md).
 
-## Честные границы (limitations для слайда жюри)
+## Integration boundary
 
-- Демо показывает **распознавание эпизода после вывода**, а не предотвращение первого перевода (5 входящих без вывода = YELLOW без алерта).
-- Пороги правил не калиброваны на банковской разметке; 85 баллов — не «вероятность 85%».
-- Переводы шаблонов не проверены носителями; для пилота нужен один приоритетный язык + review.
-- Кейсы/кулдауны живут в памяти процесса; SMS, выплаты и ограничения операций отсутствуют.
-- Для пилота с реальными данными нужны: банковский gateway/identity, PostgreSQL + audit, approved юридические тексты, data/security-согласования.
+Next.js remains intended frontend on frontend-test-brach. Backend is isolated on backend-antidrop-postgres. Approved frontend screens were not changed/merged; support buttons are not yet connected. Verified full route is HTTP CLI/Swagger. Legacy static page is not the approved Next product.
 
-## Демо-сценарий для жюри (3 минуты)
+/api/analyze remains compatible analysis; /api/v1/risk/evaluate is stateless synthetic. Legacy /api/cases now410: migrate to authenticated /sandbox/evaluations and /sandbox/cases. See [contracts](docs/architecture/API_CONTRACTS.md).
 
-1. Дашборд → **«Симулировать атаку вербовщика»** → RED-скоринг + алерт на узбекском/таджикском.
-2. **«Создать учебное обращение»** → устойчивый `CASE-XXXXXXXX`, повтор не плодит дубликаты.
-3. Открыть `/docs` → показать контракт API (работает офлайн).
-4. Квиз → учебный приз (деньги не начисляются).
-5. Тренажёр номера: без галочки OTP — запрет; один номер в разных форматах («+7 916…» vs «+7916…») — тоже запрет.
+## Review material
 
+- [Scorecard](docs/competition/JURY_SCORECARD.md), [discovery](docs/competition/PRODUCT_DISCOVERY.md), [evidence](docs/competition/EVIDENCE_REGISTER.md).
+- [Economics](docs/competition/FINANCIAL_MODEL.md), [pilot](docs/competition/PILOT_PROTOCOL.md), [pitch](docs/competition/PITCH_AND_DEMO.md), [roadmap](docs/competition/ROADMAP.md).
+- [Database](docs/architecture/DATABASE.md), [security](docs/architecture/SECURITY.md), [limitations](docs/architecture/KNOWN_LIMITATIONS.md).
 
-## P0 risk quality and reproducible evaluation
-
-The isolated `anti_drop_ml` package adds strict RiskSnapshotV1/RiskDecisionV1 contracts, a thin adapter to existing rules, Wilson 95% intervals, threshold PR curves, legitimate-negative reporting, closed PII-rejecting event schemas and an approximate per-arm A/B power helper. Existing demo endpoints remain compatible. New endpoint: `POST /api/v1/risk/evaluate`; naive timestamps, duplicate IDs, future events, zero transfers and mixed subjects return 422. Score is not probability.
-
-```sh
-python -m anti_drop_ml.make_labeling_template --output-dir fixtures/episodes
-python -m anti_drop_ml.evaluation.runner --dataset fixtures/episodes/labeled_episodes.jsonl --output-dir reports/evaluation --positive-level RED --rule-version 2026-10-08.p1
-python -m unittest discover -s tests -v
-```
-
-Add `--positive-threshold 60` for a different decision threshold. All 21 provided labeled episodes are synthetic placeholders, development-only: they measure the pipeline, not banking accuracy. An intentional family-collection/rent false positive demonstrates the importance of legitimate negatives. Independent human-reviewed holdout, legal/native-language review and a bank data owner remain necessary.
-
-See [P0 architecture and commands](docs/ml_p0_quality_layer.md), [labeling workflow](docs/labeling_guideline.md), [limitations](docs/limitations.md), [actual example report](reports/evaluation/report.md), and [legitimate-negative report](reports/evaluation/legitimate_negatives_report.md). Versioned JSON Schemas are in `docs/schemas/`.
+Historical competition-audit reports concern earlier revisions. No interviews, bank validation, production accuracy, public deployment, video or finished PPTX/PDF deck is claimed.

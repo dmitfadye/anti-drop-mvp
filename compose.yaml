@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_DB: antidrop
+      POSTGRES_USER: antidrop
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Generate a local .env using scripts/init_sandbox.py}
+      API_DATABASE_PASSWORD: ${API_DATABASE_PASSWORD:?Generate a runtime database password}
+    volumes:
+      - antidrop-postgres:/var/lib/postgresql/data
+      - ./infra/001_runtime_role.sql:/docker-entrypoint-initdb.d/001_runtime_role.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U antidrop -d antidrop"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    networks: [internal]
+  migrate:
+    build: .
+    command: ["python", "-m", "scripts.migrate"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://antidrop:${POSTGRES_PASSWORD}@postgres:5432/antidrop
+    depends_on:
+      postgres: {condition: service_healthy}
+    networks: [internal]
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://antidrop_app:${API_DATABASE_PASSWORD}@postgres:5432/antidrop
+      SANDBOX_TOKENS: ${SANDBOX_TOKENS:?Generate local sandbox credentials first}
+    ports: ["127.0.0.1:8010:8000"]
+    read_only: true
+    tmpfs: ["/tmp"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [internal, edge]
+networks:
+  edge:
+    driver: bridge
+  internal:
+    internal: true
+volumes:
+  antidrop-postgres:
