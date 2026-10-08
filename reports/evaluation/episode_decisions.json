@@ -8,7 +8,7 @@
     "is_holdout": false,
     "score": 45,
     "level": "YELLOW",
-    "evaluation_id": "ec6f73bc1c20d0777276abbe98bfbb878d0838ef0c1a16fb3b4fcdf72cc32abc",
+    "evaluation_id": "ad573630524dbf91be39c2ac1103c4a374da6584a55adc69605a1935c7104207",
     "predicted_positive": false
   },
   {
@@ -20,7 +20,19 @@
     "is_holdout": false,
     "score": 0,
     "level": "GREEN",
-    "evaluation_id": "002a8c951b5ef90c30eb51f465730fe252904da2675a877a4b1e88579c7580f2",
+    "evaluation_id": "9fd7319182f8fe7bffb78c82ffbd5366caed39e4f96f84fae2f1ab81dce78d47",
+    "predicted_positive": false
+  },
+  {
+    "episode_id": "ep_18396bd57b4bb9b0",
+    "subject_ref": "sub_18396bd57b4bb9b0",
+    "label": "normal",
+    "episode_class": "legitimate_negative",
+    "label_source": "synthetic_placeholder",
+    "is_holdout": false,
+    "score": 0,
+    "level": "GREEN",
+    "evaluation_id": "b08ace8a9cd6b7a66bf0a60399c1b133d62596c5744505877bc7eeb1afff272a",
     "predicted_positive": false
   },
   {
@@ -32,7 +44,7 @@
     "is_holdout": false,
     "score": 0,
     "level": "GREEN",
-    "evaluation_id": "ffcec19b9e7ade9361c7151be0c0ca6f60f8d3d846ff445ff55e97e1c5a020cf",
+    "evaluation_id": "b1ed88d032687e3ecf038bbed1c56ec45a498bdb98d7ad2e5b3b8de8725e2a83",
     "predicted_positive": false
   },
   {
@@ -44,7 +56,7 @@
     "is_holdout": false,
     "score": 85,
     "level": "RED",
-    "evaluation_id": "9067aa86ac815414fb616d30ee318901d54b885f4f095516bc0d39a11aa5d0e5",
+    "evaluation_id": "2cd7e6fb666b58e7b78c18ad588237b14773d5b4e432c06378fd8dee6240f11b",
     "predicted_positive": true
   },
   {
@@ -56,7 +68,7 @@
     "is_holdout": false,
     "score": 45,
     "level": "YELLOW",
-    "evaluation_id": "9cc58aa6a60f11cac8d9f3dcf57e13780a407a930813382e35a973a4a83224aa",
+    "evaluation_id": "0cafadb324a93ff78c3f11a431635235052e25488c37233749d78837323367c4",
     "predicted_positive": false
   },
   {
@@ -68,7 +80,7 @@
     "is_holdout": false,
     "score": 25,
     "level": "YELLOW",
-    "evaluation_id": "b2e0dd0a34fda562830f7e83ebfa0b688ead6566363b923c32b8adedc54b46cb",
+    "evaluation_id": "8180c51e1f6b8cd40380179ceaef30f05718be161df3e738efb3d270207ccff8",
     "predicted_positive": false
   },
   {
@@ -80,7 +92,19 @@
     "is_holdout": false,
     "score": 10,
     "level": "GREEN",
-    "evaluation_id": "8b244969b7be7c1eafaa142d6842dbeeafecb742e76d6620ef6ebab6f75149a0",
+    "evaluation_id": "d04fe9c1ce75ac3741210f5c038fe0dab66c0fb88d75c68fa27bb6055c63ce70",
+    "predicted_positive": false
+  },
+  {
+    "episode_id": "ep_3e4d29df7a5ed3e3",
+    "subject_ref": "sub_3e4d29df7a5ed3e3",
+    "label": "normal",
+    "episode_class": "legitimate_negative",
+    "label_source": "synthetic_placeholder",
+    "is_holdout": false,
+    "score": 0,
+    "level": "GREEN",
+    "evaluation_id": "ecc089a2e3915fc4083e3b9171add250bb0b91f40d07c2d18bffa03cd49b06d4",
     "predicted_positive": false
   },
   {
@@ -92,7 +116,7 @@
     "is_holdout": false,
     "score": 0,
     "level": "GREEN",
-    "evaluation_id": "a460e1292ad9a70b46f609e42a43dd0d38e8e823f1b87c4dabe56c26351954af",
+    "evaluation_id": "338384199c0b0fc6e06b49922c33ea546bfb87be82d469ed7eb9152d56002897",
     "predicted_positive": false
   },
   {
@@ -104,7 +128,7 @@
     "is_holdout": false,
     "score": 45,
     "level": "YELLOW",
-    "evaluation_id": "475be1db15b9e5f308cc408a5293fac50a42813847a5da4b923d6eb437244004",
+    "evaluation_id": "509d2a83f5df224ad82ac2fedbc8f05c2adc516a84f18a686b486e5ce0d3cc91",
     "predicted_positive": false
   },
   {
@@ -116,7 +140,7 @@
     "is_holdout": false,
     "score": 0,
     "level": "GREEN",
-    "evaluation_id": "08ebec5b831e851972951108c5167592a95b43ea8f6e2bf14ede61af774e95a4",
+    "evaluation_id": "512a034a184994ea8a6eb082496a31837c6f2fbddc021bfd53f00972c40b5d67",
     "predicted_positive": false
   },
   {
@@ -128,7 +152,7 @@
     "is_holdout": false,
     "score": 70,
     "level": "RED",
-    "evaluation_id": "7e2e054712dd9f6087594885b8dd2f2cc09a31bb82dd2fd8dc843a242670b349",
+    "evaluation_id": "bbf08202929a2d0898935e9bd621a575d55c4d18112160de191ffed438c9e729",
     "predicted_positive": true
   },
   {
@@ -140,7 +164,7 @@
     "is_holdout": false,
     "score": 45,
     "level": "YELLOW",
-    "evaluation_id": "5ee3c421ed13fd81afb533e1ce0129291fce63fa22528dc3e07ecc05cd07b86e",
+    "evaluation_id": "e7f6fe17c25d2ccb5e923c760c11251abafa8e5f8f1cd2fb8384a42d4a9f448d",
     "predicted_positive": false
   },
   {
@@ -152,7 +176,7 @@
     "is_holdout": false,
     "score": 10,
     "level": "GREEN",
-    "evaluation_id": "63827d0139e38706ff8133ce5b00e92281ecf11d122eb3c0dcac18169d501387",
+    "evaluation_id": "19db9538093aaf24d9f503e5325430b95107b729137cf1be622587a4c264d6d5",
     "predicted_positive": false
   },
   {
@@ -164,7 +188,7 @@
     "is_holdout": false,
     "score": 0,
     "level": "GREEN",
-    "evaluation_id": "96336cef26c22aec6fa07885cf9b132c730e7f2c3aa656d4c737d6c36f973812",
+    "evaluation_id": "0440b816b69a56fb666f8881fab40302aab63f94d7b2347bfbf0e642782bf0f5",
     "predicted_positive": false
   },
   {
@@ -176,7 +200,7 @@
     "is_holdout": false,
     "score": 0,
     "level": "GREEN",
-    "evaluation_id": "259d4b227fb2506812b81da99d50123f848e7c7511e6d5eaece0c7850b86a217",
+    "evaluation_id": "3626b97f05fc4cdec5d0bb55cedc732eae9c8272b43644cd110e9273fb5b3728",
     "predicted_positive": false
   },
   {
@@ -188,7 +212,7 @@
     "is_holdout": false,
     "score": 45,
     "level": "YELLOW",
-    "evaluation_id": "f020fe0ad7752f41f446575d49f348895d9ce7bd81b603d52d36a3c67c55b42e",
+    "evaluation_id": "a8a48a4d6bec72adce5abf3f3897498e95f08c166f5b01f9a8d050e6ad34f9b3",
     "predicted_positive": false
   },
   {
@@ -200,8 +224,20 @@
     "is_holdout": false,
     "score": 70,
     "level": "RED",
-    "evaluation_id": "bcb38d9d2a3fa99d63aa117bff21860c0ee7db6acf0c5e63697bf7dd767cf4e9",
+    "evaluation_id": "5e299f14beafa337b838b728ee7de3ddaf97066093bb0373f252e5301669573c",
     "predicted_positive": true
+  },
+  {
+    "episode_id": "ep_ee44e4cd9458146b",
+    "subject_ref": "sub_ee44e4cd9458146b",
+    "label": "normal",
+    "episode_class": "edge",
+    "label_source": "synthetic_placeholder",
+    "is_holdout": false,
+    "score": 0,
+    "level": "INSUFFICIENT_DATA",
+    "evaluation_id": "aa78ebb93a3e4a2c5dcea75fa9919f0936589b78a58811f6f5e84c83f2756767",
+    "predicted_positive": false
   },
   {
     "episode_id": "ep_f06b13ae803f9984",
@@ -212,7 +248,7 @@
     "is_holdout": false,
     "score": 45,
     "level": "YELLOW",
-    "evaluation_id": "e2b6bc61a49f854988dcac188b15fae662e7ec81bcb59db18064fab9b6277a1d",
+    "evaluation_id": "b6b854ee5af857a3a5a2496afae2fa351f3659ae67b87acda76a2f22895750d5",
     "predicted_positive": false
   },
   {
@@ -224,7 +260,7 @@
     "is_holdout": false,
     "score": 45,
     "level": "YELLOW",
-    "evaluation_id": "327886abc4dac57ed7248d842d6acb6e54477187c92d3ead823e2d5682c7ac93",
+    "evaluation_id": "31fb29c0c64c18dee99ec14d20d17577810cfc1032a7d15cf7f24cc9a4b9799e",
     "predicted_positive": false
   },
   {
@@ -236,7 +272,7 @@
     "is_holdout": false,
     "score": 0,
     "level": "GREEN",
-    "evaluation_id": "22b968182af91c7662bad1ff0d964401d22274c9f058d6d70a979f301fbf0a22",
+    "evaluation_id": "6d13dfcad490839b26f5caccdfc471835bc61689a90b30cf936bb127b06ae352",
     "predicted_positive": false
   },
   {
@@ -248,7 +284,7 @@
     "is_holdout": false,
     "score": 45,
     "level": "YELLOW",
-    "evaluation_id": "b854b95ea45e0f0d8ef6bfabe8574d7fd5cc6fce77f2f14d621f516791cbb1ba",
+    "evaluation_id": "ad160c40dcb172ae704a8798787ab2d43f4fc21d35228daee6e7d843a0d3ee73",
     "predicted_positive": false
   }
 ]

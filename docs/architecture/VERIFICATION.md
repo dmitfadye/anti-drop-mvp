@@ -2,6 +2,8 @@
 
 Backend worktree D:/FintechPSD/anti-drop-backend, branch backend-antidrop-postgres, base origin/zima e1b8f37. Evidence concerns local working code, not bank certification.
 
+Implementation commit:37f6b82. Evaluation rerun references that commit; manifest dirty=true reflects regenerated report artifacts still awaiting their evidence commit, not uncommitted detector changes.
+
 - `uv sync --locked` installs pinned environment.
 - TEST_DATABASE_URL=<isolated native PG 18 antidrop_test> with `uv run pytest -q`:83 passed,21 subtests; one upstream Starlette/httpx deprecation warning.
 - Nine real PG tests cover migrations/constraints, owned reads, foreign access, same-key replay/conflict,16 concurrent requests/8 workers, injected audit failure atomic rollback, separate-process retrieval, missing/unavailable storage503. Not SQLite substitutes.

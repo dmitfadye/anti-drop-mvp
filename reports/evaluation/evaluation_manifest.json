@@ -1,13 +1,13 @@
 {
-  "dataset_version": "synthetic-episodes-v1",
-  "dataset_sha256": "1808612f55a4ba3d1565f4621f7cb4fc8ead8d0ac1666aea18701bb0935d3385",
-  "rule_version": "2026-10-08.p1",
+  "dataset_version": "synthetic-episodes-v2",
+  "dataset_sha256": "b63d58e1cb5f539fc514dd7c5109fc585236881b6ab14bc9d37311556bdbc61a",
+  "rule_version": "2026-10-08.p2",
   "threshold_version": "thresholds-2026.10.08-red50-yellow25",
   "detector_threshold_version": "thresholds-2026.10.08-red50-yellow25",
-  "adapter_version": "snapshot-adapter-v1",
-  "template_version": "warning-templates-2026.10.08.p1",
+  "adapter_version": "snapshot-adapter-v2-postgres",
+  "template_version": "warning-templates-2026.10.08.p2",
   "positive_definition": "level == RED",
-  "number_of_episodes": 21,
+  "number_of_episodes": 24,
   "label_sources": [
     "synthetic_placeholder"
   ],
@@ -19,7 +19,7 @@
     "UNVALIDATED LABELS: synthetic_placeholder/unknown labels are pipeline fixtures, NOT validated banking accuracy.",
     "Not an exclusively held-out evaluation. Independent human-reviewed holdout is required."
   ],
-  "git_commit": "56daaf35c77b705b047ee283a998468d37776f42",
+  "git_commit": "37f6b8285b515f7a7cd6ca8aadb0c6b2c8051328",
   "git_worktree_dirty": true,
-  "timestamp": "2026-10-08T13:12:46.386282+00:00"
+  "timestamp": "2026-10-08T17:53:02.127192+00:00"
 }
