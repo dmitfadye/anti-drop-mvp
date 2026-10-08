@@ -27,6 +27,9 @@ for (const width of [390, 768, 1024, 1440, 1728]) {
     if (width < 768) await page.keyboard.press('Escape');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
     await page.goto('/');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Обзор защитыпереводов');
+    await expect(page.getByText(/Демонстрационные данные · показатели/)).toBeVisible();
+    await page.screenshot({ path: `test-results/overview-${width}.png` });
     await page.screenshot({ path: `test-results/workspace-${width}.png`, fullPage: true });
     if (width < 768) { await page.getByRole('button', { name: '☰ Меню' }).click(); await page.screenshot({ path: 'test-results/mobile-navigation.png' }); }
   });

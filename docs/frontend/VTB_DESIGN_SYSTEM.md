@@ -7,3 +7,7 @@ Typography: installed Segoe UI / Arial with Cyrillic fallback. Attached HTML dec
 Primary controls use blue, white text, rounded geometry, hover and visible keyboard focus. Existing disabled and validation states are preserved. Light mode only; no inactive theme control. Desktop sidebar is 286px, tablet 250px; below 768px navigation becomes a modal drawer. Shared capsule animates transform for 360ms and disables motion on mobile or reduced-motion preference.
 
 Evidence: supplied screenshots and HTML. The specified official comparison URL could not be retrieved during research: https://www.vtb.ru/malyj-biznes/otkryt-schet/sravnenie-pakety-uslug/?from=main-page . No scripts, trackers, proprietary illustrations or bank bundles are imported.
+
+## Overview demonstration fixtures
+
+The approved reference composition uses a separately labelled static educational fixture for summary metrics, event rows and the gauge. These examples do not update from API analysis and are not bank transactions. Existing monitoring performs the actual prototype analysis independently. No new dependencies or external graphic assets were added.
