@@ -155,19 +155,33 @@ class TestAlertContract(unittest.TestCase):
 
 
 class TestHonestMocks(unittest.TestCase):
-    """T02/T18: учебные кейсы и призы вместо выдуманных действий."""
+    """T02/T18: учебные кейсы и призы вместо выдуманных действий.
+
+    Legacy /api/cases отключён (410): он хранил кейсы в памяти процесса и не знал
+    про субъекта. Целевой путь — /sandbox/cases с SQLite (см. test_sandbox_cases.py).
+    """
 
     def test_case_idempotent(self):
         payload = {"summary": "тест", "lang": "ru", "score": 85, "idempotency_key": "demo-key-1"}
-        c1 = client.post("/api/cases", json=payload).json()
-        c2 = client.post("/api/cases", json=payload).json()
-        self.assertEqual(c1["case_id"], c2["case_id"])
-        self.assertTrue(c1["demo"] and c1["status"] == "open-sandbox")
+        r1 = client.post("/api/cases", json=payload)
+        r2 = client.post("/api/cases", json=payload)
+        for r in (r1, r2):
+            self.assertEqual(r.status_code, 410, r.text)
+            self.assertEqual(r.json()["error_code"], "LEGACY_CASES_DISABLED")
+            self.assertEqual(r.headers.get("Deprecation"), "true")
+            self.assertNotIn("case_id", r.json())
 
     def test_case_status_and_404(self):
-        c = client.post("/api/cases", json={"summary": "тест"}).json()
-        self.assertEqual(client.get(f"/api/cases/{c['case_id']}").status_code, 200)
-        self.assertEqual(client.get("/api/cases/CASE-NOPE1234").status_code, 404)
+        r = client.post("/api/cases", json={"summary": "тест"})
+        self.assertEqual(r.status_code, 410, r.text)
+        got = client.get("/api/cases/CASE-NOPE1234")
+        self.assertEqual(got.status_code, 410)
+        self.assertEqual(got.json()["error_code"], "LEGACY_CASES_DISABLED")
+
+    def test_legacy_cases_hidden_from_openapi(self):
+        schema = client.get("/openapi.json").json()
+        self.assertNotIn("/api/cases", schema.get("paths", {}))
+        self.assertIn("/sandbox/cases", schema.get("paths", {}))
 
     def test_quiz_reward_simulated(self):
         body = client.post("/api/quiz", json={"answers": [1, 1, 1, 1, 0]}).json()

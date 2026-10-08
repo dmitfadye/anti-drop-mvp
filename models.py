@@ -10,14 +10,39 @@
   но бесконечности/NaN запрещены.
 """
 from datetime import datetime
+import re
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from src.alerts import SUPPORTED_LANGS
+from src.config import MAX_CLIENT_COMMENT_LENGTH, MAX_EVALUATION_ID_LENGTH
+from src.errors import ApiError
+from src.identity import reject_untrusted_body_fields
 from src.policy import PROJECT_TZ, UTC
+from src.sandbox_cases import CONTACT_REASONS
 
 TxnType = Literal["incoming_p2p", "outgoing_p2p", "cash_withdraw", "purchase", "incoming_salary"]
 Level = Literal["GREEN", "YELLOW", "RED"]
+
+# Literal, а не str: OpenAPI показывает перечисление, и неверное значение
+# отсекается на границе схемы, а не в коде роута.
+ContactReason = Literal[
+    "suspicious_transfer_request",
+    "unexpected_incoming_funds",
+    "asked_to_forward_money",
+    "other",
+]
+LanguageCode = Literal["ru", "en", "uz", "tg", "ky", "zh", "ar"]
+
+ID_PATTERN = r"[A-Za-z0-9._:-]{1,128}"
+_ID_RE = re.compile(ID_PATTERN)
+
+
+def _valid_id(value: str) -> bool:
+    # fullmatch, а не match с ^...$: в Python '$' матчится перед завершающим '\n',
+    # и ключ вида "abc\n" прошёл бы проверку как "abc".
+    return bool(_ID_RE.fullmatch(value))
 
 
 def _normalize_ts(v: object) -> datetime:
@@ -87,9 +112,13 @@ class AnalyzeResponse(BaseModel):
     score: int = Field(ge=0, le=100)
     level: Level
     reasons: list[str]
+    reason_codes: list[str] = Field(default_factory=list,
+                                   description="Машиночитаемые коды тех же причин; score не вероятность.")
     metrics: dict
     alert: StopDropAlert | None = None
     rules_version: str = ""
+    evaluation_id: str = Field(default="", description="Ссылка для последующего создания sandbox-кейса.")
+    score_interpretation: str = "deterministic_rule_sum_not_probability"
 
 
 class QuizRequest(BaseModel):
@@ -130,19 +159,97 @@ class SimChangeResponse(BaseModel):
     checklist: list[str] = []
 
 
-class CaseCreateRequest(BaseModel):
-    summary: str = Field(max_length=500, description="Краткое описание ситуации со слов клиента")
-    lang: str = Field(default="ru", min_length=2, max_length=5)
-    score: int = Field(default=0, ge=0, le=100)
-    idempotency_key: str | None = Field(default=None, max_length=128)
+# Модели CaseCreateRequest/SupportCase удалены вместе с legacy /api/cases (D-7c):
+# endpoint отключён (410), и оставшаяся схема только создавала ложное впечатление,
+# что в API есть второй рабочий путь создания кейсов.
 
 
-class SupportCase(BaseModel):
+# ---------------------------------------------------------------------------
+# Sandbox cases (MVP). Субъект приходит из доверенного для демо заголовка
+# X-Sandbox-Subject, поэтому в теле запроса полей идентичности быть не должно.
+# ---------------------------------------------------------------------------
+
+
+class SandboxCaseCreate(BaseModel):
+    # extra="forbid" намеренно: иначе subject_ref в теле был бы молча проигнорирован,
+    # и граница доверия осталась бы невидимой (см. src/identity.py).
+    model_config = ConfigDict(extra="forbid")
+
+    evaluation_id: str = Field(
+        ...,
+        min_length=1,
+        max_length=MAX_EVALUATION_ID_LENGTH,
+        description="Идентификатор risk-решения, к которому относится обращение.",
+        examples=["eval-001"],
+    )
+    selected_language: LanguageCode = Field(
+        ..., description="Язык предупреждения и обращения. Список ограничен шаблонами."
+    )
+    contact_reason: ContactReason = Field(
+        ..., description="Причина обращения. Значения ограничены allowlist."
+    )
+    client_comment: str | None = Field(
+        default=None,
+        max_length=MAX_CLIENT_COMMENT_LENGTH,
+        description="Не сохраняется и не логируется; входит только в payload_hash.",
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _explicit_errors(cls, data: object) -> object:
+        """Даём машиночитаемый код ошибки вместо общего VALIDATION_ERROR.
+
+        Pydantic v2 пробрасывает не-ValueError исключения из валидатора, поэтому
+        ApiError доходит до нашего обработчика с нужным error_code и полем.
+        """
+        reject_untrusted_body_fields(data)
+        if isinstance(data, dict):
+            language = data.get("selected_language")
+            if isinstance(language, str) and language not in SUPPORTED_LANGS:
+                raise ApiError(422, "UNSUPPORTED_LANGUAGE",
+                               "Язык не поддерживается. Доступные: " + ", ".join(sorted(SUPPORTED_LANGS)),
+                               field="selected_language")
+            evaluation_id = data.get("evaluation_id")
+            if isinstance(evaluation_id, str) and not _valid_id(evaluation_id):
+                raise ApiError(422, "INVALID_EVALUATION_ID",
+                               "evaluation_id: допустимы латинские буквы, цифры и символы . _ - :, длина 1-128.",
+                               field="evaluation_id")
+        return data
+
+    @field_validator("contact_reason", mode="before")
+    @classmethod
+    def _check_reason(cls, v: object) -> object:
+        if isinstance(v, str) and v not in CONTACT_REASONS:
+            raise ApiError(422, "INVALID_CONTACT_REASON",
+                           "Причина обращения не поддерживается. Доступные: " + ", ".join(CONTACT_REASONS),
+                           field="contact_reason")
+        return v
+
+    def normalized(self) -> dict:
+        """Каноническое представление для payload_hash."""
+        return {
+            "evaluation_id": self.evaluation_id,
+            "selected_language": self.selected_language,
+            "contact_reason": self.contact_reason,
+            "client_comment": (self.client_comment or "").strip() or None,
+        }
+
+
+class SandboxCaseResponse(BaseModel):
     case_id: str
-    status: str = "open-sandbox"
-    demo: bool = True
-    created_at: str = ""
-    summary: str = ""
-    lang: str = "ru"
-    score: int = 0
-    note: str = ""
+    status: str
+    created_at: str
+    subject_ref: str
+    evaluation_id: str
+    selected_language: str
+    contact_reason: str
+    next_step: str = "sandbox_review_pending"
+    sandbox: bool = True
+    notice: str = Field(description="Явное предупреждение: никаких реальных банковских действий не выполнено.")
+
+
+class SandboxCaseListResponse(BaseModel):
+    items: list[SandboxCaseResponse]
+    limit: int
+    offset: int
+    total_count: int = Field(description="Всего кейсов у субъекта — чтобы UI знал, есть ли ещё страницы.")
