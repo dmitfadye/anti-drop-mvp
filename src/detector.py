@@ -1,8 +1,19 @@
 """Детектор дроп-аномалий: транзитный поток мелких сумм + обнал + веерные P2P.
 
 Только stdlib. Правила прозрачные (важно для объяснения клиенту и комплаенсу).
+Исправления по аудиту T03–T09:
+- T03: время нормализуется к UTC (наивное = Europe/Moscow), мусор отсекается
+  в метрику вместо 500; смешение TZ больше не падает.
+- T08: явный now/analysis_at; операции из будущего исключаются (метрика).
+- T07: нулевые суммы не считаются «мелкими входящими» (метрика).
+- T04: sim_changed_days_ago=0 считается свежей (None = неизвестно).
+- Порядок: в сквозной транзит идут выводы ПОСЛЕ первого входящего.
+- Новое устройство — только при реальной истории старше окна.
+- Формулировки нейтральные: «возможно ограничение», решение — у банка.
+
 Каждая транзакция — dict:
-  {id, user_id, ts (ISO str), type, amount, counterparty, device_id, sim_changed_days_ago}
+  {id, user_id, ts (ISO str | datetime), type, amount,
+   counterparty, device_id, sim_changed_days_ago (int | None)}
 Типы: incoming_p2p | outgoing_p2p | cash_withdraw | purchase | incoming_salary
 """
 from __future__ import annotations
@@ -11,122 +22,199 @@ from collections import Counter
 from datetime import datetime, timedelta
 from typing import Any
 
-SMALL_TXN_MAX = 5000      # «мелкая сумма» для транзита, ₽
-TRANSIT_WINDOW_MIN = 60   # окно транзита
-TRANSIT_COUNT_RED = 5     # столько разных отправителей мелких входящих за окно = RED
-TRANSIT_COUNT_YELLOW = 3
-CASHOUT_RATIO_RED = 0.8   # доля обнала от входящих за 24ч
-FANOUT_COUNT_RED = 4      # столько разных получателей исходящих за 60 мин = веер
-NIGHT_HOURS = set(range(0, 6))  # 00:00-05:59
+from src.policy import DEFAULT_POLICY, PROJECT_TZ, UTC, Policy
+
+# Обратная совместимость имён (раньше были модульными константами).
+SMALL_TXN_MAX = DEFAULT_POLICY.small_txn_max
+TRANSIT_WINDOW_MIN = DEFAULT_POLICY.transit_window_min
+TRANSIT_COUNT_RED = DEFAULT_POLICY.transit_count_red
+TRANSIT_COUNT_YELLOW = DEFAULT_POLICY.transit_count_yellow
+CASHOUT_RATIO_RED = DEFAULT_POLICY.cashout_ratio
+FANOUT_COUNT_RED = DEFAULT_POLICY.fanout_count
+NIGHT_HOURS = set(DEFAULT_POLICY.night_hours)
 
 
-def parse_ts(ts: str) -> datetime:
+def parse_ts(ts: Any) -> datetime | None:
+    """str|datetime -> aware UTC. Наивное = Europe/Moscow. None = не разобрать."""
+    if isinstance(ts, datetime):
+        dt = ts
+    elif isinstance(ts, str):
+        try:
+            dt = datetime.fromisoformat(ts)
+        except ValueError:
+            try:
+                dt = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                return None
+    else:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=PROJECT_TZ)
+    return dt.astimezone(UTC)
+
+
+def _is_fresh_sim(value: Any, max_days: int) -> bool:
+    """T04: различаем None (неизвестно) и 0 (смена сегодня). bool не считаем днями."""
+    if value is None or isinstance(value, bool):
+        return False
     try:
-        return datetime.fromisoformat(ts)
-    except ValueError:
-        return datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
+        days = int(value)
+    except (TypeError, ValueError):
+        return False
+    return 0 <= days <= max_days
 
 
-def analyze_transactions(transactions: list[dict[str, Any]], now: datetime | None = None) -> dict[str, Any]:
+def analyze_transactions(
+    transactions: list[dict[str, Any]],
+    now: datetime | str | None = None,
+    policy: Policy = DEFAULT_POLICY,
+) -> dict[str, Any]:
     """Главная функция. Возвращает {score 0-100, level, reasons[], metrics{}}."""
-    txns = sorted(transactions, key=lambda t: parse_ts(str(t.get("ts", ""))))
-    now = now or (parse_ts(str(txns[-1]["ts"])) if txns else datetime.now())
+    parsed: list[tuple[datetime, dict[str, Any]]] = []
+    bad_ts = 0
+    for t in transactions:
+        dt = parse_ts(t.get("ts"))
+        if dt is None:
+            bad_ts += 1
+            continue
+        parsed.append((dt, t))
+    parsed.sort(key=lambda p: p[0])
 
     reasons: list[str] = []
-    score = 0
-    metrics: dict[str, Any] = {}
+    metrics: dict[str, Any] = {"rules_version": policy.version}
+    fired = False  # сработало ли хоть одно скоримое правило
 
-    if not txns:
+    if bad_ts:
+        metrics["excluded_bad_ts"] = bad_ts
+    if not parsed:
         return {"score": 0, "level": "GREEN", "reasons": ["Нет транзакций для анализа."], "metrics": metrics}
 
-    window_start = now - timedelta(minutes=TRANSIT_WINDOW_MIN)
-    recent = [t for t in txns if parse_ts(str(t["ts"])) >= window_start]
+    if now is None:
+        now_dt = parsed[-1][0]
+    else:
+        now_dt = parse_ts(now) or parsed[-1][0]
 
-    # 1. Транзитный поток: мелкие входящие от разных отправителей за 60 мин
-    small_in = [t for t in recent if t.get("type") == "incoming_p2p" and float(t.get("amount", 0)) <= SMALL_TXN_MAX]
-    senders = {str(t.get("counterparty", "?")) for t in small_in}
+    # T08: будущее относительно точки анализа — не анализируем, а показываем.
+    future = [(dt, t) for dt, t in parsed if dt > now_dt]
+    txns = [(dt, t) for dt, t in parsed if dt <= now_dt]
+    metrics["excluded_future_count"] = len(future)
+    if future:
+        reasons.append(f"ℹ️ Операций с датой позже точки анализа ({len(future)} шт.) исключено — они не учитывались.")
+
+    if not txns:
+        return {"score": 0, "level": "GREEN", "reasons": reasons or ["Нет транзакций для анализа."], "metrics": metrics}
+
+    score = 0
+    window_start = now_dt - timedelta(minutes=policy.transit_window_min)
+    recent = [(dt, t) for dt, t in txns if dt >= window_start]
+
+    def amt(t: dict[str, Any]) -> float:
+        try:
+            return float(t.get("amount", 0))
+        except (TypeError, ValueError):
+            return 0.0
+
+    # 1. Транзитный поток (T07: нулевые суммы не считаются переводами).
+    small_in = [(dt, t) for dt, t in recent if t.get("type") == "incoming_p2p" and 0 < amt(t) <= policy.small_txn_max]
+    zero_n = sum(1 for _, t in recent if t.get("type") in ("incoming_p2p", "outgoing_p2p") and amt(t) <= 0)
+    metrics["excluded_zero_count"] = zero_n
+    senders = {str(t.get("counterparty", "?")) for _, t in small_in}
     metrics["small_incoming_60m_count"] = len(small_in)
     metrics["small_incoming_60m_senders"] = len(senders)
-    metrics["small_incoming_60m_sum"] = round(sum(float(t.get("amount", 0)) for t in small_in), 2)
+    metrics["small_incoming_60m_sum"] = round(sum(amt(t) for _, t in small_in), 2)
 
-    if len(small_in) >= TRANSIT_COUNT_RED and len(senders) >= 3:
+    if len(small_in) >= policy.transit_count_red and len(senders) >= policy.transit_senders_red:
         score += 45
+        fired = True
         reasons.append(
             f"🔴 Транзитный поток: {len(small_in)} мелких входящих от {len(senders)} разных отправителей "
-            f"за {TRANSIT_WINDOW_MIN} мин на {metrics['small_incoming_60m_sum']} ₽ — классический почерк вербовщика в дропы."
+            f"за {policy.transit_window_min} мин на {metrics['small_incoming_60m_sum']} ₽ — похоже на почерк вербовщика в дропы."
         )
-    elif len(small_in) >= TRANSIT_COUNT_YELLOW and len(senders) >= 2:
+    elif len(small_in) >= policy.transit_count_yellow and len(senders) >= policy.transit_senders_yellow:
         score += 25
+        fired = True
         reasons.append(
             f"🟡 Подозрительный приток: {len(small_in)} мелких входящих от {len(senders)} отправителей за час. "
-            "Если деньги просят переслать дальше — это вербовка."
+            "Если деньги просят переслать дальше — это может быть вербовка."
         )
 
-    # 2. Сквозной транзит: входящие мелкие + быстрые исходящие/обнал в том же окне
-    out_recent = [t for t in recent if t.get("type") in ("outgoing_p2p", "cash_withdraw")]
-    out_sum = sum(float(t.get("amount", 0)) for t in out_recent)
-    in_sum = metrics["small_incoming_60m_sum"]
-    if in_sum > 0 and out_sum > 0:
-        flow_ratio = out_sum / in_sum
-        metrics["flow_through_ratio_60m"] = round(flow_ratio, 2)
-        if flow_ratio >= 0.8 and len(small_in) >= 3:
-            score += 25
-            reasons.append(
-                f"🔴 Сквозной транзит: выведено {out_sum:.0f} ₽ из {in_sum:.0f} ₽ входящих ({flow_ratio:.0%}) "
-                "за час. Карту используют как «транзитную» — грозит блокировка по 115-ФЗ."
-            )
+    # 2. Сквозной транзит: выводы ПОСЛЕ первого мелкого входящего в окне.
+    if small_in:
+        first_in = min(dt for dt, _ in small_in)
+        out_recent = [(dt, t) for dt, t in recent if t.get("type") in ("outgoing_p2p", "cash_withdraw") and dt >= first_in]
+        out_sum = sum(amt(t) for _, t in out_recent)
+        in_sum = metrics["small_incoming_60m_sum"]
+        if in_sum > 0 and out_sum > 0:
+            flow_ratio = out_sum / in_sum
+            metrics["flow_through_ratio_60m"] = round(flow_ratio, 2)
+            if flow_ratio >= policy.flow_ratio and len(small_in) >= 3:
+                score += 25
+                fired = True
+                reasons.append(
+                    f"🔴 Сквозной транзит: после поступлений выведено {out_sum:.0f} ₽ из {in_sum:.0f} ₽ "
+                    f"({flow_ratio:.0%}) за час. Возможно ограничение операций по 115-ФЗ — решение принимает банк."
+                )
 
-    # 3. Обнал после входящих за 24ч
-    day_start = now - timedelta(hours=24)
-    day = [t for t in txns if parse_ts(str(t["ts"])) >= day_start]
-    day_in = sum(float(t.get("amount", 0)) for t in day if t.get("type") in ("incoming_p2p", "incoming_salary"))
-    day_cash = sum(float(t.get("amount", 0)) for t in day if t.get("type") == "cash_withdraw")
+    # 3. Обнал после входящих за 24ч.
+    day_start = now_dt - timedelta(hours=policy.cashout_window_h)
+    day = [(dt, t) for dt, t in txns if dt >= day_start]
+    day_in = sum(amt(t) for _, t in day if t.get("type") in ("incoming_p2p", "incoming_salary") and amt(t) > 0)
+    day_cash = sum(amt(t) for _, t in day if t.get("type") == "cash_withdraw" and amt(t) > 0)
     metrics["incoming_24h"] = round(day_in, 2)
     metrics["cash_24h"] = round(day_cash, 2)
-    if day_in > 0 and (day_cash / day_in) >= CASHOUT_RATIO_RED and day_in >= 10000:
+    if day_in > 0 and (day_cash / day_in) >= policy.cashout_ratio and day_in >= policy.cashout_min_in:
         score += 25
+        fired = True
         reasons.append(
             f"🔴 Обнал: снято наличными {day_cash:.0f} ₽ из {day_in:.0f} ₽ входящих за 24ч "
-            f"({day_cash / day_in:.0%}). Типичный финал дроп-схемы."
+            f"({day_cash / day_in:.0%}) — похоже на финал дроп-схемы."
         )
 
-    # 4. Веерные исходящие: много разных получателей за 60 мин
-    receivers = Counter(str(t.get("counterparty", "?")) for t in recent if t.get("type") == "outgoing_p2p")
+    # 4. Веерные исходящие.
+    receivers = Counter(str(t.get("counterparty", "?")) for _, t in recent if t.get("type") == "outgoing_p2p" and amt(t) > 0)
     metrics["fanout_60m_receivers"] = len(receivers)
-    if len(receivers) >= FANOUT_COUNT_RED:
+    if len(receivers) >= policy.fanout_count:
         score += 25
+        fired = True
         reasons.append(
-            f"🔴 Веерная рассылка: {len(receivers)} разных получателей за час — распыление украденных денег."
+            f"🔴 Веерная рассылка: {len(receivers)} разных получателей за час — похоже на распыление чужих денег."
         )
 
-    # 5. Ночная активность
-    night_n = sum(1 for t in recent if parse_ts(str(t["ts"])).hour in NIGHT_HOURS)
+    # 5. Ночная активность.
+    night_n = sum(1 for dt, _ in recent if dt.astimezone(PROJECT_TZ).hour in policy.night_hours)
     metrics["night_60m_count"] = night_n
     if night_n >= 3:
         score += 10
-        reasons.append(f"🟡 Ночная активность: {night_n} операций между 00:00–06:00 — нетипично для вас.")
+        fired = True
+        reasons.append(f"🟡 Ночная активность: {night_n} операций между 00:00–06:00 по Москве — нетипичное время.")
 
-    # 6. Смена SIM/устройства + всплеск
-    sim_fresh = any(int(t.get("sim_changed_days_ago", 999) or 999) <= 2 for t in recent)
+    # 6. Свежая смена SIM + всплеск (T04: 0 дней = сегодня = свежая).
+    sim_fresh = any(_is_fresh_sim(t.get("sim_changed_days_ago"), policy.sim_fresh_days) for _, t in recent)
     metrics["sim_changed_recently"] = sim_fresh
     if sim_fresh and (len(small_in) >= 2 or len(receivers) >= 2):
         score += 15
+        fired = True
         reasons.append(
-            "🔴 Смена SIM/устройства за последние 2 дня + всплеск переводов — возможен перехват SMS-кодов. "
-            "Срочно проверьте номер в разделе «Безопасная смена номера»."
+            f"🔴 Смена SIM/устройства за последние {policy.sim_fresh_days} дня + всплеск переводов — "
+            "возможен перехват SMS-кодов. Проверьте номер в учебном тренажёре смены номера."
         )
 
-    # 7. Новое устройство (эвристика: device_id, которого не было раньше)
-    if len(txns) >= 4:
-        old_devices = {str(t.get("device_id", "")) for t in txns[:-len(recent)] or txns[:2]}
-        new_devices = {str(t.get("device_id", "")) for t in recent} - old_devices - {""}
+    # 7. Новое устройство — только если есть история старше окна.
+    history = [(dt, t) for dt, t in txns if dt < window_start]
+    if history and len(txns) >= 4:
+        metrics["device_baseline"] = True
+        old_devices = {str(t.get("device_id", "")) for _, t in history}
+        new_devices = {str(t.get("device_id", "")) for _, t in recent} - old_devices - {""}
         if new_devices and len(recent) >= 3:
             score += 10
-            reasons.append(f"🟡 Новое устройство {sorted(new_devices)[0][:8]}… + активность — убедитесь, что это вы.")
+            fired = True
+            reasons.append("🟡 Новое устройство + активность — убедитесь, что это вы.")
+    else:
+        metrics["device_baseline"] = bool(history)
 
     score = min(100, score)
-    level = "RED" if score >= 50 else ("YELLOW" if score >= 25 else "GREEN")
-    if level == "GREEN" and not reasons:
+    level = "RED" if score >= policy.score_red else ("YELLOW" if score >= policy.score_yellow else "GREEN")
+    if not fired:
         reasons.append("✅ Всё спокойно: транзитных потоков и веерных рассылок не найдено.")
 
     metrics["score"] = score

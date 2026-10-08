@@ -1,6 +1,10 @@
-"""Анти-Дроп MVP — веб-дашборд на stdlib (без pip-зависимостей).
-Запуск: python3 app.py  ->  http://localhost:8000
-API: POST /api/analyze | POST /api/quiz | POST /api/sim
+"""Анти-Дроп MVP — LEGACY фолбэк на stdlib (T10–T12 исправлены, но путь не поддерживается).
+
+Основной путь — FastAPI (main.py). Этот файл оставлен для офлайн-диагностики ядра
+на машине без зависимостей. Отличия от основного пути зафиксированы:
+- квиз отдаётся БЕЗ правильных ответов (как в /api/content);
+- НЕ выставлять в сеть (однопоточный, без лимитов кроме базового cap тела).
+Запуск: python3 app_stdlib.py  ->  http://localhost:8000
 """
 import json
 import sys
@@ -15,6 +19,10 @@ from src.quiz import QUIZ, STORIES, check_quiz
 from src.sim_security import start_number_change
 
 PORT = 8000
+MAX_BODY = 1_000_000  # T12: базовый предел тела POST (фолбэк не для сети)
+
+# T10: публичный квиз без correct — как в FastAPI /api/content.
+PUBLIC_QUIZ = [{"q": item["q"], "options": item["options"]} for item in QUIZ]
 
 PAGE = """<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -159,15 +167,20 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if urlparse(self.path).path in ("/", "/index.html"):
             html = PAGE.replace("__STORIES__", json.dumps(STORIES, ensure_ascii=False)).replace(
-                "__QUIZ__", json.dumps(QUIZ, ensure_ascii=False))
+                "__QUIZ__", json.dumps(PUBLIC_QUIZ, ensure_ascii=False))
             self._html(html)
         elif self.path == "/api/langs":
             self._json(SUPPORTED_LANGS)
         else:
-            self.send_error(404, "Not found. Откройте /")
+            self.send_error(404, "Not found")  # T11: только ASCII в reason
 
     def do_POST(self):
-        length = int(self.headers.get("Content-Length", 0))
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+        except ValueError:
+            return self._json({"error": "Некорректный Content-Length"}, 400)
+        if length > MAX_BODY:  # T12: не читаем сверх лимита
+            return self._json({"error": "Тело запроса слишком большое"}, 413)
         try:
             body = json.loads(self.rfile.read(length) or b"{}")
         except json.JSONDecodeError:
