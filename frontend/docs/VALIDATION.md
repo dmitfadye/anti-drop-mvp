@@ -15,3 +15,5 @@ This is a foundation smoke check, not a complete accessibility certification, pe
 ## Legacy scenario migration
 
 Eight Playwright tests passed after migration, including real backend analysis/quiz/phone scenarios, API failure/retry and loaded mobile reflow. Lint, strict typecheck and production build passed. Desktop/mobile rendered screenshots inspected. Original Python/static source unchanged.
+
+Latest screen implementation and validation: ../../docs/frontend/QA_REPORT.md (2026-10-08).

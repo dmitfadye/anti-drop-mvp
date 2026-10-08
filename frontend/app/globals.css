@@ -15,21 +15,96 @@
   --font-size-small: 14px;
   --font-size-caption: 12px;
   --transition-control: 120ms ease;
-  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
-  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
-  --space-12: 48px; --space-16: 64px;
-  --radius-small: 8px; --radius-medium: 16px; --radius-large: 24px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-small: 8px;
+  --radius-medium: 16px;
+  --radius-large: 24px;
   --shadow-surface: 0 8px 32px #07123b08;
-  --font-body: 'Segoe UI', Arial, sans-serif;
+  --font-ui: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: var(--font-ui);
+  --font-heading: var(--font-display), 'Segoe UI', sans-serif;
 }
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--color-canvas); color: var(--color-ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
-button, input { font: inherit; }
-a { color: inherit; }
-button, summary, a { -webkit-tap-highlight-color: transparent; }
-:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 5px; }
-::selection { background: #c8dcff; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  font-synthesis: none;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+[hidden] {
+  display: none !important;
+}
+h1,
+h2,
+h3,
+strong {
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+button,
+a,
+input,
+select {
+  touch-action: manipulation;
+}
+body {
+  padding-inline: 16px;
+  background: linear-gradient(125deg, #dceaff, #edf5ff 50%, #cfe2ff);
+}
+@media (max-width: 767px) {
+  body {
+    padding-inline: 0;
+  }
+}
+a {
+  color: inherit;
+}
+button,
+summary,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 5px;
+}
+::selection {
+  background: #c8dcff;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
 
-body { font-variant-numeric:tabular-nums; }
+body {
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-contrast='true'] {
+  filter: contrast(1.18);
+}

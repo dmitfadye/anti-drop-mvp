@@ -27,3 +27,10 @@
 
 - Keep one shared sidebar capsule; remeasure after hash, size, font and drawer changes.
 - Toolbar search covers supported sections only; preserve demo and affiliation disclosures.
+
+# Approved implementation (2026-10-08)
+- The user authorized implementing the supplied AntiDrop screens; do not request concept approval again for these references.
+- Primary visual reference is the third collage; see ../docs/frontend/VISUAL_SPEC.md.
+- Work in frontend-test-brach. Preserve hash links and backend contracts.
+- Use local Asket assets; disclose the missing Halvar and normal-width Asket instead of silently claiming exact typography.
+- Keep third-party font attribution. Verify screenshots after fonts and transitions settle.

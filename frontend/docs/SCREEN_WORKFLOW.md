@@ -10,3 +10,5 @@
 8. Commit on the authorized feature branch with explicit staging and secret checks.
 
 Recommended next screen: an explicitly labeled suspicious-transfer demonstration, with user-selected synthetic scenario and explainable findings. Requires separate concept approval. No screen beyond Stage 1 is implemented here.
+
+The Stage 1-only description above is historical. The supplied AntiDrop collage screens were approved for implementation on 2026-10-08; see ../../docs/frontend/VISUAL_SPEC.md for the implemented reference mapping. Separate approval applies only to future new visual concepts.
