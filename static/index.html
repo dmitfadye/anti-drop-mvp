@@ -1,241 +1,164 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Анти-Дроп — защита от дроп-схем</title>
+<!-- Tailwind остаётся офлайн-сбором P0; app.css — слой доступности и RTL из P1. -->
 <link rel="stylesheet" href="/static/tailwind.css">
+<link rel="stylesheet" href="/static/css/app.css">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
-<header class="bg-gradient-to-r from-red-700 via-red-600 to-amber-500 text-white px-6 py-5 shadow-lg">
-  <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
-    <div>
-      <h1 class="text-2xl font-extrabold tracking-tight">🛡️ Анти-Дроп: защита и адаптация</h1>
-      <p class="text-sm opacity-90">Сервис финансовой безопасности для нерезидентов • 115-ФЗ • ст. 187 УК РФ</p>
-    </div>
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-bold bg-black/40 border border-white/40 rounded-lg px-3 py-2" title="Все действия имитируются: поддержка не вызывается, деньги не двигаются">🧪 ДЕМО-РЕЖИМ</span>
-      <a href="/docs" target="_blank" class="text-xs bg-black/30 hover:bg-black/50 rounded-lg px-3 py-2 font-mono">⚡ API docs</a>
+<body>
+<a class="skip-link" href="#main">Перейти к основному содержимому</a>
+
+<header class="banner">
+  <div class="banner__inner">
+    <div class="banner__row">
+      <div>
+        <h1 style="margin:0;font-size:1.5rem">🛡️ Анти-Дроп: объяснимое предупреждение о риске</h1>
+        <p style="margin:.25rem 0 0;font-size:.9rem;opacity:.95">
+          Коммуникационный слой поверх существующей защиты банка. Синтетические данные, sandbox, без банковских действий.
+        </p>
+      </div>
+      <div class="banner__row">
+        <span class="chip" title="Поддержка не вызывается, деньги не двигаются, переводы не блокируются">🧪 ДЕМО-РЕЖИМ</span>
+        <a class="chip" href="/docs" target="_blank" rel="noopener">⚡ API docs</a>
+        <a class="chip" href="/operator" id="operatorLink">🖥️ Экран оператора</a>
+      </div>
     </div>
   </div>
 </header>
 
-<main class="max-w-5xl mx-auto px-4 py-6">
-  <nav class="flex flex-wrap gap-2 mb-5" id="tabs">
-    <button data-tab="dash" class="tab-btn bg-amber-500 text-black font-semibold rounded-xl px-5 py-2.5">📊 Мониторинг</button>
-    <button data-tab="quiz" class="tab-btn bg-slate-800 hover:bg-slate-700 rounded-xl px-5 py-2.5">🎓 Онбординг + квиз</button>
-    <button data-tab="sim" class="tab-btn bg-slate-800 hover:bg-slate-700 rounded-xl px-5 py-2.5">📱 Смена номера (тренажёр)</button>
+<main class="layout" id="main">
+  <nav class="tabs" role="tablist" aria-label="Разделы демонстрации">
+    <button class="tab-btn" role="tab" id="tab-dash" aria-controls="panel-dash" aria-selected="true" data-tab="dash">📊 Мониторинг и предупреждение</button>
+    <button class="tab-btn" role="tab" id="tab-quiz" aria-controls="panel-quiz" aria-selected="false" data-tab="quiz">🎓 Онбординг и квиз</button>
+    <button class="tab-btn" role="tab" id="tab-sim" aria-controls="panel-sim" aria-selected="false" data-tab="sim">📱 Смена номера (тренажёр)</button>
   </nav>
 
-  <!-- ============ DASHBOARD ============ -->
-  <section id="t-dash">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5 mb-4">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <h2 class="text-lg font-bold">Мониторинг карты</h2>
-        <span id="scoreBadge" class="font-bold text-sm rounded-full px-4 py-1.5 bg-green-800">GREEN • 0</span>
+  <!-- ============ MONITORING ============ -->
+  <section id="panel-dash" role="tabpanel" aria-labelledby="tab-dash">
+    <div class="card">
+      <div class="banner__row">
+        <h2 class="card__title">Сценарий и язык предупреждения</h2>
+        <span id="levelBadge" class="level-badge level-badge--green" role="status" aria-live="polite">
+          <span class="level-badge__icon" id="levelIcon" aria-hidden="true">✅</span>
+          <span class="level-badge__text" id="levelText">Нет решения</span>
+          <span id="levelScore">—</span>
+        </span>
       </div>
-      <div class="h-3.5 bg-slate-700 rounded-full overflow-hidden mt-3">
-        <div id="scoreBar" class="h-full w-0 bg-gradient-to-r from-green-500 via-amber-500 to-red-600 transition-all duration-500"></div>
-      </div>
-      <div class="flex flex-wrap items-center gap-2 mt-4">
-        <label for="lang" class="text-sm text-slate-300">Язык алерта:
-          <select id="lang" class="bg-slate-950 border border-slate-600 rounded-lg px-3 py-2 ml-1">
-            <option value="ru">Русский</option><option value="uz">O'zbekcha</option>
-            <option value="tg">Тоҷикӣ</option><option value="ky">Кыргызча</option>
-            <option value="en">English</option><option value="zh">中文</option><option value="ar">العربية</option>
+      <p class="legal-note" id="scoreNote">
+        Score — детерминированный скоринг правил. Это <strong>не вероятность мошенничества</strong> и не юридический вывод.
+      </p>
+
+      <div class="controls" style="margin-block-start:.75rem">
+        <div class="field">
+          <label for="scenario">Сценарий</label>
+          <select id="scenario">
+            <option value="normal">Обычная активность</option>
+            <option value="attack">Дроп-схема (транзит + вывод)</option>
+            <option value="family">Сбор с друзьями (legitimate negative)</option>
+            <option value="salary">Зарплата и снятие наличных (legitimate negative)</option>
           </select>
-        </label>
-        <button id="btnNormal" onclick="loadScenario('normal')" class="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 rounded-xl px-4 py-2 text-sm">✅ Норма</button>
-        <button id="btnAttack" onclick="loadScenario('attack')" class="bg-red-700 hover:bg-red-600 disabled:opacity-50 font-bold rounded-xl px-4 py-2 text-sm">🔥 Симулировать атаку вербовщика</button>
-        <button id="btnCheck" onclick="analyze()" class="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-green-950 font-bold rounded-xl px-4 py-2 text-sm">🔍 Проверить</button>
+        </div>
+        <div class="field">
+          <label for="lang">Язык предупреждения</label>
+          <select id="lang" aria-describedby="langStatus"><option value="ru-RU">Русский (baseline)</option></select>
+        </div>
+        <button class="btn btn--primary" id="btnCheck" type="button">🔍 Проверить</button>
+        <button class="btn btn--danger" id="btnAttack" type="button">🔥 Симулировать атаку</button>
       </div>
-      <p id="apiErr" class="hidden text-xs text-red-300 bg-red-950 border border-red-700 rounded-lg px-3 py-2 mt-3" role="alert"></p>
-      <p class="text-xs text-slate-400 mt-2">Атака = 5 мелких входящих от разных людей за ~25 мин + вывод дальше. Детектор ищет транзит, веер, обнал, ночь, связку SIM+всплеск. Один запрос — один клиент (смешение user_id отклоняется).</p>
+      <p class="legal-note" id="langStatus" style="margin-block-start:.5rem">
+        Загрузка каталога локализаций…
+      </p>
+      <p class="error-box" id="apiErr" role="alert" hidden></p>
+      <p class="legal-note" id="requestState" role="status" aria-live="polite"></p>
     </div>
 
-    <div id="alertBox" role="alert" class="hidden bg-red-950 border-2 border-red-500 rounded-2xl p-5 mb-4 shadow-[0_0_30px_rgba(239,68,68,.35)]">
-      <h2 id="alertTitle" class="text-lg font-extrabold text-red-200"></h2>
-      <pre id="alertBody" dir="auto" class="whitespace-pre-wrap bg-black/40 rounded-xl p-4 mt-3 text-red-100 text-sm leading-relaxed"></pre>
-      <div class="flex flex-wrap gap-2 mt-3">
-        <button id="btnSupport" onclick="contactSupport()" class="bg-green-500 hover:bg-green-400 disabled:opacity-50 text-green-950 font-bold rounded-xl px-4 py-2.5 text-sm">📞 Создать учебное обращение</button>
-        <button onclick="document.getElementById('alertBox').classList.add('hidden')" class="bg-slate-700 hover:bg-slate-600 rounded-xl px-4 py-2.5 text-sm">Я всё понял, скрыть</button>
+    <div class="alert-card" id="alertBox" role="alert" hidden>
+      <h3 class="alert-card__title" id="alertTitle"></h3>
+      <p class="alert-card__body" id="alertBody" dir="auto" lang="ru"></p>
+      <p class="draft-badge" id="draftBadge" hidden></p>
+      <p class="legal-note" id="alertMeta"></p>
+      <p class="legal-note" id="sandboxNotice"></p>
+      <p class="legal-note" id="legalDisclaimer"></p>
+      <p class="legal-note" id="privacyNotice"></p>
+      <div class="controls" style="margin-block-start:.75rem">
+        <button class="btn btn--primary" id="btnSupport" type="button">📞 Создать песочное обращение</button>
+        <button class="btn" id="btnHide" type="button">Скрыть предупреждение</button>
       </div>
-      <p id="ticket" aria-live="polite" class="text-xs text-red-300 mt-2"></p>
+      <p class="legal-note" id="ticket" role="status" aria-live="polite" style="margin-block-start:.75rem"></p>
     </div>
 
-    <div class="grid md:grid-cols-2 gap-4">
-      <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5">
-        <h2 class="font-bold mb-2">Транзакции</h2>
-        <div class="overflow-x-auto"><table class="w-full text-sm">
-          <thead><tr class="text-slate-400 text-left"><th class="py-1">Время</th><th>Тип</th><th>Сумма ₽</th><th>Контрагент</th></tr></thead>
+    <div class="card">
+      <h2 class="card__title">Транзакции в снимке</h2>
+      <div class="table-scroll">
+        <table>
+          <caption>Синтетические операции одного субъекта. Персональных данных нет.</caption>
+          <thead><tr><th scope="col">Время (UTC)</th><th scope="col">Тип</th><th scope="col">Сумма, ₽</th><th scope="col">Контрагент</th></tr></thead>
           <tbody id="txTable"></tbody>
-        </table></div>
+        </table>
       </div>
-      <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5">
-        <h2 class="font-bold mb-2">Почему так решили <span class="text-xs font-normal text-slate-400">(объяснимый скоринг)</span></h2>
-        <ul id="reasons" aria-live="polite" class="text-sm space-y-2 text-slate-200"><li class="text-slate-500">Нажмите «Проверить».</li></ul>
-      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card__title">Почему такое решение <span class="legal-note">объяснимый скоринг правил</span></h2>
+      <ul id="reasons" class="legal-note" aria-live="polite" style="padding-inline-start:1.25rem">
+        <li>Нажмите «Проверить».</li>
+      </ul>
+      <h3 class="card__title" style="font-size:1rem">Коды причин (reason codes)</h3>
+      <p id="reasonCodes" class="legal-note" aria-live="polite">—</p>
     </div>
   </section>
 
   <!-- ============ QUIZ ============ -->
-  <section id="t-quiz" class="hidden">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5 mb-4">
-      <h2 class="text-lg font-bold mb-2">📚 Микро-сторис: почему нельзя отдавать карту</h2>
-      <div id="stories" class="space-y-2"><p class="text-slate-500 text-sm">Загрузка…</p></div>
+  <section id="panel-quiz" role="tabpanel" aria-labelledby="tab-quiz" hidden>
+    <div class="card">
+      <h2 class="card__title">📚 Микро-сторис: почему нельзя отдавать карту</h2>
+      <div id="stories"><p class="legal-note">Загрузка…</p></div>
     </div>
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5">
-      <h2 class="text-lg font-bold">📝 Квиз — учебный приз 100 ₽ за ≥4 правильных <span class="text-xs font-normal text-slate-400">(деньги не начисляются)</span></h2>
-      <div id="quizBox" class="mt-2"><p class="text-slate-500 text-sm">Загрузка…</p></div>
-      <button id="btnQuiz" onclick="sendQuiz()" class="mt-3 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-green-950 font-bold rounded-xl px-5 py-2.5 text-sm">Получить результат</button>
-      <div id="quizRes" aria-live="polite" class="mt-3 text-sm space-y-1"></div>
+    <div class="card">
+      <h2 class="card__title">📝 Учебный квиз <span class="legal-note">приз в демо не начисляется</span></h2>
+      <div id="quizBox"><p class="legal-note">Загрузка…</p></div>
+      <button class="btn btn--primary" id="btnQuiz" type="button" style="margin-block-start:.75rem">Отправить ответы</button>
+      <div id="quizRes" role="status" aria-live="polite" class="legal-note" style="margin-block-start:.75rem"></div>
     </div>
   </section>
 
   <!-- ============ SIM ============ -->
-  <section id="t-sim" class="hidden">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5">
-      <h2 class="text-lg font-bold">📱 Тренажёр смены номера <span class="text-xs font-normal text-slate-400">(SMS не отправляются, номер не меняется)</span></h2>
-      <div class="flex flex-wrap gap-2 mt-3">
-        <div><label for="oldP" class="text-xs text-slate-400 block mb-1">Старый номер</label>
-        <input id="oldP" value="+79160000001" inputmode="tel" class="bg-slate-950 border border-slate-600 rounded-lg px-3 py-2 text-sm w-48"></div>
-        <div><label for="newP" class="text-xs text-slate-400 block mb-1">Новый номер</label>
-        <input id="newP" value="+79160000002" inputmode="tel" class="bg-slate-950 border border-slate-600 rounded-lg px-3 py-2 text-sm w-48"></div>
+  <section id="panel-sim" role="tabpanel" aria-labelledby="tab-sim" hidden>
+    <div class="card">
+      <h2 class="card__title">📱 Тренажёр смены номера <span class="legal-note">SMS не отправляются, номер не меняется</span></h2>
+      <div class="controls" style="margin-block-start:.75rem">
+        <div class="field">
+          <label for="oldP">Учебный старый номер</label>
+          <input id="oldP" value="+70000000001" inputmode="tel" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="newP">Учебный новый номер</label>
+          <input id="newP" value="+70000000002" inputmode="tel" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="otpO">Код со старого номера</label>
+          <input type="checkbox" id="otpO">
+        </div>
+        <div class="field">
+          <label for="otpN">Код с нового номера</label>
+          <input type="checkbox" id="otpN">
+        </div>
+        <button class="btn btn--primary" id="btnSim" type="button">Сменить номер</button>
       </div>
-      <div class="flex flex-wrap items-center gap-4 mt-3 text-sm">
-        <label class="flex items-center gap-1.5"><input type="checkbox" id="otpO" class="w-4 h-4 accent-green-500"> SMS-код со старого ✓</label>
-        <label class="flex items-center gap-1.5"><input type="checkbox" id="otpN" class="w-4 h-4 accent-green-500"> SMS-код с нового ✓</label>
-        <button id="btnSim" onclick="sendSim()" class="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-green-950 font-bold rounded-xl px-5 py-2 text-sm">Сменить номер</button>
-      </div>
-      <div id="simRes" aria-live="polite" class="mt-3 text-sm"></div>
-      <p class="text-xs text-slate-400 mt-2">Без кода со старого номера смену запрещаем. После учебной смены — 24ч кулдаун: P2P до 5 000 ₽.</p>
+      <div id="simRes" role="status" aria-live="polite" class="legal-note" style="margin-block-start:.75rem"></div>
+      <p class="legal-note" style="margin-block-start:.5rem">Без кода со старого номера учебная смена отклоняется.</p>
     </div>
   </section>
 
-  <footer class="text-center text-xs text-slate-500 mt-8">
-    MVP хакатона • FastAPI + Pydantic • офлайн-сборка (Tailwind/Swagger локально) • <a href="/docs" class="underline">Swagger</a>
+  <footer class="footer">
+    P1-демо · FastAPI + Pydantic v2 · офлайн-ассеты, без CDN · <a href="/docs">Swagger</a> ·
+    <a href="/api/health">health</a> · <a href="/api/operator/metrics">operator metrics</a>
   </footer>
 </main>
 
-<script>
-// T15: серверные строки вставляем только через esc() — innerHTML для статичной разметки.
-function esc(s) {
-  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-let TXNS = [], QUIZ = [], analyzeSeq = 0, lastCaseKey = null, lastScore = 0, lastLang = 'ru';
-const SCEN = {
-  normal: [["2026-10-06 09:00","incoming_salary",60000,"работодатель"],["2026-10-06 12:10","purchase",1200,"магнит"],["2026-10-06 18:40","purchase",800,"аптека"],["2026-10-07 09:15","purchase",1500,"пятёрочка"]],
-  attack: [["2026-10-07 13:00","incoming_salary",15000,"стройка"],["2026-10-07 14:02","incoming_p2p",3000,"отправитель_1"],["2026-10-07 14:07","incoming_p2p",2500,"отправитель_2"],["2026-10-07 14:12","incoming_p2p",4000,"отправитель_3"],["2026-10-07 14:20","incoming_p2p",1800,"отправитель_4"],["2026-10-07 14:25","incoming_p2p",3500,"отправитель_5"],["2026-10-07 14:40","outgoing_p2p",9000,"кошелёк_вербовщика"],["2026-10-07 14:45","cash_withdraw",5000,"банкомат"]]
-};
-
-// T16: единый fetch с проверкой ошибок и индикацией загрузки.
-async function api(path, body, btnIds = []) {
-  const btns = btnIds.map(id => document.getElementById(id)).filter(Boolean);
-  const labels = btns.map(b => b.textContent);
-  btns.forEach(b => { b.disabled = true; });
-  hideErr();
-  try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 15000);
-    const res = await fetch(path, {method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(body), signal: ctrl.signal});
-    clearTimeout(timer);
-    if (!res.ok) {
-      let detail = `HTTP ${res.status}`;
-      try { const j = await res.json(); detail = (j.detail && JSON.stringify(j.detail)) || detail; } catch (e) {}
-      throw new Error(detail);
-    }
-    return await res.json();
-  } catch (e) {
-    showErr(e.name === 'AbortError' ? 'Сервер не отвечает (таймаут 15с). Ничего не применено.' : `Ошибка: ${e.message}. Ничего не применено.`);
-    return null;
-  } finally {
-    btns.forEach((b, i) => { b.disabled = false; b.textContent = labels[i]; });
-  }
-}
-function showErr(msg) { const el = document.getElementById('apiErr'); el.textContent = msg; el.classList.remove('hidden'); }
-function hideErr() { document.getElementById('apiErr').classList.add('hidden'); }
-
-document.querySelectorAll('.tab-btn').forEach(b => b.onclick = () => {
-  document.querySelectorAll('.tab-btn').forEach(x => { x.classList.remove('bg-amber-500','text-black','font-semibold'); x.classList.add('bg-slate-800'); });
-  b.classList.add('bg-amber-500','text-black','font-semibold'); b.classList.remove('bg-slate-800');
-  ['dash','quiz','sim'].forEach(t => document.getElementById('t-'+t).classList.toggle('hidden', t !== b.dataset.tab));
-  if (b.dataset.tab === 'quiz' && !QUIZ.length) loadContent();
-});
-
-function loadScenario(k) {
-  TXNS = SCEN[k].map((r,i) => ({id:String(i), user_id:"u777", ts:r[0]+":00", type:r[1], amount:r[2], counterparty:r[3], device_id:"dev_X", sim_changed_days_ago: k==="attack"?1:90}));
-  document.getElementById('txTable').innerHTML = TXNS.map(t =>
-    `<tr class="border-t border-slate-800"><td class="py-1.5 text-slate-400">${esc(t.ts.slice(5))}</td><td class="font-mono text-xs">${esc(t.type)}</td><td class="font-semibold">${esc(t.amount.toLocaleString('ru-RU'))}</td><td>${esc(t.counterparty)}</td></tr>`).join('');
-  analyze();
-}
-
-async function analyze() {
-  if (!TXNS.length) loadScenario('normal');
-  const mySeq = ++analyzeSeq;
-  lastLang = document.getElementById('lang').value;
-  const r = await api('/api/analyze', {transactions: TXNS, lang: lastLang}, ['btnNormal','btnAttack','btnCheck']);
-  if (!r || mySeq !== analyzeSeq) return; // T16: устаревший ответ игнорируем
-  lastScore = r.score;
-  lastCaseKey = 'demo-u777-' + r.score + '-' + TXNS.length;
-  const badge = document.getElementById('scoreBadge');
-  badge.textContent = `${r.level} • ${r.score}`;
-  badge.className = 'font-bold text-sm rounded-full px-4 py-1.5 ' + (r.level==='RED' ? 'bg-red-700 animate-pulse' : r.level==='YELLOW' ? 'bg-amber-700' : 'bg-green-800');
-  document.getElementById('scoreBar').style.width = r.score + '%';
-  document.getElementById('reasons').innerHTML = r.reasons.map(x => `<li class="bg-slate-950 rounded-lg px-3 py-2">${esc(x)}</li>`).join('');
-  const box = document.getElementById('alertBox');
-  if (r.alert) { box.classList.remove('hidden');
-    document.getElementById('alertTitle').textContent = `${r.alert.title} (${r.alert.lang_name})`;
-    document.getElementById('alertBody').textContent = r.alert.body;
-    document.getElementById('ticket').textContent = '';
-    box.scrollIntoView({behavior:'smooth', block:'center'});
-  } else box.classList.add('hidden');
-}
-
-async function contactSupport() {
-  // T02: серверный учебный кейс вместо выдуманной «заморозки».
-  const r = await api('/api/cases', {
-    summary: `Подозрительный транзит: скоринг ${lastScore}/100, ${TXNS.length} операций в снапшоте`,
-    lang: lastLang, score: lastScore, idempotency_key: lastCaseKey
-  }, ['btnSupport']);
-  const el = document.getElementById('ticket');
-  if (!r) { el.textContent = '⚠️ Кейс не создан (см. ошибку выше). Поддержка не вызывалась, ничего не заморожено.'; return; }
-  el.textContent = `✅ Учебный кейс ${r.case_id} создан, статус: ${r.status}. Демо: поддержка не вызывается, операции не ограничиваются.`;
-}
-
-async function loadContent() {
-  try {
-    const c = await (await fetch('/api/content')).json();
-    document.getElementById('stories').innerHTML = c.stories.map(s =>
-      `<div class="bg-slate-950 border-l-4 border-amber-500 rounded-r-xl px-4 py-2.5 text-sm"><b>${esc(s.emoji)} ${esc(s.title)}</b><br><span class="text-slate-300">${esc(s.text)}</span></div>`).join('');
-    QUIZ = c.quiz;
-    document.getElementById('quizBox').innerHTML = QUIZ.map((q,i) =>
-      `<div class="bg-slate-950 rounded-xl p-3.5 mt-2"><b class="text-sm">В${i+1}. ${esc(q.q)}</b>` +
-      q.options.map((o,j) => `<label class="flex items-center gap-2 text-sm mt-1.5 cursor-pointer hover:text-amber-300"><input type="radio" name="q${i}" value="${j}" class="accent-amber-500"> ${esc(o)}</label>`).join('') + `</div>`).join('');
-  } catch (e) { document.getElementById('stories').innerHTML = `<p class="text-red-300 text-sm">Не удалось загрузить контент: ${esc(e.message)}</p>`; }
-}
-
-async function sendQuiz() {
-  const ans = QUIZ.map((_,i) => { const el = document.querySelector(`input[name=q${i}]:checked`); return el ? +el.value : -1; });
-  const r = await api('/api/quiz', {answers: ans}, ['btnQuiz']);
-  if (!r) return;
-  document.getElementById('quizRes').innerHTML =
-    `<b class="${r.passed ? 'text-green-400' : 'text-red-400'} text-base">${esc(r.message)} (${r.score}/${r.total})</b>` +
-    r.details.map(d => `<div><span class="${d.ok ? 'text-green-400' : 'text-red-400'}">${d.ok ? '✓' : '✗'}</span> ${esc(d.explain)}</div>`).join('');
-}
-
-async function sendSim() {
-  const body = {old_phone: document.getElementById('oldP').value, new_phone: document.getElementById('newP').value,
-    otp_ok_old: document.getElementById('otpO').checked, otp_ok_new: document.getElementById('otpN').checked};
-  const r = await api('/api/sim', body, ['btnSim']);
-  if (!r) return;
-  document.getElementById('simRes').innerHTML = r.ok
-    ? `<b class="text-green-400">${esc(r.message)}</b><div class="text-slate-300 mt-1">Лимиты: ${esc(r.limits.note)}</div>` + r.checklist.map(c => `<div class="text-slate-300">${esc(c)}</div>`).join('')
-    : `<b class="text-red-400">Запрещено:</b>` + r.errors.map(e => `<div class="text-slate-300">• ${esc(e)}</div>`).join('');
-}
-
-loadScenario('normal');
-</script>
+<script src="/static/js/app.js"></script>
 </body>
 </html>

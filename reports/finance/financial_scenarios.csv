@@ -1,0 +1,4 @@
+scenario,multipliers,fraud_benefit,support_benefit,revenue_uplift,false_alert_cost,rewards,inference_cost,opex_annual,k_initial_cost,annual_margin,year1_net,year1_roi,simple_payback_months
+conservative,"{""delta_incremental_prevention"": 0.5, ""false_alerts_per_client_year"": 1.3, ""k_initial_cost"": 1.2, ""l_bank_rubles_per_episode"": 0.8, ""n_clients"": 0.8, ""opex_annual"": 1.2}",1152000.0,4800000.0,0.0,845000.0,0.0,0.0,10800000.0,21600000.0,-5693000.0,-27293000.0,-0.82,
+base,{},3600000.0,6000000.0,0.0,812500.0,0.0,0.0,9000000.0,18000000.0,-212500.0,-18212500.0,-0.65,
+optimistic,"{""delta_incremental_prevention"": 1.5, ""false_alerts_per_client_year"": 0.7, ""k_initial_cost"": 0.9, ""l_bank_rubles_per_episode"": 1.2, ""n_clients"": 1.2, ""opex_annual"": 0.9}",7776000.0,7200000.0,0.0,682500.0,0.0,0.0,8100000.0,16200000.0,6193500.0,-10006500.0,-0.4,31.39

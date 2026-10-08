@@ -24,8 +24,13 @@ def _normalize_ts(v: object) -> datetime:
     if isinstance(v, datetime):
         dt = v
     else:
+        text = str(v).strip()
+        # 'Z' is only understood by fromisoformat from Python 3.11; the project
+        # declares 3.10 support, so normalise it here instead of rejecting UTC.
+        if text.endswith(("Z", "z")):
+            text = text[:-1] + "+00:00"
         try:
-            dt = datetime.fromisoformat(str(v))
+            dt = datetime.fromisoformat(text)
         except ValueError:
             raise ValueError("ts: ожидаю ISO дату-время, например '2026-10-07 14:02:00'") from None
     if dt.tzinfo is None:

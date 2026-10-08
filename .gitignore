@@ -13,6 +13,20 @@ wheels/
 .local/
 docs/competition-audit/.build/
 
+# Holdout split files duplicate the dataset; the manifest (episode ids,
+# subjects, time ranges) is the tracked artifact.
+reports/evaluation/holdout_development.jsonl
+reports/evaluation/holdout_holdout.jsonl
+reports/experiment/collected.csv
+
+# Local sandbox stores, event sinks and downloaded exports.
+# Reports/ stays tracked: those are synthetic artifacts meant to be reviewed.
+*.sqlite
+*.sqlite3
+operator_events.jsonl
+*.export.json
+*.export.csv
+
 # JavaScript dependencies, builds and test output
 node_modules/
 .next/

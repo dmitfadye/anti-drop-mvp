@@ -1,8 +1,21 @@
-segment_type,segment,total_episodes,TP,FP,TN,FN,recall,precision,fpr,alert_rate
-episode_class,normal,2,0,0,2,0,,,0.0,0.0
-episode_class,risk,2,2,0,0,0,1.0,1.0,,1.0
-episode_class,legitimate_negative,9,0,1,8,0,,0.0,0.1111111111111111,0.1111111111111111
-episode_class,edge,8,0,0,8,0,,,0.0,0.0
-label_source,synthetic_placeholder,21,2,1,18,0,1.0,0.6666666666666666,0.05263157894736842,0.14285714285714285
-is_holdout,false,21,2,1,18,0,1.0,0.6666666666666666,0.05263157894736842,0.14285714285714285
-is_holdout,true,0,0,0,0,0,,,,
+segment_type,segment,scope,total_episodes,TP,FP,TN,FN,recall,precision,fpr,alert_rate,note
+episode_class,normal,primary,11,0,0,11,0,,,0.0,0.0,
+episode_class,risk,primary,33,31,0,0,2,0.9393939393939394,1.0,,0.9393939393939394,
+episode_class,legitimate_negative,primary,12,0,0,12,0,,,0.0,0.0,
+episode_class,edge,all,25,3,0,8,14,0.17647058823529413,1.0,0.0,0.12,
+label_source,synthetic_placeholder,all,81,34,0,31,16,0.68,1.0,0.0,0.41975308641975306,synthetic_placeholder is not validated accuracy
+is_holdout,false,all,81,34,0,31,16,0.68,1.0,0.0,0.41975308641975306,
+is_holdout,true,all,0,0,0,0,0,,,,,
+sim_profile,absent,all,1,0,0,1,0,,,0.0,0.0,"null means unknown, not zero days"
+sim_profile,fresh_0d,all,3,2,0,1,0,1.0,1.0,0.0,0.6666666666666666,"null means unknown, not zero days"
+sim_profile,fresh_1d,all,1,1,0,0,0,1.0,1.0,,1.0,"null means unknown, not zero days"
+sim_profile,fresh_2d,all,1,1,0,0,0,1.0,1.0,,1.0,"null means unknown, not zero days"
+sim_profile,null_only,all,73,30,0,29,14,0.6818181818181818,1.0,0.0,0.410958904109589,"null means unknown, not zero days"
+sim_profile,stale_30d,all,1,0,0,0,1,0.0,,,0.0,"null means unknown, not zero days"
+sim_profile,stale_3d,all,1,0,0,0,1,0.0,,,0.0,"null means unknown, not zero days"
+device_novelty,false,all,79,33,0,30,16,0.673469387755102,1.0,0.0,0.4177215189873418,
+device_novelty,true,primary,2,1,0,1,0,1.0,1.0,0.0,0.5,
+hour_bucket_local,day_12_17,all,68,32,0,20,16,0.6666666666666666,1.0,0.0,0.47058823529411764,diagnostics only: night hours partially drive the score in this rule set
+hour_bucket_local,morning_06_11,primary,5,0,0,5,0,,,0.0,0.0,diagnostics only: night hours partially drive the score in this rule set
+hour_bucket_local,night_00_05,all,7,2,0,5,0,1.0,1.0,0.0,0.2857142857142857,diagnostics only: night hours partially drive the score in this rule set
+hour_bucket_local,unknown,all,1,0,0,1,0,,,0.0,0.0,diagnostics only: night hours partially drive the score in this rule set

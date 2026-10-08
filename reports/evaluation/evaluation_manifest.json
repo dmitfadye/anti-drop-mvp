@@ -1,25 +1,56 @@
 {
-  "dataset_version": "synthetic-episodes-v1",
-  "dataset_sha256": "1808612f55a4ba3d1565f4621f7cb4fc8ead8d0ac1666aea18701bb0935d3385",
+  "dataset_version": "synthetic-episodes-p1-v1",
+  "dataset_sha256": "760c739e273fbc600ec8e28d878a50a48023667e9bf3e59b58b8108121571aa6",
   "rule_version": "2026-10-08.p1",
   "threshold_version": "thresholds-2026.10.08-red50-yellow25",
   "detector_threshold_version": "thresholds-2026.10.08-red50-yellow25",
   "adapter_version": "snapshot-adapter-v1",
   "template_version": "warning-templates-2026.10.08.p1",
   "positive_definition": "level == RED",
-  "number_of_episodes": 21,
+  "number_of_episodes": 81,
+  "number_of_primary_episodes": 56,
+  "number_of_edge_episodes": 25,
   "label_sources": [
     "synthetic_placeholder"
   ],
   "holdout_status": "development_only",
+  "environment": {
+    "python_version": "3.10.5",
+    "python_implementation": "CPython",
+    "platform": "Windows",
+    "packages": {
+      "pydantic": "2.13.4",
+      "fastapi": "0.141.1",
+      "uvicorn": "0.53.0",
+      "httpx": "0.28.1"
+    },
+    "rule_version": "2026-10-08.p1",
+    "threshold_version": "thresholds-2026.10.08-red50-yellow25",
+    "adapter_version": "snapshot-adapter-v1",
+    "generated_at": "2026-10-08T15:08:42+00:00"
+  },
+  "experiment_id": null,
+  "random_seed": null,
   "warnings": [
     "Rule score is not probability. Warnings are not legal conclusions. No banking actions are performed.",
     "Wilson intervals assume independent episodes; repeated subjects and synthetic labels do not establish bank accuracy.",
     "PR threshold sweeps are descriptive; do not tune on a holdout used to report performance.",
+    "Primary metrics cover normal/risk/legitimate_negative episodes only; edge and missing-data fixtures are boundary checks.",
+    "The warning is post-event: without an approved pre-transfer mode the client is informed after the transaction, not before.",
     "UNVALIDATED LABELS: synthetic_placeholder/unknown labels are pipeline fixtures, NOT validated banking accuracy.",
-    "Not an exclusively held-out evaluation. Independent human-reviewed holdout is required."
+    "Not an exclusively held-out evaluation. Independent human-reviewed holdout is required.",
+    "SMALL SAMPLE: 81 episodes. Rates move a lot with one episode; do not quote them externally.",
+    "Adversarial fixtures present (3): adversarial_single_counterparty_split, adversarial_wait_out_the_window, adversarial_zero_padding. They probe rule evasion and are expected to appear in the false-negative list.",
+    "NO BANK ADJUDICATION: no episode in this repository carries a bank-reviewed label.",
+    "Score bands are the rule score mapped to levels; nothing here is a calibrated probability of fraud."
   ],
-  "git_commit": "56daaf35c77b705b047ee283a998468d37776f42",
+  "git_commit": "e1b8f37b56c92ae3b7844b136819a999ea23ef48",
   "git_worktree_dirty": true,
-  "timestamp": "2026-10-08T13:12:46.386282+00:00"
+  "timestamp": "2026-10-08T15:08:42.642408+00:00",
+  "holdout_split": {
+    "written": true,
+    "holdout_percent": 30,
+    "development_episodes": 55,
+    "holdout_episodes": 26
+  }
 }

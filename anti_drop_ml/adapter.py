@@ -11,7 +11,14 @@ THRESHOLD_VERSION = 'thresholds-2026.10.08-red50-yellow25'
 ADAPTER_VERSION = 'snapshot-adapter-v1'
 
 
-def evaluate_snapshot(snapshot: RiskSnapshotV1 | dict) -> RiskDecisionV1:
+def evaluate_snapshot(snapshot: RiskSnapshotV1 | dict, disabled_rules: frozenset[str] | None = None) -> RiskDecisionV1:
+    """Evaluate one strict snapshot.
+
+    `disabled_rules` exists only for the P1 ablation report: it switches off a
+    single named rule so a reviewer can see what that rule contributed. The
+    evaluation_id ignores it on purpose — disabling a rule does not change the
+    identity of the snapshot, only the score.
+    """
     # Revalidate even model instances: never trust model_construct or mutated nested lists.
     snapshot = RiskSnapshotV1.model_validate(snapshot.model_dump() if isinstance(snapshot, RiskSnapshotV1) else snapshot)
     ordered = sorted(snapshot.transactions, key=lambda t: (t.occurred_at, t.event_id))
@@ -24,7 +31,7 @@ def evaluate_snapshot(snapshot: RiskSnapshotV1 | dict) -> RiskDecisionV1:
         # Family collections remain P2P: a self-declared purpose is not evidence of legitimacy.
         kind = ('incoming_p2p' if t.direction == 'in' else 'outgoing_p2p') if t.type in ('transfer', 'family_collection') else {'salary': 'incoming_salary', 'cash_withdrawal': 'cash_withdraw'}.get(t.type, 'purchase')
         transactions.append({'id': t.event_id, 'user_id': snapshot.subject_ref, 'ts': t.occurred_at, 'type': kind, 'amount': t.amount_minor / 100, 'counterparty': t.counterparty_ref or '', 'device_id': t.device_id or '', 'sim_changed_days_ago': t.sim_changed_days_ago})
-    result = analyze_transactions(transactions, now=snapshot.analysis_at)
+    result = analyze_transactions(transactions, now=snapshot.analysis_at, disabled_rules=disabled_rules)
     contributions = result['metrics'].get('score_contributions', {})
     effective = [t for t in ordered if t.occurred_at <= snapshot.analysis_at]
     codes = sorted(contributions)

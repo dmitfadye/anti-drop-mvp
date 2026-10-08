@@ -64,12 +64,35 @@ def _is_fresh_sim(value: Any, max_days: int) -> bool:
     return 0 <= days <= max_days
 
 
+# Имена правил = ключи score_contributions. Используются для ablation-отчёта
+# P1 (правило выключается по одному); по умолчанию включены все.
+RULE_KEYS = (
+    'multiple_small_inbound',
+    'large_outbound_after_inbound',
+    'cashout_ratio',
+    'fanout_transfers',
+    'night_activity',
+    'sim_changed_recently',
+    'device_novelty_with_baseline',
+)
+
+
 def analyze_transactions(
     transactions: list[dict[str, Any]],
     now: datetime | str | None = None,
     policy: Policy = DEFAULT_POLICY,
+    disabled_rules: frozenset[str] | set[str] | None = None,
 ) -> dict[str, Any]:
-    """Главная функция. Возвращает {score 0-100, level, reasons[], metrics{}}."""
+    """Главная функция. Возвращает {score 0-100, level, reasons[], metrics{}}.
+
+    disabled_rules используется только для ablation-отчёта P1: позволяет
+    выключить одно правило и посмотреть, что оно добавляло. Пустое значение —
+    обычное поведение, версии правил не меняются.
+    """
+    disabled = frozenset(disabled_rules or ())
+    unknown = disabled - set(RULE_KEYS)
+    if unknown:
+        raise ValueError(f"unknown rule(s) for ablation: {sorted(unknown)}")
     parsed: list[tuple[datetime, dict[str, Any]]] = []
     bad_ts = 0
     for t in transactions:
@@ -81,7 +104,7 @@ def analyze_transactions(
     parsed.sort(key=lambda p: p[0])
 
     reasons: list[str] = []
-    metrics: dict[str, Any] = {"rules_version": policy.version, "score_contributions": {}}
+    metrics: dict[str, Any] = {"rules_version": policy.version, "score_contributions": {}, "disabled_rules": sorted(disabled)}
     fired = False  # сработало ли хоть одно скоримое правило
 
     if bad_ts:
@@ -123,7 +146,7 @@ def analyze_transactions(
     metrics["small_incoming_60m_senders"] = len(senders)
     metrics["small_incoming_60m_sum"] = round(sum(amt(t) for _, t in small_in), 2)
 
-    if len(small_in) >= policy.transit_count_red and len(senders) >= policy.transit_senders_red:
+    if 'multiple_small_inbound' not in disabled and len(small_in) >= policy.transit_count_red and len(senders) >= policy.transit_senders_red:
         score += 45
         metrics["score_contributions"]["multiple_small_inbound"] = 45
         fired = True
@@ -131,7 +154,7 @@ def analyze_transactions(
             f"🔴 Транзитный поток: {len(small_in)} мелких входящих от {len(senders)} разных отправителей "
             f"за {policy.transit_window_min} мин на {metrics['small_incoming_60m_sum']} ₽ — похоже на почерк вербовщика в дропы."
         )
-    elif len(small_in) >= policy.transit_count_yellow and len(senders) >= policy.transit_senders_yellow:
+    elif 'multiple_small_inbound' not in disabled and len(small_in) >= policy.transit_count_yellow and len(senders) >= policy.transit_senders_yellow:
         score += 25
         metrics["score_contributions"]["multiple_small_inbound"] = 25
         fired = True
@@ -149,7 +172,7 @@ def analyze_transactions(
         if in_sum > 0 and out_sum > 0:
             flow_ratio = out_sum / in_sum
             metrics["flow_through_ratio_60m"] = round(flow_ratio, 2)
-            if flow_ratio >= policy.flow_ratio and len(small_in) >= 3:
+            if 'large_outbound_after_inbound' not in disabled and flow_ratio >= policy.flow_ratio and len(small_in) >= 3:
                 score += 25
                 metrics["score_contributions"]["large_outbound_after_inbound"] = 25
                 fired = True
@@ -165,7 +188,7 @@ def analyze_transactions(
     day_cash = sum(amt(t) for _, t in day if t.get("type") == "cash_withdraw" and amt(t) > 0)
     metrics["incoming_24h"] = round(day_in, 2)
     metrics["cash_24h"] = round(day_cash, 2)
-    if day_in > 0 and (day_cash / day_in) >= policy.cashout_ratio and day_in >= policy.cashout_min_in:
+    if 'cashout_ratio' not in disabled and day_in > 0 and (day_cash / day_in) >= policy.cashout_ratio and day_in >= policy.cashout_min_in:
         score += 25
         metrics["score_contributions"]["cashout_ratio"] = 25
         fired = True
@@ -177,7 +200,7 @@ def analyze_transactions(
     # 4. Веерные исходящие.
     receivers = Counter(str(t.get("counterparty", "?")) for _, t in recent if t.get("type") == "outgoing_p2p" and amt(t) > 0)
     metrics["fanout_60m_receivers"] = len(receivers)
-    if len(receivers) >= policy.fanout_count:
+    if 'fanout_transfers' not in disabled and len(receivers) >= policy.fanout_count:
         score += 25
         metrics["score_contributions"]["fanout_transfers"] = 25
         fired = True
@@ -188,7 +211,7 @@ def analyze_transactions(
     # 5. Ночная активность.
     night_n = sum(1 for dt, _ in recent if dt.astimezone(PROJECT_TZ).hour in policy.night_hours)
     metrics["night_60m_count"] = night_n
-    if night_n >= 3:
+    if 'night_activity' not in disabled and night_n >= 3:
         score += 10
         metrics["score_contributions"]["night_activity"] = 10
         fired = True
@@ -197,7 +220,7 @@ def analyze_transactions(
     # 6. Свежая смена SIM + всплеск (T04: 0 дней = сегодня = свежая).
     sim_fresh = any(_is_fresh_sim(t.get("sim_changed_days_ago"), policy.sim_fresh_days) for _, t in recent)
     metrics["sim_changed_recently"] = sim_fresh
-    if sim_fresh and (len(small_in) >= 2 or len(receivers) >= 2):
+    if 'sim_changed_recently' not in disabled and sim_fresh and (len(small_in) >= 2 or len(receivers) >= 2):
         score += 15
         metrics["score_contributions"]["sim_changed_recently"] = 15
         fired = True
@@ -212,7 +235,7 @@ def analyze_transactions(
         metrics["device_baseline"] = True
         old_devices = {str(t.get("device_id", "")) for _, t in history}
         new_devices = {str(t.get("device_id", "")) for _, t in recent} - old_devices - {""}
-        if new_devices and len(recent) >= 3:
+        if 'device_novelty_with_baseline' not in disabled and new_devices and len(recent) >= 3:
             score += 10
             metrics["score_contributions"]["device_novelty_with_baseline"] = 10
             fired = True

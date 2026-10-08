@@ -1,0 +1,25 @@
+{
+  "schema_version": "LocalizationPackV1",
+  "locale": "uz-UZ",
+  "language_code": "uz",
+  "display_name_native": "Oʻzbekcha",
+  "display_name_en": "Uzbek",
+  "direction": "ltr",
+  "script": "Latn",
+  "status": "draft",
+  "reviewers": [],
+  "messages": {
+    "alert.red.title": "Operatsiyalar xavfli sxemaga oʻxshaydi",
+    "alert.red.body": "Oxirgi soat ichida {amount} {currency} keldi va pul yana uzatib yuborilmoqda. Ogohlantirish sababi: {reason_short}. Bu tekshiruv signali, aybdorlik isboti emas.",
+    "alert.yellow.title": "Operatsiyalarga eʼtibor bering",
+    "alert.yellow.body": "Operatsiyalar odatiy faoliyatingizdan farq qiladi. Sabab: {reason_short}. Ushbu operatsiyalarni oʻzingiz solishtirib koʻring.",
+    "cta.help": "Demo qoʻllab-quvvatga oʻquv murojaat yaratish",
+    "cta.sandbox_notice": "Bu namoyish uchun qum sandbox murojaati. Haqiqiy bank qoʻllab-quvvati chaqirilmaydi, operatsiyalar cheklanmaydi.",
+    "legal.disclaimer": "Xabar yuridik xulosa emas va aybdorlikni koʻrsatmaydi. Cheklovlar boʻyicha qarorni bank qabul qiladi."
+  },
+  "template_ids": ["warning_uz_treatment_v1"],
+  "fallback_locale": "ru-RU",
+  "version": "loc-uz-v1",
+  "synthetic": true,
+  "notes": "DRAFT machine-assisted draft, NOT reviewed by a native speaker and NOT legally reviewed. privacy.notice is intentionally absent so the ru-RU fallback path is observable; fallback must be logged as translation_fallback in the UI."
+}
