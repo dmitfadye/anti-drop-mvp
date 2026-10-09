@@ -23,6 +23,21 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from src.policy import DEFAULT_POLICY, PROJECT_TZ, UTC, Policy
+from src.reason_codes import (
+    FUTURE_EVENT_EXCLUDED,
+    HIGH_CASHOUT_RATIO,
+    INSUFFICIENT_DATA,
+    INVALID_TIMESTAMP_EXCLUDED,
+    MULTIPLE_SMALL_INBOUND,
+    MULTIPLE_SMALL_INBOUND_SUSPICIOUS,
+    NEW_DEVICE,
+    NIGHT_ACTIVITY,
+    NO_RISK_SIGNAL,
+    OUTBOUND_AFTER_INBOUND,
+    RAPID_OUTFANOUT,
+    SIM_CHANGED_RECENTLY,
+    ZERO_AMOUNT_EXCLUDED,
+)
 
 # Обратная совместимость имён (раньше были модульными константами).
 SMALL_TXN_MAX = DEFAULT_POLICY.small_txn_max
@@ -81,13 +96,16 @@ def analyze_transactions(
     parsed.sort(key=lambda p: p[0])
 
     reasons: list[str] = []
+    reason_codes: list[str] = []  # машиночитаемое отражение тех же правил; score не меняет
     metrics: dict[str, Any] = {"rules_version": policy.version}
     fired = False  # сработало ли хоть одно скоримое правило
 
     if bad_ts:
         metrics["excluded_bad_ts"] = bad_ts
+        reason_codes.append(INVALID_TIMESTAMP_EXCLUDED)
     if not parsed:
-        return {"score": 0, "level": "GREEN", "reasons": ["Нет транзакций для анализа."], "metrics": metrics}
+        return {"score": 0, "level": "GREEN", "reasons": ["Нет транзакций для анализа."],
+                "reason_codes": [INSUFFICIENT_DATA], "metrics": metrics}
 
     if now is None:
         now_dt = parsed[-1][0]
@@ -100,9 +118,11 @@ def analyze_transactions(
     metrics["excluded_future_count"] = len(future)
     if future:
         reasons.append(f"ℹ️ Операций с датой позже точки анализа ({len(future)} шт.) исключено — они не учитывались.")
+        reason_codes.append(FUTURE_EVENT_EXCLUDED)
 
     if not txns:
-        return {"score": 0, "level": "GREEN", "reasons": reasons or ["Нет транзакций для анализа."], "metrics": metrics}
+        return {"score": 0, "level": "GREEN", "reasons": reasons or ["Нет транзакций для анализа."],
+                "reason_codes": reason_codes + [INSUFFICIENT_DATA], "metrics": metrics}
 
     score = 0
     window_start = now_dt - timedelta(minutes=policy.transit_window_min)
@@ -118,6 +138,8 @@ def analyze_transactions(
     small_in = [(dt, t) for dt, t in recent if t.get("type") == "incoming_p2p" and 0 < amt(t) <= policy.small_txn_max]
     zero_n = sum(1 for _, t in recent if t.get("type") in ("incoming_p2p", "outgoing_p2p") and amt(t) <= 0)
     metrics["excluded_zero_count"] = zero_n
+    if zero_n:
+        reason_codes.append(ZERO_AMOUNT_EXCLUDED)
     senders = {str(t.get("counterparty", "?")) for _, t in small_in}
     metrics["small_incoming_60m_count"] = len(small_in)
     metrics["small_incoming_60m_senders"] = len(senders)
@@ -130,6 +152,7 @@ def analyze_transactions(
             f"🔴 Транзитный поток: {len(small_in)} мелких входящих от {len(senders)} разных отправителей "
             f"за {policy.transit_window_min} мин на {metrics['small_incoming_60m_sum']} ₽ — похоже на почерк вербовщика в дропы."
         )
+        reason_codes.append(MULTIPLE_SMALL_INBOUND)
     elif len(small_in) >= policy.transit_count_yellow and len(senders) >= policy.transit_senders_yellow:
         score += 25
         fired = True
@@ -137,6 +160,7 @@ def analyze_transactions(
             f"🟡 Подозрительный приток: {len(small_in)} мелких входящих от {len(senders)} отправителей за час. "
             "Если деньги просят переслать дальше — это может быть вербовка."
         )
+        reason_codes.append(MULTIPLE_SMALL_INBOUND_SUSPICIOUS)
 
     # 2. Сквозной транзит: выводы ПОСЛЕ первого мелкого входящего в окне.
     if small_in:
@@ -154,6 +178,7 @@ def analyze_transactions(
                     f"🔴 Сквозной транзит: после поступлений выведено {out_sum:.0f} ₽ из {in_sum:.0f} ₽ "
                     f"({flow_ratio:.0%}) за час. Возможно ограничение операций по 115-ФЗ — решение принимает банк."
                 )
+                reason_codes.append(OUTBOUND_AFTER_INBOUND)
 
     # 3. Обнал после входящих за 24ч.
     day_start = now_dt - timedelta(hours=policy.cashout_window_h)
@@ -169,6 +194,7 @@ def analyze_transactions(
             f"🔴 Обнал: снято наличными {day_cash:.0f} ₽ из {day_in:.0f} ₽ входящих за 24ч "
             f"({day_cash / day_in:.0%}) — похоже на финал дроп-схемы."
         )
+        reason_codes.append(HIGH_CASHOUT_RATIO)
 
     # 4. Веерные исходящие.
     receivers = Counter(str(t.get("counterparty", "?")) for _, t in recent if t.get("type") == "outgoing_p2p" and amt(t) > 0)
@@ -179,6 +205,7 @@ def analyze_transactions(
         reasons.append(
             f"🔴 Веерная рассылка: {len(receivers)} разных получателей за час — похоже на распыление чужих денег."
         )
+        reason_codes.append(RAPID_OUTFANOUT)
 
     # 5. Ночная активность.
     night_n = sum(1 for dt, _ in recent if dt.astimezone(PROJECT_TZ).hour in policy.night_hours)
@@ -187,6 +214,7 @@ def analyze_transactions(
         score += 10
         fired = True
         reasons.append(f"🟡 Ночная активность: {night_n} операций между 00:00–06:00 по Москве — нетипичное время.")
+        reason_codes.append(NIGHT_ACTIVITY)
 
     # 6. Свежая смена SIM + всплеск (T04: 0 дней = сегодня = свежая).
     sim_fresh = any(_is_fresh_sim(t.get("sim_changed_days_ago"), policy.sim_fresh_days) for _, t in recent)
@@ -198,6 +226,7 @@ def analyze_transactions(
             f"🔴 Смена SIM/устройства за последние {policy.sim_fresh_days} дня + всплеск переводов — "
             "возможен перехват SMS-кодов. Проверьте номер в учебном тренажёре смены номера."
         )
+        reason_codes.append(SIM_CHANGED_RECENTLY)
 
     # 7. Новое устройство — только если есть история старше окна.
     history = [(dt, t) for dt, t in txns if dt < window_start]
@@ -209,6 +238,7 @@ def analyze_transactions(
             score += 10
             fired = True
             reasons.append("🟡 Новое устройство + активность — убедитесь, что это вы.")
+            reason_codes.append(NEW_DEVICE)
     else:
         metrics["device_baseline"] = bool(history)
 
@@ -216,11 +246,13 @@ def analyze_transactions(
     level = "RED" if score >= policy.score_red else ("YELLOW" if score >= policy.score_yellow else "GREEN")
     if not fired:
         reasons.append("✅ Всё спокойно: транзитных потоков и веерных рассылок не найдено.")
+        reason_codes.append(NO_RISK_SIGNAL)
 
     metrics["score"] = score
     metrics["level"] = level
     metrics["analyzed"] = len(txns)
-    return {"score": score, "level": level, "reasons": reasons, "metrics": metrics}
+    return {"score": score, "level": level, "reasons": reasons, "reason_codes": reason_codes,
+            "metrics": metrics}
 
 
 def quick_check(transactions: list[dict[str, Any]]) -> tuple[str, int, list[str]]:

@@ -57,7 +57,7 @@
       <h2 id="alertTitle" class="text-lg font-extrabold text-red-200"></h2>
       <pre id="alertBody" dir="auto" class="whitespace-pre-wrap bg-black/40 rounded-xl p-4 mt-3 text-red-100 text-sm leading-relaxed"></pre>
       <div class="flex flex-wrap gap-2 mt-3">
-        <button id="btnSupport" onclick="contactSupport()" class="bg-green-500 hover:bg-green-400 disabled:opacity-50 text-green-950 font-bold rounded-xl px-4 py-2.5 text-sm">📞 Создать учебное обращение</button>
+        <button id="btnSupport" onclick="contactSupport()" class="bg-green-500 hover:bg-green-400 disabled:opacity-50 text-green-950 font-bold rounded-xl px-4 py-2.5 text-sm">📞 Создать обращение (песочница)</button>
         <button onclick="document.getElementById('alertBox').classList.add('hidden')" class="bg-slate-700 hover:bg-slate-600 rounded-xl px-4 py-2.5 text-sm">Я всё понял, скрыть</button>
       </div>
       <p id="ticket" aria-live="polite" class="text-xs text-red-300 mt-2"></p>
@@ -123,14 +123,17 @@ function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-let TXNS = [], QUIZ = [], analyzeSeq = 0, lastCaseKey = null, lastScore = 0, lastLang = 'ru';
+let TXNS = [], QUIZ = [], analyzeSeq = 0, lastScore = 0, lastLang = 'ru', lastEvaluationId = 'eval_demo_0';
+const SANDBOX_SUBJECT = 'demo-user-1'; // sandbox-заголовок, НЕ production auth
 const SCEN = {
   normal: [["2026-10-06 09:00","incoming_salary",60000,"работодатель"],["2026-10-06 12:10","purchase",1200,"магнит"],["2026-10-06 18:40","purchase",800,"аптека"],["2026-10-07 09:15","purchase",1500,"пятёрочка"]],
   attack: [["2026-10-07 13:00","incoming_salary",15000,"стройка"],["2026-10-07 14:02","incoming_p2p",3000,"отправитель_1"],["2026-10-07 14:07","incoming_p2p",2500,"отправитель_2"],["2026-10-07 14:12","incoming_p2p",4000,"отправитель_3"],["2026-10-07 14:20","incoming_p2p",1800,"отправитель_4"],["2026-10-07 14:25","incoming_p2p",3500,"отправитель_5"],["2026-10-07 14:40","outgoing_p2p",9000,"кошелёк_вербовщика"],["2026-10-07 14:45","cash_withdraw",5000,"банкомат"]]
 };
 
 // T16: единый fetch с проверкой ошибок и индикацией загрузки.
-async function api(path, body, btnIds = []) {
+// opts.headers — доп. заголовки (sandbox-субъект, Idempotency-Key).
+// opts.withMeta — вернуть {ok,status,data,replayed} вместо только data.
+async function api(path, body, btnIds = [], opts = {}) {
   const btns = btnIds.map(id => document.getElementById(id)).filter(Boolean);
   const labels = btns.map(b => b.textContent);
   btns.forEach(b => { b.disabled = true; });
@@ -138,15 +141,22 @@ async function api(path, body, btnIds = []) {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 15000);
-    const res = await fetch(path, {method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(body), signal: ctrl.signal});
+    const headers = {'Content-Type': 'application/json', ...(opts.headers || {})};
+    const res = await fetch(path, {
+      method: opts.method || 'POST', headers,
+      body: body === undefined ? undefined : JSON.stringify(body), signal: ctrl.signal});
     clearTimeout(timer);
+    let data = null;
+    try { data = await res.json(); } catch (e) {}
     if (!res.ok) {
-      let detail = `HTTP ${res.status}`;
-      try { const j = await res.json(); detail = (j.detail && JSON.stringify(j.detail)) || detail; } catch (e) {}
-      throw new Error(detail);
+      // Структурированный envelope: error_code + message + request_id.
+      const code = data && data.error_code ? ` (${data.error_code})` : '';
+      const rid = data && data.request_id ? ` [request_id: ${data.request_id}]` : '';
+      throw new Error(`HTTP ${res.status}${code}: ${(data && data.message) || 'нет подробностей'}${rid}`);
     }
-    return await res.json();
+    if (opts.withMeta) return {ok: true, status: res.status, data: data,
+                               replayed: res.headers.get('Idempotency-Replayed') === 'true'};
+    return data;
   } catch (e) {
     showErr(e.name === 'AbortError' ? 'Сервер не отвечает (таймаут 15с). Ничего не применено.' : `Ошибка: ${e.message}. Ничего не применено.`);
     return null;
@@ -178,7 +188,7 @@ async function analyze() {
   const r = await api('/api/analyze', {transactions: TXNS, lang: lastLang}, ['btnNormal','btnAttack','btnCheck']);
   if (!r || mySeq !== analyzeSeq) return; // T16: устаревший ответ игнорируем
   lastScore = r.score;
-  lastCaseKey = 'demo-u777-' + r.score + '-' + TXNS.length;
+  if (r.evaluation_id) lastEvaluationId = r.evaluation_id;
   const badge = document.getElementById('scoreBadge');
   badge.textContent = `${r.level} • ${r.score}`;
   badge.className = 'font-bold text-sm rounded-full px-4 py-1.5 ' + (r.level==='RED' ? 'bg-red-700 animate-pulse' : r.level==='YELLOW' ? 'bg-amber-700' : 'bg-green-800');
@@ -193,15 +203,46 @@ async function analyze() {
   } else box.classList.add('hidden');
 }
 
-async function contactSupport() {
-  // T02: серверный учебный кейс вместо выдуманной «заморозки».
-  const r = await api('/api/cases', {
-    summary: `Подозрительный транзит: скоринг ${lastScore}/100, ${TXNS.length} операций в снапшоте`,
-    lang: lastLang, score: lastScore, idempotency_key: lastCaseKey
-  }, ['btnSupport']);
+let caseSeq = 0, caseAttemptKey = null;
+
+function renderTicket(msg, cls) {
   const el = document.getElementById('ticket');
-  if (!r) { el.textContent = '⚠️ Кейс не создан (см. ошибку выше). Поддержка не вызывалась, ничего не заморожено.'; return; }
-  el.textContent = `✅ Учебный кейс ${r.case_id} создан, статус: ${r.status}. Демо: поддержка не вызывается, операции не ограничиваются.`;
+  el.textContent = msg;               // только textContent: server-строки не через innerHTML
+  el.className = cls;
+}
+
+async function contactSupport() {
+  // Sandbox-кейс вместо выдуманной «заморозки». Ключ идемпотентности один на попытку:
+  // повтор после таймаута переиспользует его и не создаст второй кейс.
+  const el = document.getElementById('ticket');
+  const mySeq = ++caseSeq;
+  if (!caseAttemptKey) {
+    caseAttemptKey = 'idem-' + (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+  }
+  renderTicket('Отправляем обращение в песочницу…', 'text-xs text-amber-300 mt-2');
+  const r = await api('/sandbox/cases', {
+    evaluation_id: lastEvaluationId,
+    selected_language: lastLang,
+    contact_reason: 'suspicious_transfer_request'
+  }, ['btnSupport'], {
+    headers: {'X-Sandbox-Subject': SANDBOX_SUBJECT, 'Idempotency-Key': caseAttemptKey},
+    withMeta: true
+  });
+  if (mySeq !== caseSeq) return;      // старый ответ не перезаписывает новый
+  if (!r) {
+    renderTicket('⚠️ Обращение НЕ создано (ошибка выше). Реальная блокировка не выполнялась. '
+      + 'Повтор разрешён: тот же Idempotency-Key вернёт тот же кейс и не создаст дубликат.',
+      'text-xs text-red-300 mt-2');
+    return;
+  }
+  const c = r.data;
+  renderTicket(
+    (r.replayed ? '↺ Повторный запрос — кейс не дублируется.' : '✅ Обращение зарегистрировано в песочнице.')
+    + ` Кейс: ${c.case_id}, статус: ${c.status}.`
+    + ` Оценка эпизода: ${lastScore}/100 (сумма правил, не вероятность).`
+    + ` ${c.notice}`,
+    'text-xs text-green-300 mt-2');
+  caseAttemptKey = null;             // успех зафиксирован — следующее нажатие = новая попытка
 }
 
 async function loadContent() {

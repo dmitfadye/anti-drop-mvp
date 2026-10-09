@@ -9,41 +9,82 @@
 - T02: обращение в поддержку — серверный sandbox-кейс POST /api/cases
   с устойчивым case_id и идемпотентностью (учебный, не банковское действие).
 - Наблюдаемость-минимум: X-Request-ID в ответах, rules_version в analyze/health.
+
+MVP-слой sandbox-кейсов (зона ответственности):
+- Хранилище SQLite (src/db.py): кейсы переживают перезапуск сервера.
+- Субъект только из заголовка X-Sandbox-Subject (src/identity.py); в теле он запрещён.
+- Идемпотентность по Idempotency-Key + payload_hash (src/sandbox_cases.py).
+- Единый error envelope: error_code / message / request_id (src/errors.py).
+- Машиночитаемые reason_codes в /api/analyze без изменения score (src/reason_codes.py).
 """
 import uuid
+from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
+from typing import Annotated
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Query, Request, Response
+from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.responses import FileResponse
+from fastapi.openapi.utils import get_openapi
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from models import (
     AnalyzeRequest,
     AnalyzeResponse,
-    CaseCreateRequest,
     QuizRequest,
     QuizResponse,
+    SandboxCaseCreate,
+    SandboxCaseListResponse,
+    SandboxCaseResponse,
     SimChangeRequest,
     SimChangeResponse,
     StopDropAlert,
-    SupportCase,
 )
 from src.alerts import SUPPORTED_LANGS, build_stop_drop_alert
-from src.cases import create_case, get_case
+from src.config import (
+    DATABASE_PATH,
+    DEFAULT_LIST_LIMIT,
+    MAX_LIST_LIMIT,
+    NOTICES,
+    SANDBOX_MODE,
+    configure_logging,
+    get_logger,
+)
+from src.db import get_db, init_db
 from src.detector import analyze_transactions
+from src.errors import ApiError, ErrorDetail, error_body, router_error
+from src.identity import get_sandbox_subject, subject_hash_prefix
 from src.policy import RULES_VERSION, UTC
 from src.quiz import QUIZ, STORIES, check_quiz
+from src.sandbox_cases import compute_payload_hash, create_case as create_sandbox_case, \
+    get_case_for_subject, get_idempotency_key, list_cases_for_subject
 from src.sim_security import start_number_change
 
+configure_logging()
+log = get_logger("anti_drop")
+
 BASE_DIR = Path(__file__).resolve().parent
-VERSION = "0.3.0"
+VERSION = "0.4.0"
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Схема SQLite создаётся до первого запроса. on_event устарел — lifespan уместнее."""
+    init_db()
+    log.info("startup app_version=%s database_path=%s sandbox_mode=%s",
+             VERSION, DATABASE_PATH.resolve(), SANDBOX_MODE)
+    yield
+    log.info("shutdown app_version=%s", VERSION)
+
 
 app = FastAPI(
     title="Анти-Дроп API",
     description="Учебный демонстратор: объяснимый детектор транзита, Стоп-Дроп алерты, квизы, тренажёр смены номера. Только синтетика, без банковских действий.",
     version=VERSION,
+    lifespan=lifespan,
     docs_url=None,  # T17: Swagger из локальных файлов, не CDN
     redoc_url=None,
 )
@@ -52,11 +93,88 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 
 @app.middleware("http")
-async def request_id_middleware(request, call_next):
-    request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:12]
-    response = await call_next(request)
+async def request_id_middleware(request: Request, call_next):
+    request_id = request.headers.get("X-Request-ID") or f"req_{uuid.uuid4().hex}"
+    request.state.request_id = request_id
+    started = datetime.now(UTC)
+    try:
+        response = await call_next(request)
+    except Exception:
+        # Обработчик ниже не всегда успевает проставить заголовок — дублируем здесь.
+        log.exception("request_id=%s method=%s endpoint=%s status=500 unhandled=true",
+                      request_id, request.method, request.url.path)
+        response = JSONResponse(
+            status_code=500,
+            content=error_body(request_id, ApiError(
+                500, "INTERNAL_ERROR", "Внутренняя ошибка сервиса. Повторите попытку позже.")),
+            headers={"X-Request-ID": request_id},
+        )
+    latency_ms = int((datetime.now(UTC) - started).total_seconds() * 1000)
     response.headers["X-Request-ID"] = request_id
+    log.info("request_id=%s method=%s endpoint=%s status=%s latency_ms=%d",
+             request_id, request.method, request.url.path, response.status_code, latency_ms)
     return response
+
+
+def _request_id(request: Request) -> str:
+    return getattr(request.state, "request_id", None) or f"req_{uuid.uuid4().hex}"
+
+
+def _log_error(request: Request, exc: ApiError) -> None:
+    subject = request.headers.get("X-Sandbox-Subject")
+    # Логируем хеш субъекта, а не сам идентификатор: в логах он не нужен, а восстановить его нельзя.
+    subject_hash = subject_hash_prefix(subject) if subject else None
+    log.error("request_id=%s method=%s endpoint=%s status=%s error_code=%s subject_hash=%s",
+              _request_id(request), request.method, request.url.path,
+              exc.status_code, exc.error_code, subject_hash)
+
+
+@app.exception_handler(ApiError)
+async def api_error_handler(request: Request, exc: ApiError) -> JSONResponse:
+    _log_error(request, exc)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=error_body(_request_id(request), exc),
+        headers={**exc.headers, "X-Request-ID": _request_id(request)} if exc.headers
+        else {"X-Request-ID": _request_id(request)},
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """Pydantic-ошибки -> тот же envelope, чтобы клиент видел error_code и field."""
+    details = []
+    for err in exc.errors():
+        loc = ".".join(str(p) for p in err.get("loc", ()) if p != "body") or None
+        details.append(ErrorDetail(field=loc, message=err.get("msg")))
+    err = ApiError(422, "VALIDATION_ERROR", "Проверьте переданные данные.", details=details)
+    _log_error(request, err)
+    return JSONResponse(status_code=422, content=error_body(_request_id(request), err),
+                        headers={"X-Request-ID": _request_id(request)})
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_error_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    """Покрывает и FastAPI HTTPException, и роутерные 404/405: FastAPI HTTPException
+    наследуется от Starlette HTTPException, а обработчик на базовом класове ловит оба."""
+    err = router_error(exc.status_code, exc.detail)
+    _log_error(request, err)
+    return JSONResponse(status_code=err.status_code, content=error_body(_request_id(request), err),
+                        headers={"X-Request-ID": _request_id(request), **(exc.headers or {})})
+
+
+@app.exception_handler(Exception)
+async def unhandled_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Клиенту не отдаём traceback; в лог — request_id для разбора."""
+    request_id = _request_id(request)
+    log.exception("request_id=%s method=%s endpoint=%s unhandled=%s",
+                  request_id, request.method, request.url.path, type(exc).__name__)
+    return JSONResponse(
+        status_code=500,
+        content=error_body(request_id, ApiError(
+            500, "INTERNAL_ERROR", "Внутренняя ошибка сервиса. Повторите попытку позже.")),
+        headers={"X-Request-ID": request_id},
+    )
 
 
 @app.get("/", include_in_schema=False)
@@ -122,13 +240,16 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
                 res["score"],
             )
         )
+    evaluation_id = "eval_" + uuid.uuid4().hex
     return AnalyzeResponse(
         score=res["score"],
         level=res["level"],
         reasons=res["reasons"],
+        reason_codes=res.get("reason_codes", []),
         metrics=res["metrics"],
         alert=alert,
         rules_version=res["metrics"].get("rules_version", RULES_VERSION),
+        evaluation_id=evaluation_id,
     )
 
 
@@ -145,15 +266,129 @@ def sim_change(req: SimChangeRequest) -> SimChangeResponse:
     return SimChangeResponse(ok=True, **{k: v for k, v in out.items() if k != "ok"})
 
 
-@app.post("/api/cases", response_model=SupportCase, summary="Создать учебный кейс обращения (sandbox)")
-def create_support_case(req: CaseCreateRequest) -> SupportCase:
-    case = create_case(req.summary, req.lang, req.score, req.idempotency_key)
-    return SupportCase(**{k: v for k, v in case.items() if k != "deduped"})
+@app.post("/api/cases", include_in_schema=False, deprecated=True)
+def create_support_case() -> None:
+    """Legacy-путь отключён: хранил кейсы в памяти процесса и не знал про субъект.
+
+    Тело намеренно не принимается: иначе FastAPI проверит его раньше тела роута
+    и вернул бы 422 вместо однозначного 410.
+    """
+    raise ApiError(410, "LEGACY_CASES_DISABLED",
+                   "Этот учебный эндпоинт отключён. Используйте /sandbox/cases.",
+                   headers={"Deprecation": "true"})
 
 
-@app.get("/api/cases/{case_id}", response_model=SupportCase, summary="Статус учебного кейса")
-def case_status(case_id: str) -> SupportCase:
-    case = get_case(case_id)
+@app.get("/api/cases/{case_id}", include_in_schema=False, deprecated=True)
+def case_status(case_id: str) -> None:
+    raise ApiError(410, "LEGACY_CASES_DISABLED",
+                   "Этот учебный эндпоинт отключён. Используйте /sandbox/cases/{case_id}.",
+                   headers={"Deprecation": "true"})
+
+
+# ---------------------------------------------------------------------------
+# Sandbox cases: подтверждённое обращение вместо имитации «поддержки».
+# Всё здесь — песочница. Реальной блокировки, SMS, выплаты и тикета в
+# банковскую систему не происходит.
+# ---------------------------------------------------------------------------
+
+
+def _notice(lang: str) -> str:
+    return NOTICES.get(lang, NOTICES["ru"])
+
+
+def _to_response(case: dict) -> SandboxCaseResponse:
+    return SandboxCaseResponse(**case, notice=_notice(case["selected_language"]))
+
+
+REQUIRED_SANDBOX_HEADERS = ("X-Sandbox-Subject", "Idempotency-Key")
+
+
+def custom_openapi() -> dict:
+    """Помечает sandbox-заголовки обязательными в схеме.
+
+    В зависимостях они объявлены как Header(default=None), иначе FastAPI отвечал бы
+    своим 422 вместо наших SUBJECT_REQUIRED/MISSING_IDEMPOTENCY_KEY с error_code.
+    Схема при этом должна честно показывать, что заголовки обязательны.
+    """
+    if app.openapi_schema:
+        return app.openapi_schema
+    schema = get_openapi(
+        title=app.title, version=app.version, description=app.description, routes=app.routes
+    )
+    for path, item in schema.get("paths", {}).items():
+        if not path.startswith("/sandbox/cases"):
+            continue
+        for operation in item.values():
+            for param in operation.get("parameters", []):
+                if param.get("name") in REQUIRED_SANDBOX_HEADERS and param.get("in") == "header":
+                    param["required"] = True
+    app.openapi_schema = schema
+    return schema
+
+
+app.openapi = custom_openapi
+
+
+@app.post("/sandbox/cases", response_model=SandboxCaseResponse,
+          status_code=201,
+          summary="Создать sandbox-кейс обращения (идемпотентно, без банковского действия)")
+def create_sandbox_case_endpoint(
+    request: Request,
+    response: Response,
+    body: SandboxCaseCreate,
+    subject_ref: Annotated[str, Depends(get_sandbox_subject)],
+    idempotency_key: Annotated[str, Depends(get_idempotency_key)],
+    conn=Depends(get_db),
+) -> SandboxCaseResponse:
+    if not SANDBOX_MODE:
+        raise ApiError(503, "SANDBOX_DISABLED", "Песочница отключена конфигурацией (SANDBOX_MODE=false).")
+
+    case, replayed = create_sandbox_case(
+        conn,
+        subject_ref=subject_ref,
+        idempotency_key=idempotency_key,
+        evaluation_id=body.evaluation_id,
+        selected_language=body.selected_language,
+        contact_reason=body.contact_reason,
+        payload_hash=compute_payload_hash(body.normalized()),
+    )
+    response.headers["Idempotency-Replayed"] = "true" if replayed else "false"
+    if replayed:
+        # Тот же ключ + то же тело = тот же ресурс, а не новый кейс.
+        response.status_code = 200
+    log.info("request_id=%s endpoint=POST /sandbox/cases subject_hash=%s case_id=%s replayed=%s",
+             _request_id(request), subject_hash_prefix(subject_ref), case["case_id"], replayed)
+    return _to_response(case)
+
+
+@app.get("/sandbox/cases", response_model=SandboxCaseListResponse,
+         summary="Список sandbox-кейсов текущего субъекта (только свои)")
+def list_sandbox_cases(
+    request: Request,
+    subject_ref: Annotated[str, Depends(get_sandbox_subject)],
+    limit: Annotated[int, Query(ge=1, le=MAX_LIST_LIMIT,
+                                description="Размер страницы (1-100)")] = DEFAULT_LIST_LIMIT,
+    offset: Annotated[int, Query(ge=0, description="Смещение от начала выборки")] = 0,
+    conn=Depends(get_db),
+) -> SandboxCaseListResponse:
+    # limit/offset валидируются Query: отрицательные значения -> 422, а не молчаливая починка.
+    items, total = list_cases_for_subject(conn, subject_ref, limit, offset)
+    log.info("request_id=%s endpoint=GET /sandbox/cases subject_hash=%s total_count=%d",
+             _request_id(request), subject_hash_prefix(subject_ref), total)
+    return SandboxCaseListResponse(items=[_to_response(c) for c in items],
+                                   limit=limit, offset=offset, total_count=total)
+
+
+@app.get("/sandbox/cases/{case_id}", response_model=SandboxCaseResponse,
+         summary="Статус своего sandbox-кейса (чужой кейс неразличим от отсутствующего)")
+def get_sandbox_case(
+    request: Request,
+    case_id: str,
+    subject_ref: Annotated[str, Depends(get_sandbox_subject)],
+    conn=Depends(get_db),
+) -> SandboxCaseResponse:
+    case = get_case_for_subject(conn, case_id, subject_ref)
     if case is None:
-        raise HTTPException(status_code=404, detail="Кейс не найден (хранилище — память одного процесса)")
-    return SupportCase(**case)
+        # 404, а не 403: иначе по коду ответа можно проверить существование чужого кейса.
+        raise ApiError(404, "CASE_NOT_FOUND", "Кейс не найден.")
+    return _to_response(case)
