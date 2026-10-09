@@ -77,6 +77,9 @@ def get_json(path: str) -> dict:
 def start_server(db_path: Path) -> subprocess.Popen:
     env = dict(os.environ)
     env["DATABASE_PATH"] = str(db_path)
+    # Скрипт проверяет SQLite-рестарт: гасим PG_DSN из .env/.env.example,
+    # иначе сервер уйдёт в PostgreSQL и тест будет не о том.
+    env["PG_DSN"] = ""
     env["LOG_LEVEL"] = os.getenv("LOG_LEVEL", "INFO")
     proc = subprocess.Popen(
         [sys.executable, "-m", "uvicorn", "main:app", "--host", "127.0.0.1",

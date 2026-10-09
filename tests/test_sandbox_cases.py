@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from unittest import mock
 
@@ -25,6 +26,25 @@ from main import app
 from src.reason_codes import ALL_CODES
 
 client = TestClient(app, raise_server_exceptions=False)
+
+
+@contextmanager
+def _isolated_sqlite_db(db_path: Path):
+    """Временная SQLite-БД + принудительный SQLite-режим.
+
+    src/config.py подхватывает PG_DSN из .env/.env.example, поэтому одного
+    патча DATABASE_PATH недостаточно: без сброса PG_DSN тесты ушли бы
+    в реальный PostgreSQL. Сбрасываем обе привязки: src.db.PG_DSN (пул
+    psycopg2) и src.config.PG_DSN (выбор плейсхолдеров в src/sandbox_cases.py).
+    """
+    with mock.patch.object(db_module, "DATABASE_PATH", db_path), \
+         mock.patch.object(db_module, "PG_DSN", None), \
+         mock.patch("src.config.PG_DSN", None):
+        db_module.reset_init_state_for_tests()
+        try:
+            yield db_path
+        finally:
+            db_module.reset_init_state_for_tests()
 
 SUBJECT = "demo-user-1"
 OTHER_SUBJECT = "demo-user-2"
@@ -82,11 +102,9 @@ class SandboxCaseTestBase(unittest.TestCase):
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)
         self.db_path = Path(self._tmp.name) / "anti_drop_test.db"
-        self._patch = mock.patch.object(db_module, "DATABASE_PATH", self.db_path)
-        self._patch.start()
-        self.addCleanup(self._patch.stop)
-        db_module.reset_init_state_for_tests()
-        self.addCleanup(db_module.reset_init_state_for_tests)
+        self._db_ctx = _isolated_sqlite_db(self.db_path)
+        self._db_ctx.__enter__()
+        self.addCleanup(self._db_ctx.__exit__, None, None, None)
 
     def post_case(self, body=None, subject=SUBJECT, key="idem-001", **headers):
         hdrs = {"Content-Type": "application/json"}
@@ -650,11 +668,9 @@ class TestIdempotencyScopePerSubject(unittest.TestCase):
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)
         self.db_path = Path(self._tmp.name) / "scope.db"
-        self._patch = mock.patch.object(db_module, "DATABASE_PATH", self.db_path)
-        self._patch.start()
-        self.addCleanup(self._patch.stop)
-        db_module.reset_init_state_for_tests()
-        self.addCleanup(db_module.reset_init_state_for_tests)
+        self._db_ctx = _isolated_sqlite_db(self.db_path)
+        self._db_ctx.__enter__()
+        self.addCleanup(self._db_ctx.__exit__, None, None, None)
 
     def post(self, subject: str, key: str, body: dict):
         return client.post("/sandbox/cases", json=body, headers={
@@ -846,7 +862,7 @@ class TestLogging(unittest.TestCase):
     def test_case_logs_include_case_id_and_subject_hash_not_raw_subject(self):
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "log.db"
-            with mock.patch.object(db_module, "DATABASE_PATH", db_path):
+            with _isolated_sqlite_db(db_path):
                 db_module.reset_init_state_for_tests()
                 try:
                     with self.assertLogs("anti_drop", level="INFO") as captured:
@@ -870,7 +886,7 @@ class TestLogging(unittest.TestCase):
     def test_logs_do_not_include_client_comment(self):
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "log2.db"
-            with mock.patch.object(db_module, "DATABASE_PATH", db_path):
+            with _isolated_sqlite_db(db_path):
                 db_module.reset_init_state_for_tests()
                 try:
                     with self.assertLogs("anti_drop", level="DEBUG") as captured:
@@ -889,7 +905,7 @@ class TestLogging(unittest.TestCase):
     def test_startup_logs_resolved_database_path(self):
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "startup.db"
-            with mock.patch.object(db_module, "DATABASE_PATH", db_path):
+            with _isolated_sqlite_db(db_path):
                 db_module.reset_init_state_for_tests()
                 with self.assertLogs("anti_drop.db", level="INFO") as captured:
                     db_module.init_db()
@@ -948,6 +964,9 @@ class TestRestartAcrossProcesses(unittest.TestCase):
     def _client_env(self, db_path: Path) -> dict:
         env = dict(os.environ)
         env["DATABASE_PATH"] = str(db_path)
+        # Субпроцесс тоже читает .env/.env.example: гасим PG_DSN, иначе
+        # рестарт-тест уйдёт в PostgreSQL вместо временного SQLite-файла.
+        env["PG_DSN"] = ""
         return env
 
     def _run_script(self, db_path: Path, script: str) -> dict:
@@ -1008,11 +1027,9 @@ class TestStorageFailure(unittest.TestCase):
         # Путь указывает на каталог: sqlite3.connect() честно падает "unable to open database file".
         blocked = Path(self._tmp.name) / "blocked_dir"
         blocked.mkdir()
-        self._patch = mock.patch.object(db_module, "DATABASE_PATH", blocked)
-        self._patch.start()
-        self.addCleanup(self._patch.stop)
-        db_module.reset_init_state_for_tests()
-        self.addCleanup(db_module.reset_init_state_for_tests)
+        self._db_ctx = _isolated_sqlite_db(blocked)
+        self._db_ctx.__enter__()
+        self.addCleanup(self._db_ctx.__exit__, None, None, None)
 
     def _post(self):
         return client.post("/sandbox/cases", json=VALID_BODY, headers={

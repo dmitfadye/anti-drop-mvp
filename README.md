@@ -15,6 +15,8 @@
 cd anti-drop-mvp
 uv sync  # или: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
+docker compose up
+
 .venv/bin/uvicorn main:app --reload
 # дашборд → http://localhost:8000 (работает без интернета)
 # Swagger  → http://localhost:8000/docs (локальные ассеты)
@@ -59,8 +61,13 @@ printf '@import "tailwindcss";\n' > /tmp/tw-input.css && ./node_modules/.bin/tai
 
 #### Переменные окружения
 
+`.env`, а при его отсутствии — `.env.example` в корне репозитория подхватываются
+автоматически (приоритет: окружение процесса > `.env` > `.env.example`).
+Для Docker-PostgreSQL достаточно раскомментировать `PG_DSN` в `.env.example`.
+
 | Переменная | По умолчанию | Смысл |
 |---|---|---|
+| `PG_DSN` | — | DSN PostgreSQL (`postgresql://anti_drop:anti_drop@localhost:5433/anti_drop`). Если задан — пишем в PostgreSQL, иначе — в SQLite |
 | `DATABASE_PATH` | `./data/anti_drop_mvp.db` | Путь к SQLite. Относительный разрешается от корня репозитория, а не от текущего каталога — иначе можно молча получить другую БД |
 | `LOG_LEVEL` | `INFO` | Уровень логов |
 | `SANDBOX_MODE` | `true` | `false` отключает case API (503 `SANDBOX_DISABLED`) |

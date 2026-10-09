@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 from typing import Any, Optional, Tuple
 
 from fastapi import Header, Request
+from psycopg2.extras import RealDictCursor
 
 from src.config import MAX_IDEMPOTENCY_KEY_LENGTH, get_logger
 from src.db import _use_postgres
@@ -30,6 +31,13 @@ from src.errors import ApiError
 from src.identity import subject_hash_prefix
 
 log = get_logger("anti_drop.cases")
+
+
+def _pg_cursor(conn: Any):
+    """Dict-курсор для PostgreSQL: строки как отображения колонка->значение,
+    аналогично sqlite3.Row. Дефолтный курсор отдаёт кортежи, с которыми
+    _row_to_case (доступ по именам) не работает."""
+    return conn.cursor(cursor_factory=RealDictCursor)
 
 HEADER_NAME = "Idempotency-Key"
 
@@ -102,7 +110,11 @@ _COLUMNS = (
 
 
 def _row_to_case(row: Any) -> dict:
-    """Convert DB row to case dict (works for both psycopg2 and sqlite3 rows)."""
+    """Convert DB row to case dict (works for both psycopg2 and sqlite3 rows).
+
+    PostgreSQL возвращает TIMESTAMPTZ как datetime, SQLite — как TEXT:
+    приводим к ISO-строке здесь, чтобы контракт ответа был одинаковым.
+    """
     return {
         "case_id": row["case_id"],
         "subject_ref": row["subject_ref"],
@@ -110,12 +122,19 @@ def _row_to_case(row: Any) -> dict:
         "idempotency_key": row["idempotency_key"],
         "payload_hash": row["payload_hash"],
         "status": row["status"],
-        "created_at": row["created_at"],
-        "updated_at": row["updated_at"],
+        "created_at": _as_iso(row["created_at"]),
+        "updated_at": _as_iso(row["updated_at"]),
         "sandbox": bool(row["sandbox"]),
         "selected_language": row["selected_language"],
         "contact_reason": row["contact_reason"],
     }
+
+
+def _as_iso(value: Any) -> Any:
+    """datetime из PostgreSQL -> ISO-строка; остальное без изменений."""
+    if isinstance(value, datetime):
+        return value.isoformat()
+    return value
 
 
 def _use_postgres() -> bool:
@@ -132,7 +151,7 @@ def _get_dialect(conn: Any) -> str:
 def find_by_idempotency_key(conn: Any, key: str, subject_ref: str) -> Any:
     """Поиск строго в пределах субъекта: глобальный поиск раскрывал бы чужие кейсы."""
     if _use_postgres():
-        with conn.cursor() as cur:
+        with _pg_cursor(conn) as cur:
             cur.execute(
                 "SELECT case_id, subject_ref, evaluation_id, idempotency_key, payload_hash, "
                 "status, created_at, updated_at, sandbox, selected_language, contact_reason "
@@ -167,7 +186,7 @@ def create_case(
     now = _utc_now()
 
     if _use_postgres():
-        with conn.cursor() as cur:
+        with _pg_cursor(conn) as cur:
             try:
                 cur.execute("""
                     INSERT INTO sandbox_cases (
@@ -176,8 +195,8 @@ def create_case(
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (subject_ref, idempotency_key) DO UPDATE SET
                         payload_hash = EXCLUDED.payload_hash
-                    RETURNING case_id, status, created_at, subject_ref, evaluation_id,
-                              selected_language, contact_reason, sandbox
+                    RETURNING case_id, subject_ref, evaluation_id, idempotency_key, payload_hash,
+                              status, created_at, updated_at, sandbox, selected_language, contact_reason
                 """, (
                     case_id, subject_ref, evaluation_id, idempotency_key, payload_hash,
                     "created", now, None, True, selected_language, contact_reason
@@ -185,11 +204,7 @@ def create_case(
                 row = cur.fetchone()
                 conn.commit()
                 if row:
-                    return _row_to_case(dict(zip([
-                        "case_id", "subject_ref", "evaluation_id", "idempotency_key",
-                        "payload_hash", "status", "created_at", "updated_at", "sandbox",
-                        "selected_language", "contact_reason"
-                    ], row))), True
+                    return _row_to_case(dict(row)), False
             except Exception:
                 conn.rollback()
                 raise
@@ -206,7 +221,7 @@ def create_case(
                     status, created_at, updated_at, sandbox, selected_language, contact_reason
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (case_id, subject_ref, evaluation_id, idempotency_key, payload_hash,
-                 "created", _utc_now(), None, 1, selected_language, contact_reason)
+                 "created", now, None, 1, selected_language, contact_reason)
             )
             conn.commit()
         except Exception as exc:
@@ -222,7 +237,7 @@ def create_case(
     return {
         "case_id": case_id,
         "status": "created",
-        "created_at": _utc_now(),
+        "created_at": now,
         "subject_ref": subject_ref,
         "evaluation_id": evaluation_id,
         "selected_language": selected_language,
@@ -249,7 +264,7 @@ def _replay_or_mismatch(row: Any, payload_hash: str, subject_ref: str) -> tuple[
 
 def get_case_for_subject(conn: Any, case_id: str, subject_ref: str) -> dict | None:
     if _use_postgres():
-        with conn.cursor() as cur:
+        with _pg_cursor(conn) as cur:
             cur.execute(
                 "SELECT case_id, subject_ref, evaluation_id, idempotency_key, payload_hash, "
                 "status, created_at, updated_at, sandbox, selected_language, contact_reason "
@@ -272,7 +287,7 @@ def list_cases_for_subject(
     conn: Any, subject_ref: str, limit: int, offset: int
 ) -> tuple[list[dict], int]:
     if _use_postgres():
-        with conn.cursor() as cur:
+        with _pg_cursor(conn) as cur:
             cur.execute(
                 "SELECT case_id, subject_ref, evaluation_id, idempotency_key, payload_hash, "
                 "status, created_at, updated_at, sandbox, selected_language, contact_reason "
@@ -282,15 +297,11 @@ def list_cases_for_subject(
             )
             rows = cur.fetchall()
             cur.execute(
-                "SELECT COUNT(*) FROM sandbox_cases WHERE subject_ref = %s",
+                "SELECT COUNT(*) AS total FROM sandbox_cases WHERE subject_ref = %s",
                 (subject_ref,)
             )
-            total = cur.fetchone()[0]
-            return [_row_to_case(dict(zip([
-                "case_id", "subject_ref", "evaluation_id", "idempotency_key",
-                "payload_hash", "status", "created_at", "updated_at", "sandbox",
-                "selected_language", "contact_reason"
-            ], row))) for row in rows], int(total)
+            total = cur.fetchone()["total"]
+            return [_row_to_case(dict(row)) for row in rows], int(total)
     else:
         rows = conn.execute(
             "SELECT case_id, subject_ref, evaluation_id, idempotency_key, payload_hash, "

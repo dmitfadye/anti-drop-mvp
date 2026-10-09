@@ -19,6 +19,8 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+from fastapi.exceptions import RequestValidationError
+
 from src.config import (
     DATABASE_PATH,
     PG_DSN,
@@ -252,7 +254,12 @@ def init_db(path: Path | None = None) -> None:
 
         _initialized.add(key)
         mode = "postgres" if _use_postgres() else "sqlite"
-        log.info("db_ready mode=%s schema_version=%s", mode, SCHEMA_VERSION)
+        if _use_postgres():
+            # DSN с паролем в логи не пишем.
+            log.info("db_ready mode=%s schema_version=%s", mode, SCHEMA_VERSION)
+        else:
+            log.info("db_ready mode=%s path=%s schema_version=%s",
+                     mode, target.resolve(), SCHEMA_VERSION)
 
 
 def get_db() -> Iterator[Any]:
@@ -260,11 +267,18 @@ def get_db() -> Iterator[Any]:
 
     При недоступности хранилища отдаём 503 STORAGE_UNAVAILABLE, а не создаём
     имитацию успеха.
+
+    ApiError эндпоинта (422/404/...) и ошибки валидации запроса пропускаем
+    как есть: заворачивать их в 503 нельзя, иначе клиент получит
+    «хранилище недоступно» вместо настоящей причины (например,
+    IDEMPOTENCY_KEY_PAYLOAD_MISMATCH или VALIDATION_ERROR).
     """
     try:
         init_db()
         with _use_connection() as conn:
             yield conn
+    except (ApiError, RequestValidationError):
+        raise
     except Exception as exc:
         if _use_postgres():
             log.exception("pg_db_error")
