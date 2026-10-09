@@ -13,3 +13,10 @@ wheels/
 data/*.db
 data/*.db-wal
 data/*.db-shm
+
+# PostgreSQL data (docker volume)
+pgdata/
+
+# Environment files
+.env
+.env.local

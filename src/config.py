@@ -1,6 +1,6 @@
 """Конфигурация MVP-слоя через env. Без pydantic-settings: только stdlib.
 
-Sandbox-режим не является production-контур��м. `X-Sandbox-Subject` и `SANDBOX_MODE`
+Sandbox-режим не является production-контуром. `X-Sandbox-Subject` и `SANDBOX_MODE`
 существуют для локального демо; для реальных данных субъект должен приходить
 из банковского gateway/SSO, а не из браузера.
 """
@@ -13,6 +13,10 @@ from pathlib import Path
 APP_ENV = os.getenv("APP_ENV", "sandbox")
 SANDBOX_MODE = os.getenv("SANDBOX_MODE", "true").strip().lower() in ("1", "true", "yes")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").strip().upper()
+
+# PostgreSQL DSN — если задан, используется PostgreSQL. Иначе — SQLite fallback.
+# Формат: postgresql://user:pass@host:port/dbname
+PG_DSN = os.getenv("PG_DSN")
 
 # Относительный путь зависит от текущего каталога запуска: молча можно получить
 # другую БД. Поэтому разрешаем его один раз при старте относительно корня репозитория.
@@ -61,3 +65,6 @@ SANDBOX_NOTICE_EN = (
 )
 
 NOTICES = {"ru": SANDBOX_NOTICE, "en": SANDBOX_NOTICE_EN}
+
+# Версия схемы БД (для миграций)
+SCHEMA_VERSION = 2
