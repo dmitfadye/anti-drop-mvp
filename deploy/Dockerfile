@@ -11,30 +11,32 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     ANTI_DROP_EXPERIMENT_ENABLED=false \
     ANTI_DROP_ADVISORY_ENABLED=false
 
-WORKDIR /app
+# Контекст сборки — корень репозитория, код — в app/.
+# Внутри контейнера рабочая директория /srv/app (не путать с host-папкой app/).
+WORKDIR /srv/app
 
 # zoneinfo needs tzdata on slim images; the detector reads Europe/Moscow.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends tzdata \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
+COPY app/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY main.py models.py app_stdlib.py pyproject.toml ./
-COPY src/ ./src/
-COPY anti_drop_ml/ ./anti_drop_ml/
-COPY scripts/ ./scripts/
-COPY static/ ./static/
-COPY locales/ ./locales/
-COPY templates/ ./templates/
-COPY fixtures/ ./fixtures/
-COPY configs/ ./configs/
+COPY app/main.py app/models.py app/app_stdlib.py app/pyproject.toml ./
+COPY app/src/ ./src/
+COPY app/anti_drop_ml/ ./anti_drop_ml/
+COPY app/scripts/ ./scripts/
+COPY app/static/ ./static/
+COPY app/locales/ ./locales/
+COPY app/templates/ ./templates/
+COPY app/fixtures/ ./fixtures/
+COPY app/configs/ ./configs/
 
 # Reports are produced at run time into a volume; nothing pre-baked.
-RUN mkdir -p /app/reports /app/.local \
+RUN mkdir -p /srv/app/reports /srv/app/.local \
     && useradd --create-home --uid 10001 sandbox \
-    && chown -R sandbox:sandbox /app
+    && chown -R sandbox:sandbox /srv/app
 USER sandbox
 
 EXPOSE 8000

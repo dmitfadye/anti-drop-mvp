@@ -13,29 +13,30 @@ outputs. A report without those fields is not evidence.
 ## Full regeneration from a clean clone
 
 ```bash
-python -m venv .venv && .venv/bin/pip install -r requirements-lock.txt
+python -m venv app/.venv && app/.venv/bin/pip install -r app/requirements-lock.txt
+export PYTHONPATH=app   # Python code lives in app/, run from repo root
 
 # 1. fixtures — deterministic, fixed seed, no randomness at import time
-python -m scripts.generate_synthetic_fixtures --output-dir fixtures/episodes
+python -m scripts.generate_synthetic_fixtures --output-dir app/fixtures/episodes
 
 # 2. evaluation pack
 python -m anti_drop_ml.evaluation.runner \
-  --dataset fixtures/episodes/all_episodes_p1.jsonl \
+  --dataset app/fixtures/episodes/all_episodes_p1.jsonl \
   --output-dir reports/evaluation \
   --cost-false-alert 650 --cost-missed-risk 45000 --prevalence 0.002
 
 # 3. financial model
 python -m scripts.run_financial_model \
-  --config configs/financial_assumptions.json --output-dir reports/finance
+  --config app/configs/financial_assumptions.json --output-dir reports/finance
 
 # 4. blinded scoring template (empty by design)
 python -m scripts.export_blinded_scoring --experiment-id exp-warning-language-2026.10
 
 # 5. stop criteria gate
-python -m scripts.validate_stop_criteria --config configs/pilot_stop_criteria.json
+python -m scripts.validate_stop_criteria --config app/configs/pilot_stop_criteria.json
 
 # 6. tests
-python -m unittest discover -s tests -v
+python -m unittest discover -s app/tests -t app -v
 ```
 
 `scripts/ci_smoke.sh` runs exactly this sequence.

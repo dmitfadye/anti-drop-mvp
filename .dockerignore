@@ -1,6 +1,7 @@
 # Build context hygiene: image carries only what the api/eval runtime needs.
 # Everything else is mounted at run time (reports, .local) or not needed.
 .venv/
+app/.venv
 .git/
 __pycache__/
 *.py[oc]

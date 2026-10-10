@@ -19,7 +19,7 @@ is not an authorisation.
 | `support_capacity` | pending | a staffed channel with an agreed service level |
 | `stop_rollback_plan` | partial | this plan, rehearsed at least once |
 
-Run `python -m scripts.validate_stop_criteria` to re-check the shape. It cannot
+Run `PYTHONPATH=app python -m scripts.validate_stop_criteria` to re-check the shape. It cannot
 tell you a gate is satisfied — only a person can do that.
 
 ## Stage 1 — feasibility and usability

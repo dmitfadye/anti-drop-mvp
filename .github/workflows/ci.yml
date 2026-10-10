@@ -27,10 +27,10 @@ jobs:
       - name: Install from frozen lockfile
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements-lock.txt ]; then
-            pip install -r requirements-lock.txt
+          if [ -f app/requirements-lock.txt ]; then
+            pip install -r app/requirements-lock.txt
           else
-            pip install -r requirements.txt
+            pip install -r app/requirements.txt
           fi
 
       - name: Report environment
@@ -41,30 +41,30 @@ jobs:
       - name: Lint / typecheck (only if configured)
         run: |
           set -e
-          if command -v ruff >/dev/null 2>&1; then ruff check src anti_drop_ml scripts tests; fi
-          if python -c "import mypy" >/dev/null 2>&1; then python -m mypy src anti_drop_ml; fi
+          if command -v ruff >/dev/null 2>&1; then ruff check app/src app/anti_drop_ml app/scripts app/tests; fi
+          if python -c "import mypy" >/dev/null 2>&1; then python -m mypy app/src app/anti_drop_ml; fi
           echo "lint step finished (project declares no mandatory linter)"
 
       - name: Unit, contract and negative tests
-        run: python -m unittest discover -s tests -v
+        run: python -m unittest discover -s app/tests -t app -v
 
       - name: Regenerate synthetic fixtures (deterministic)
-        run: python -m scripts.generate_synthetic_fixtures --output-dir fixtures/episodes
+        run: PYTHONPATH=app python -m scripts.generate_synthetic_fixtures --output-dir app/fixtures/episodes
 
       - name: Evaluation smoke on synthetic fixtures
         run: |
-          python -m anti_drop_ml.evaluation.runner \
-            --dataset fixtures/episodes/all_episodes_p1.jsonl \
+          PYTHONPATH=app python -m anti_drop_ml.evaluation.runner \
+            --dataset app/fixtures/episodes/all_episodes_p1.jsonl \
             --output-dir reports/evaluation \
             --cost-false-alert 650 --cost-missed-risk 45000 --prevalence 0.002
 
       - name: Financial model smoke
         run: |
-          python -m scripts.run_financial_model \
-            --config configs/financial_assumptions.json --output-dir reports/finance
+          PYTHONPATH=app python -m scripts.run_financial_model \
+            --config app/configs/financial_assumptions.json --output-dir reports/finance
 
       - name: Blinded scoring template (empty by design)
-        run: python -m scripts.export_blinded_scoring --experiment-id exp-warning-language-2026.10
+        run: PYTHONPATH=app python -m scripts.export_blinded_scoring --experiment-id exp-warning-language-2026.10
 
       - name: Pilot stop criteria gate
         # A non-zero exit here is a truthful statement that the pilot is not ready.
@@ -72,7 +72,7 @@ jobs:
         # validate_stop_criteria distinguishes with exit code 2.
         run: |
           set +e
-          python -m scripts.validate_stop_criteria --config configs/pilot_stop_criteria.json
+          PYTHONPATH=app python -m scripts.validate_stop_criteria --config app/configs/pilot_stop_criteria.json
           code=$?
           if [ "$code" -eq 2 ]; then exit 2; fi
           echo "stop criteria validated; ready_to_start is expected to be false"

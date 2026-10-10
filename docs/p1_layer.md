@@ -51,21 +51,22 @@ say "local demo only, no authentication".
 ## Commands
 
 ```bash
+export PYTHONPATH=app   # Python code lives in app/, run from repo root
 # tests (no network, no real data)
-python -m unittest discover -s tests -v
+python -m unittest discover -s app/tests -t app -v
 
 # fixtures (deterministic, fixed seed)
-python -m scripts.generate_synthetic_fixtures --output-dir fixtures/episodes
+python -m scripts.generate_synthetic_fixtures --output-dir app/fixtures/episodes
 
 # evaluation pack
 python -m anti_drop_ml.evaluation.runner \
-  --dataset fixtures/episodes/all_episodes_p1.jsonl \
+  --dataset app/fixtures/episodes/all_episodes_p1.jsonl \
   --output-dir reports/evaluation \
   --cost-false-alert 650 --cost-missed-risk 45000 --prevalence 0.002
 
 # financial model
 python -m scripts.run_financial_model \
-  --config configs/financial_assumptions.json --output-dir reports/finance
+  --config app/configs/financial_assumptions.json --output-dir reports/finance
 
 # experiment assignment (deterministic hash)
 python -m scripts.run_experiment_assignment \
@@ -82,7 +83,7 @@ python -m scripts.analyze_experiment \
   --declared-powered-n 400 --output-dir reports/experiment
 
 # stop criteria gate
-python -m scripts.validate_stop_criteria --config configs/pilot_stop_criteria.json
+python -m scripts.validate_stop_criteria --config app/configs/pilot_stop_criteria.json
 
 # server
 uvicorn main:app --host 127.0.0.1 --port 8000

@@ -2,7 +2,7 @@
 name = "anti-drop-mvp"
 version = "0.2.0"
 description = "Анти-Дроп: защита нерезидентов от вербовки в дропы (FastAPI + Pydantic + TailwindCSS)"
-readme = "README.md"
+readme = "../README.md"
 requires-python = ">=3.10"
 dependencies = [
   "fastapi[standard]>=0.115",

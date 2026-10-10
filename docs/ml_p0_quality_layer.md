@@ -44,9 +44,10 @@ Transfers and family collections map to existing incoming/outgoing P2P. Self-dec
 From repository root, with project dependencies installed (Windows additionally requires tzdata):
 
 ```sh
-python -m anti_drop_ml.make_labeling_template --output-dir fixtures/episodes
-python -m anti_drop_ml.evaluation.runner --dataset fixtures/episodes/labeled_episodes.jsonl --output-dir reports/evaluation --positive-level RED --rule-version 2026-10-08.p1
-python -m unittest discover -s tests -v
+export PYTHONPATH=app   # Python code lives in app/, run from repo root
+python -m anti_drop_ml.make_labeling_template --output-dir app/fixtures/episodes
+python -m anti_drop_ml.evaluation.runner --dataset app/fixtures/episodes/labeled_episodes.jsonl --output-dir reports/evaluation --positive-level RED --rule-version 2026-10-08.p1
+python -m unittest discover -s app/tests -t app -v
 ```
 
 Use `--positive-threshold 60` to define score>=60 instead of RED. Use `--holdout-only` only after a genuine subject-disjoint holdout exists. The supplied fixtures are all development-only synthetic placeholders. No random generation is used, so no seed is needed. Dataset bytes and ordering are deterministic. Metrics and decisions repeat; manifest timestamp/Git provenance intentionally change across runs.

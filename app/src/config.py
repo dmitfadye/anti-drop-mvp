@@ -16,7 +16,9 @@ import os
 import re
 from pathlib import Path
 
-_REPO_ROOT = Path(__file__).resolve().parent.parent
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+# app/src/config.py -> app/src -> app -> repo root: .env-файлы и data/ живут
+# в корне репозитория, а не внутри app/.
 
 _ENV_KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 

@@ -29,7 +29,7 @@ real data. No step needs credentials.
 ## Local equivalent
 
 ```bash
-make ci          # or: ./scripts/ci_smoke.sh
+make ci          # or: ./app/scripts/ci_smoke.sh
 ```
 
 `scripts/ci_smoke.sh` is the same sequence with no CI-specific assumptions, and it

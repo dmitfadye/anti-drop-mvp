@@ -73,9 +73,10 @@ instead of storing them.
 ## How to regenerate and re-measure
 
 ```bash
-python -m scripts.generate_synthetic_fixtures --output-dir fixtures/episodes
+export PYTHONPATH=app   # Python code lives in app/, run from repo root
+python -m scripts.generate_synthetic_fixtures --output-dir app/fixtures/episodes
 python -m anti_drop_ml.evaluation.runner \
-  --dataset fixtures/episodes/all_episodes_p1.jsonl --output-dir reports/evaluation
+  --dataset app/fixtures/episodes/all_episodes_p1.jsonl --output-dir reports/evaluation
 ```
 
 Then read `reports/evaluation/legitimate_negative_report.md` for the per-scenario

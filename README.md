@@ -13,28 +13,29 @@
 
 ```bash
 cd anti-drop-mvp
-uv sync  # или: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+# Python-код живёт в app/ (импорты main/src/anti_drop_ml/scripts), запуск из корня.
+cd app && uv sync && cd ..  # или: python3 -m venv app/.venv && app/.venv/bin/pip install -r app/requirements.txt
 
 docker compose up
 # postgres (127.0.0.1:5433) + api (127.0.0.1:8000) одним процессом.
 # ML-оценка батчем (one-shot, пишет в ./reports):
 # docker compose --profile tools run --rm eval
 
-.venv/bin/uvicorn main:app --reload
+PYTHONPATH=app app/.venv/bin/uvicorn main:app --reload
 # дашборд → http://localhost:8000 (работает без интернета)
 # Swagger  → http://localhost:8000/docs (локальные ассеты)
 
-# тесты (ядро + API + регрессия аудита + sandbox-кейсы, 128 шт.):
-.venv/bin/python -m unittest discover -s tests -v
+# тесты (ядро + API + регрессия аудита + sandbox-кейсы):
+app/.venv/bin/python -m unittest discover -s app/tests -t app -v
 
 # ручной smoke перезапуска процесса (поднимает и убивает настоящий uvicorn):
-.venv/bin/python scripts/restart_smoke.py
+PYTHONPATH=app app/.venv/bin/python app/scripts/restart_smoke.py
 
 # CLI-демо детектора:
-.venv/bin/python src/demo.py
+PYTHONPATH=app app/.venv/bin/python app/src/demo.py
 
 # Пересобрать CSS после правок index.html (нужен npm-пакет @tailwindcss/cli):
-printf '@import "tailwindcss";\n' > /tmp/tw-input.css && ./node_modules/.bin/tailwindcss -i /tmp/tw-input.css -o static/tailwind.css --minify
+printf '@import "tailwindcss";\n' > /tmp/tw-input.css && ./node_modules/.bin/tailwindcss -i /tmp/tw-input.css -o app/static/tailwind.css --minify
 ```
 
 ## API

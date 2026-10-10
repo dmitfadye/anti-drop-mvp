@@ -84,8 +84,8 @@ post-event sandbox. That is why this block is optional and why it defaults off.
 ## Testing it
 
 ```bash
-ANTI_DROP_ADVISORY_ENABLED=true uvicorn main:app --host 127.0.0.1 --port 8000
-pytest tests/test_p1_advisory.py -v      # or: python -m unittest tests.test_p1_advisory -v
+PYTHONPATH=app ANTI_DROP_ADVISORY_ENABLED=true uvicorn main:app --host 127.0.0.1 --port 8000
+pytest app/tests/test_pre_transfer_advisory.py -v      # or: python -m unittest discover -s app/tests -t app -v
 ```
 
 Covered: advisory mode accepts the planned event, ordinary mode still rejects

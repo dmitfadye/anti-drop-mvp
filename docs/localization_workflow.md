@@ -45,8 +45,8 @@ silently changing the meaning.
 3. **Run the validators.**
 
    ```bash
-   python -m scripts.validate_localization   # or: python -c "from src.localization import validate_packs; print(validate_packs())"
-   python -c "from src.templates import validate_templates; print(validate_templates())"
+   PYTHONPATH=app python -m scripts.validate_localization   # or: PYTHONPATH=app python -c "from src.localization import validate_packs; print(validate_packs())"
+   PYTHONPATH=app python -c "from src.templates import validate_templates; print(validate_templates())"
    ```
 
 4. **Native review.** A native speaker fills in `docs/translation_checklist.md`

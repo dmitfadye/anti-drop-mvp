@@ -40,15 +40,15 @@ services:
       ANTI_DROP_OPERATOR_EXPORT_ENABLED: "false"
       ANTI_DROP_EXPERIMENT_ENABLED: "false"
       ANTI_DROP_ADVISORY_ENABLED: "false"
-      ANTI_DROP_OPERATOR_LOG: "/app/.local/operator_events.jsonl"
+      ANTI_DROP_OPERATOR_LOG: "/srv/app/.local/operator_events.jsonl"
       # Внутри compose-сети PostgreSQL доступен по имени сервиса и стандартному порту.
       PG_DSN: "postgresql://anti_drop:anti_drop@postgres:5432/anti_drop"
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
-      - ./reports:/app/reports
-      - ./.local:/app/.local
+      - ./reports:/srv/app/reports
+      - ./.local:/srv/app/.local
     restart: "no"
     read_only: false
     security_opt:
@@ -73,7 +73,7 @@ services:
       HOME: /tmp
     command: ["bash", "scripts/eval_pack.sh"]
     volumes:
-      - ./reports:/app/reports
+      - ./reports:/srv/app/reports
     restart: "no"
     read_only: false
     security_opt:

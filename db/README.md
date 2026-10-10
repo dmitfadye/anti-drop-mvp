@@ -1,8 +1,8 @@
 # db — PostgreSQL для песочницы
 
 Официальный образ `postgres:16-alpine`, своих init-скриптов нет:
-схема БД создаётся приложением при старте (`src/db.py::init_db`
-через lifespan в `main.py`), поэтому папка держит только этот README.
+схема БД создаётся приложением при старте (`app/src/db.py::init_db`
+через lifespan в `app/main.py`), поэтому папка держит только этот README.
 
 ## Топология (см. корневой `docker-compose.yml`)
 

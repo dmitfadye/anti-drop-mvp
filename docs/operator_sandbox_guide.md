@@ -18,6 +18,7 @@ export.
 ## Turning it on
 
 ```bash
+export PYTHONPATH=app   # Python code lives in app/, run from repo root
 export ANTI_DROP_DEMO_MODE=true
 export ANTI_DROP_OPERATOR_UI_ENABLED=true
 export ANTI_DROP_OPERATOR_EXPORT_ENABLED=true      # optional, for /export

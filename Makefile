@@ -2,13 +2,16 @@
 # Один поддерживаемый серверный путь: FastAPI (uvicorn main:app).
 # app_stdlib.py — legacy диагностика, в deploy-путь не входит.
 
+# Python-код живёт в app/ (импорты main/src/anti_drop_ml/scripts), запуск из корня.
+# PYRUN добавляет app/ в sys.path; относительные пути данных — от корня.
 PYTHON ?= python
+PYRUN = PYTHONPATH=app $(PYTHON)
 HOST ?= 127.0.0.1
 PORT ?= 8000
-DATASET ?= fixtures/episodes/all_episodes_p1.jsonl
+DATASET ?= app/fixtures/episodes/all_episodes_p1.jsonl
 EVAL_DIR ?= reports/evaluation
 FINANCE_DIR ?= reports/finance
-FINANCE_CONFIG ?= configs/financial_assumptions.json
+FINANCE_CONFIG ?= app/configs/financial_assumptions.json
 
 .DEFAULT_GOAL := help
 .PHONY: help install test eval fixtures finance experiment stop-criteria demo operator \
@@ -19,45 +22,45 @@ help: ## Показать доступные цели
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
 install: ## Установить зависимости
-	$(PYTHON) -m pip install -r requirements.txt
+	$(PYTHON) -m pip install -r app/requirements.txt
 
 test: ## Прогнать все тесты (без сети, без реальных данных)
-	$(PYTHON) -m unittest discover -s tests -v
+	$(PYTHON) -m unittest discover -s app/tests -t app -v
 
 fixtures: ## Перегенерировать синтетические fixtures (детерминированно, fixed seed)
-	$(PYTHON) -m scripts.generate_synthetic_fixtures --output-dir fixtures/episodes
+	$(PYRUN) -m scripts.generate_synthetic_fixtures --output-dir app/fixtures/episodes
 
 eval: ## Полный evaluation pack P1
-	$(PYTHON) -m anti_drop_ml.evaluation.runner \
+	$(PYRUN) -m anti_drop_ml.evaluation.runner \
 		--dataset $(DATASET) --output-dir $(EVAL_DIR) \
 		--cost-false-alert 650 --cost-missed-risk 45000 --prevalence 0.002
 
 finance: ## Финансовая модель (conservative/base/optimistic + sensitivity + break-even)
-	$(PYTHON) -m scripts.run_financial_model --config $(FINANCE_CONFIG) --output-dir $(FINANCE_DIR)
+	$(PYRUN) -m scripts.run_financial_model --config $(FINANCE_CONFIG) --output-dir $(FINANCE_DIR)
 
 experiment: ## Шаблон blinded scoring + карта раскрытия (без данных)
-	$(PYTHON) -m scripts.export_blinded_scoring --experiment-id exp-warning-language-2026.10
+	$(PYRUN) -m scripts.export_blinded_scoring --experiment-id exp-warning-language-2026.10
 
 stop-criteria: ## Проверить план остановки пилота
-	$(PYTHON) -m scripts.validate_stop_criteria --config configs/pilot_stop_criteria.json
+	$(PYRUN) -m scripts.validate_stop_criteria --config app/configs/pilot_stop_criteria.json
 
 demo: ## Запустить локальный демо (FastAPI, только синтетика)
-	$(PYTHON) -m uvicorn main:app --host $(HOST) --port $(PORT)
+	$(PYRUN) -m uvicorn main:app --host $(HOST) --port $(PORT)
 
 operator: ## Запустить демо с включённым экраном оператора
 	ANTI_DROP_DEMO_MODE=true \
 	ANTI_DROP_OPERATOR_UI_ENABLED=true \
 	ANTI_DROP_OPERATOR_EXPORT_ENABLED=true \
 	ANTI_DROP_OPERATOR_LOG=.local/operator_events.jsonl \
-	$(PYTHON) -m uvicorn main:app --host $(HOST) --port $(PORT)
+	$(PYRUN) -m uvicorn main:app --host $(HOST) --port $(PORT)
 
 lint: ## Линт/типизация, если настроены в проекте
-	@if command -v ruff >/dev/null 2>&1; then ruff check src anti_drop_ml scripts tests; \
-	elif $(PYTHON) -c "import mypy" >/dev/null 2>&1; then $(PYTHON) -m mypy src anti_drop_ml; \
+	@if command -v ruff >/dev/null 2>&1; then ruff check app/src app/anti_drop_ml app/scripts app/tests; \
+	elif $(PYTHON) -c "import mypy" >/dev/null 2>&1; then $(PYTHON) -m mypy app/src app/anti_drop_ml; \
 	else echo "ruff/mypy не установлены — пропускаю (проект не требует отдельного линтера)."; fi
 
 ci: ## Локальный эквивалент CI
-	./scripts/ci_smoke.sh
+	./app/scripts/ci_smoke.sh
 
 docker-build: ## Собрать образ демонстратора (non-root)
 	docker build -f deploy/Dockerfile -t anti-drop-p1:demo .
