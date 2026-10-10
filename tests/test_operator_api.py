@@ -161,7 +161,11 @@ class TestOperatorFlow(unittest.TestCase):
         status(self.client, self.case_id, 'viewed', 'a')
         skipped = status(self.client, self.case_id, 'safe_action_confirmed', 'b')
         self.assertEqual(skipped.status_code, 409)
-        self.assertIn('not an allowed operator transition', skipped.json()['detail'])
+        # Error shape depends on the app envelope: zima returned {"detail"},
+        # the merged app wraps router HTTPExceptions into {error_code, message}.
+        payload = skipped.json()
+        text = payload.get('detail') if 'detail' in payload else payload.get('message', '')
+        self.assertIn('not an allowed operator transition', text)
         self.assertEqual(self.client.get(f'/api/operator/cases/{self.case_id}').json()['status'], 'viewed')
 
     def test_terminal_status_cannot_be_left(self):
