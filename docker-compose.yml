@@ -30,10 +30,16 @@ services:
       context: .
       dockerfile: deploy/Dockerfile
     image: anti-drop-p1:demo
+    # Bind-mounts (./reports, ./.local) belong to the host user while the image
+    # defaults to USER sandbox (uid 10001): without mapping, the operator event
+    # sink and local artifacts are not writable. Mapping keeps the container
+    # non-root; the Dockerfile USER stays the default for plain docker run.
+    user: "${UID:-1000}:${GID:-1000}"
     ports:
       - "127.0.0.1:8000:8000"
     environment:
       ANTI_DROP_DEMO_MODE: "true"
+      HOME: /tmp
       ANTI_DROP_LOCALIZATION_ENABLED: "true"
       # Включайте явно, когда нужен экран оператора.
       ANTI_DROP_OPERATOR_UI_ENABLED: "false"
