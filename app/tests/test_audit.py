@@ -14,8 +14,18 @@ from fastapi.testclient import TestClient
 
 from main import app
 from src.detector import analyze_transactions
+from src.db import get_db, reset_init_state_for_tests
 
 client = TestClient(app)
+
+# Setup test user in database
+reset_init_state_for_tests()
+for db in get_db():
+    db.execute("INSERT OR REPLACE INTO users (user_id, phone, created_at) VALUES ('test_user', '+79160000001', datetime('now'))")
+    db.commit()
+    break
+
+HEADERS = {"X-Sandbox-Subject": "test_user"}
 
 
 def T(ts, type_, amount, cp="x", dev="dev_A", sim=None, uid="u1", tid="1"):
@@ -190,7 +200,7 @@ class TestHonestMocks(unittest.TestCase):
 
     def test_sim_response_marked_demo(self):
         body = client.post("/api/sim", json={"old_phone": "+79160000001", "new_phone": "+79160000002",
-                                              "otp_ok_old": True, "otp_ok_new": True}).json()
+                                              "otp_ok_old": True, "otp_ok_new": True}, headers=HEADERS).json()
         self.assertTrue(body["demo"])
 
     def test_request_id_header(self):

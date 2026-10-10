@@ -31,7 +31,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
@@ -322,10 +322,29 @@ def quiz(req: QuizRequest) -> QuizResponse:
 
 
 @app.post("/api/sim", response_model=SimChangeResponse, summary="Тренажёр смены номера (SMS не отправляются)")
-def sim_change(req: SimChangeRequest) -> SimChangeResponse:
+def sim_change(
+    req: SimChangeRequest,
+    subject: str = Header(..., alias="X-Sandbox-Subject"),
+    db=Depends(get_db),
+) -> SimChangeResponse:
+    from src.sim_security import canonical_phone
+
+    # Проверить, что старый номер принадлежит subject
+    row = db.execute("SELECT phone FROM users WHERE user_id=?", (subject,)).fetchone()
+    if not row or canonical_phone(row["phone"]) != canonical_phone(req.old_phone):
+        return SimChangeResponse(ok=False, errors=["Номер не принадлежит вам или неверный"])
+
     out = start_number_change(req.old_phone, req.new_phone, req.otp_ok_old, req.otp_ok_new)
     if not out["ok"]:
         return SimChangeResponse(ok=False, errors=out["errors"])
+
+    # Обновляем телефон в БД
+    new_c = canonical_phone(req.new_phone)
+    db.execute(
+        "UPDATE users SET phone=?, phone_verified_at=datetime('now') WHERE user_id=?",
+        (new_c, subject)
+    )
+    db.commit()
     return SimChangeResponse(ok=True, **{k: v for k, v in out.items() if k != "ok"})
 
 

@@ -481,7 +481,7 @@ async function sendSim() {
     otp_ok_old: $('otpO').checked,
     otp_ok_new: $('otpN').checked
   };
-  const result = await api('/api/sim', body);
+  const result = await api('/api/sim', body, 'POST', { 'X-Sandbox-Subject': SUBJECT_REF });
   if (!result) return;
   const target = $('simRes');
   clear(target);

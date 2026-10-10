@@ -50,6 +50,13 @@ CREATE TABLE IF NOT EXISTS sandbox_cases (
     contact_reason    TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS users (
+    user_id           TEXT PRIMARY KEY,
+    phone             TEXT NOT NULL UNIQUE,
+    phone_verified_at TIMESTAMPTZ,
+    created_at        TIMESTAMPTZ NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS schema_meta (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -80,6 +87,13 @@ CREATE TABLE IF NOT EXISTS sandbox_cases (
     sandbox           INTEGER NOT NULL DEFAULT 1,
     selected_language TEXT NOT NULL,
     contact_reason    TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    user_id           TEXT PRIMARY KEY,
+    phone             TEXT NOT NULL UNIQUE,
+    phone_verified_at TEXT,
+    created_at        TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS schema_meta (
