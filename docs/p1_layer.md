@@ -23,7 +23,7 @@ synthetic / sandbox / demo.
 | P1-SHOULD 1 discovery artifacts | templates only | `docs/{discovery_interview_guide,jtbd_canvas,alternatives_map,hypothesis_tracker,evidence_ledger}.md` |
 | P1-SHOULD 2 financial model | done | `src/finance.py`, `configs/financial_assumptions.json` |
 | P1-SHOULD 3 stop criteria + pilot protocol | done | `configs/pilot_stop_criteria.json`, `scripts/validate_stop_criteria.py` |
-| P1-SHOULD 4 CI + container | done | `.github/workflows/ci.yml`, `Dockerfile`, `Makefile` |
+| P1-SHOULD 4 CI + container | done | `.github/workflows/ci.yml`, `deploy/Dockerfile`, `Makefile` |
 | P1-OPTIONAL pre-transfer advisory | done, advisory only | `src/advisory.py` |
 
 ## Feature flags

@@ -26,7 +26,9 @@ services:
     restart: unless-stopped
 
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
     image: anti-drop-p1:demo
     ports:
       - "127.0.0.1:8000:8000"
@@ -57,7 +59,9 @@ services:
   # One-shot ML/финансовая оценка: тот же образ, без портов и БД.
   # Пишет артефакты в ./reports. В обычный `docker compose up` не входит.
   eval:
-    build: .
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
     image: anti-drop-p1:demo
     profiles: ["tools"]
     # Bind-mount ./reports принадлежит host-пользователю, а образ по умолчанию

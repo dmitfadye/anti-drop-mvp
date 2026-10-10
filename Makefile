@@ -60,7 +60,7 @@ ci: ## Локальный эквивалент CI
 	./scripts/ci_smoke.sh
 
 docker-build: ## Собрать образ демонстратора (non-root)
-	docker build -t anti-drop-p1:demo .
+	docker build -f deploy/Dockerfile -t anti-drop-p1:demo .
 
 docker-run: ## Запустить контейнер на 127.0.0.1:8000
 	docker run --rm -p 127.0.0.1:8000:8000 anti-drop-p1:demo

@@ -278,7 +278,7 @@ python -m unittest discover -s tests -v
 uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
-`make help` — те же шаги целями. Сборка CI: `make ci`, Dockerfile: `make docker-build`,
+`make help` — те же шаги целями. Сборка CI: `make ci`, Dockerfile (`deploy/Dockerfile`): `make docker-build`,
 экран оператора: `make operator`.
 
 ### Флаги (безопасное состояние по умолчанию)

@@ -47,7 +47,7 @@ If a real customer's data reaches any of these surfaces, that is an
 | 16 | No CDN or third-party asset | `VERIFIED` — asserted by tests | Swagger and CSS are local |
 | 17 | CORS | `VERIFIED` — no wildcard | same-origin only |
 | 18 | Dependency pinning | `PARTIAL` — `uv.lock` + `requirements-lock.txt` exist | no automated dependency audit in CI |
-| 19 | Container runs non-root | see `Dockerfile` | verify the image, do not assume |
+| 19 | Container runs non-root | see `deploy/Dockerfile` | verify the image, do not assume |
 | 20 | No secrets in the image | `VERIFIED` — none exist; keep it true | |
 | 21 | Dependency scanning | `NOT VERIFIED` | suggested in CI, non-blocking by design |
 | 22 | Rate limiting | `NOT VERIFIED` | a demo on loopback does not need it; a pilot does |
