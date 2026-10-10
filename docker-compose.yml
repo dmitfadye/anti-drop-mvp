@@ -1,4 +1,8 @@
-# Локальный запуск: PostgreSQL (песочница-хранилище) + API P1.
+# Локальный запуск одним `docker compose up`: PostgreSQL (песочница-хранилище)
+# + API P1 (FastAPI; ML-слой anti_drop_ml работает внутри процесса api,
+# отдельного serving-контейнера не требует).
+# Батч-оценка ML/финансов — one-shot сервис `eval` (профиль tools):
+#   docker compose --profile tools run --rm eval
 # Ни Kafka, ни Redis, ни ClickHouse, ни Kubernetes. Это синтетический
 # демонстратор, не банковский runtime.
 
@@ -43,6 +47,29 @@ services:
     volumes:
       - ./reports:/app/reports
       - ./.local:/app/.local
+    restart: "no"
+    read_only: false
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  # One-shot ML/финансовая оценка: тот же образ, без портов и БД.
+  # Пишет артефакты в ./reports. В обычный `docker compose up` не входит.
+  eval:
+    build: .
+    image: anti-drop-p1:demo
+    profiles: ["tools"]
+    # Bind-mount ./reports принадлежит host-пользователю, а образ по умолчанию
+    # работает как sandbox (uid 10001). Для one-shot записи артефактов маппим
+    # host UID/GID; чтение кода образа при этом сохраняется (644/755).
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      PG_DSN: ""
+      HOME: /tmp
+    command: ["bash", "scripts/eval_pack.sh"]
+    volumes:
+      - ./reports:/app/reports
     restart: "no"
     read_only: false
     security_opt:

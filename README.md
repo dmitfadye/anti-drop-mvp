@@ -16,6 +16,9 @@ cd anti-drop-mvp
 uv sync  # или: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
 docker compose up
+# postgres (127.0.0.1:5433) + api (127.0.0.1:8000) одним процессом.
+# ML-оценка батчем (one-shot, пишет в ./reports):
+# docker compose --profile tools run --rm eval
 
 .venv/bin/uvicorn main:app --reload
 # дашборд → http://localhost:8000 (работает без интернета)
