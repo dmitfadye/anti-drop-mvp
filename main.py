@@ -53,6 +53,7 @@ from models import (
 )
 from src.advisory import PlannedTransferAdvisoryV1, advise
 from src.alerts import SUPPORTED_LANGS, build_stop_drop_alert
+from src.communication import router as communication_router
 from src.config import (
     DATABASE_PATH,
     DEFAULT_LIST_LIMIT,
