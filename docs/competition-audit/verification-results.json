@@ -1,0 +1,358 @@
+{
+  "invalid_date": {
+    "http": 500,
+    "body": "Internal Server Error"
+  },
+  "mixed_timezones": {
+    "http": 500,
+    "body": "Internal Server Error"
+  },
+  "negative_amount": {
+    "http": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "greater_than_equal",
+          "loc": [
+            "body",
+            "transactions",
+            0,
+            "amount"
+          ],
+          "msg": "Input should be greater than or equal to 0",
+          "ctx": {
+            "ge": 0.0
+          }
+        }
+      ]
+    }
+  },
+  "empty": {
+    "http": 200,
+    "body": {
+      "score": 0,
+      "level": "GREEN",
+      "reasons": [
+        "Нет транзакций для анализа."
+      ],
+      "metrics": {},
+      "alert": null
+    }
+  },
+  "over_limit": {
+    "http": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "too_long",
+          "loc": [
+            "body",
+            "transactions"
+          ],
+          "msg": "List should have at most 5000 items after validation, not 5001",
+          "ctx": {
+            "field_type": "List",
+            "max_length": 5000,
+            "actual_length": 5001
+          }
+        }
+      ]
+    }
+  },
+  "sim_today": {
+    "http": 200,
+    "body": {
+      "score": 0,
+      "level": "GREEN",
+      "reasons": [
+        "✅ Всё спокойно: транзитных потоков и веерных рассылок не найдено."
+      ],
+      "metrics": {
+        "small_incoming_60m_count": 2,
+        "small_incoming_60m_senders": 2,
+        "small_incoming_60m_sum": 6000.0,
+        "incoming_24h": 6000.0,
+        "cash_24h": 0,
+        "fanout_60m_receivers": 0,
+        "night_60m_count": 0,
+        "sim_changed_recently": false,
+        "score": 0,
+        "level": "GREEN",
+        "analyzed": 2
+      },
+      "alert": null
+    }
+  },
+  "mixed_users": {
+    "http": 200,
+    "body": {
+      "score": 70,
+      "level": "RED",
+      "reasons": [
+        "🔴 Транзитный поток: 5 мелких входящих от 5 разных отправителей за 60 мин на 15000.0 ₽ — классический почерк вербовщика в дропы.",
+        "🔴 Сквозной транзит: выведено 14000 ₽ из 15000 ₽ входящих (93%) за час. Карту используют как «транзитную» — грозит блокировка по 115-ФЗ."
+      ],
+      "metrics": {
+        "small_incoming_60m_count": 5,
+        "small_incoming_60m_senders": 5,
+        "small_incoming_60m_sum": 15000.0,
+        "flow_through_ratio_60m": 0.93,
+        "incoming_24h": 15000.0,
+        "cash_24h": 0,
+        "fanout_60m_receivers": 1,
+        "night_60m_count": 0,
+        "sim_changed_recently": false,
+        "score": 70,
+        "level": "RED",
+        "analyzed": 6
+      },
+      "alert": {
+        "lang": "ru",
+        "lang_name": "Русский",
+        "title": "🛑 СТОП-ДРОП: срочное предупреждение",
+        "body": "⛔ ВНИМАНИЕ! Кажется, вашу карту используют мошенники.\nПоступления 15 000 ₽ от 5 человек и переводы дальше — это схема «дроп». Вам грозит блокировка по 115-ФЗ и суд по ст. 187 УК РФ (до 6 лет).\nНемедленно: 1) никому не переводите, 2) нажмите «Связаться с поддержкой», 3) не отдавайте карту и коды.",
+        "score": 70
+      }
+    }
+  },
+  "duplicate_ids": {
+    "http": 200,
+    "body": {
+      "score": 70,
+      "level": "RED",
+      "reasons": [
+        "🔴 Транзитный поток: 5 мелких входящих от 3 разных отправителей за 60 мин на 15000.0 ₽ — классический почерк вербовщика в дропы.",
+        "🔴 Сквозной транзит: выведено 14000 ₽ из 15000 ₽ входящих (93%) за час. Карту используют как «транзитную» — грозит блокировка по 115-ФЗ."
+      ],
+      "metrics": {
+        "small_incoming_60m_count": 5,
+        "small_incoming_60m_senders": 3,
+        "small_incoming_60m_sum": 15000.0,
+        "flow_through_ratio_60m": 0.93,
+        "incoming_24h": 15000.0,
+        "cash_24h": 0,
+        "fanout_60m_receivers": 1,
+        "night_60m_count": 0,
+        "sim_changed_recently": false,
+        "score": 70,
+        "level": "RED",
+        "analyzed": 6
+      },
+      "alert": {
+        "lang": "ru",
+        "lang_name": "Русский",
+        "title": "🛑 СТОП-ДРОП: срочное предупреждение",
+        "body": "⛔ ВНИМАНИЕ! Кажется, вашу карту используют мошенники.\nПоступления 15 000 ₽ от 3 человек и переводы дальше — это схема «дроп». Вам грозит блокировка по 115-ФЗ и суд по ст. 187 УК РФ (до 6 лет).\nНемедленно: 1) никому не переводите, 2) нажмите «Связаться с поддержкой», 3) не отдавайте карту и коды.",
+        "score": 70
+      }
+    }
+  },
+  "zero_amounts": {
+    "http": 200,
+    "body": {
+      "score": 45,
+      "level": "YELLOW",
+      "reasons": [
+        "🔴 Транзитный поток: 5 мелких входящих от 5 разных отправителей за 60 мин на 0.0 ₽ — классический почерк вербовщика в дропы."
+      ],
+      "metrics": {
+        "small_incoming_60m_count": 5,
+        "small_incoming_60m_senders": 5,
+        "small_incoming_60m_sum": 0.0,
+        "incoming_24h": 0.0,
+        "cash_24h": 0,
+        "fanout_60m_receivers": 0,
+        "night_60m_count": 0,
+        "sim_changed_recently": false,
+        "score": 45,
+        "level": "YELLOW",
+        "analyzed": 5
+      },
+      "alert": null
+    }
+  },
+  "html_reason": {
+    "http": 200,
+    "body": {
+      "score": 0,
+      "level": "GREEN",
+      "reasons": [
+        "✅ Всё спокойно: транзитных потоков и веерных рассылок не найдено."
+      ],
+      "metrics": {
+        "small_incoming_60m_count": 1,
+        "small_incoming_60m_senders": 1,
+        "small_incoming_60m_sum": 3000.0,
+        "incoming_24h": 3000.0,
+        "cash_24h": 0,
+        "fanout_60m_receivers": 0,
+        "night_60m_count": 0,
+        "sim_changed_recently": false,
+        "score": 0,
+        "level": "GREEN",
+        "analyzed": 4
+      },
+      "alert": null
+    }
+  },
+  "future_included": {
+    "small_incoming_60m_count": 1,
+    "small_incoming_60m_senders": 1,
+    "small_incoming_60m_sum": 3000.0,
+    "incoming_24h": 3000.0,
+    "cash_24h": 0,
+    "fanout_60m_receivers": 0,
+    "night_60m_count": 0,
+    "sim_changed_recently": false,
+    "score": 0,
+    "level": "GREEN",
+    "analyzed": 1
+  },
+  "same_phone_different_format": {
+    "ok": true,
+    "message": "Номер изменён на +7 916 000-00-01. Кулдаун до 09.10 14:31.",
+    "errors": [],
+    "new_phone": "+7 916 000-00-01",
+    "cooldown_until": "2026-10-09 14:31",
+    "limits": {
+      "p2p_per_transfer": 5000,
+      "note": "24 часа: исходящие P2P до 5000 ₽, смена номера только через поддержку с паспортом."
+    },
+    "checklist": [
+      "✅ Проверьте, что к старому номеру нет доступа у посторонних",
+      "✅ Включите двухфакторную аутентификацию в приложении",
+      "✅ Позвоните оператору и запретите перевыпуск SIM без паспорта",
+      "✅ Если коды приходят с задержкой — сразу в поддержку"
+    ]
+  },
+  "repeat_quiz": [
+    100,
+    100
+  ],
+  "all_languages": {
+    "ru": "ru",
+    "en": "en",
+    "uz": "uz",
+    "tg": "tg",
+    "ky": "ky",
+    "zh": "zh",
+    "ar": "ar"
+  },
+  "stdlib": {
+    "quiz_answer_exposed": true,
+    "empty_analyze_http": 200,
+    "/api/health": "RemoteProtocolError: Cyrillic HTTP status reason, latin-1 UnicodeEncodeError",
+    "/api/content": "RemoteProtocolError: Cyrillic HTTP status reason, latin-1 UnicodeEncodeError",
+    "/docs": "RemoteProtocolError: Cyrillic HTTP status reason, latin-1 UnicodeEncodeError"
+  },
+  "live": {
+    "/": 200,
+    "/api/health": 200,
+    "/docs": 200,
+    "/openapi.json": 200
+  },
+  "swagger_external": true,
+  "live_scenarios": {
+    "normal": {
+      "http": 200,
+      "body": {
+        "score": 0,
+        "level": "GREEN",
+        "reasons": [
+          "✅ Всё спокойно: транзитных потоков и веерных рассылок не найдено."
+        ],
+        "metrics": {
+          "small_incoming_60m_count": 0,
+          "small_incoming_60m_senders": 0,
+          "small_incoming_60m_sum": 0,
+          "incoming_24h": 0,
+          "cash_24h": 0,
+          "fanout_60m_receivers": 0,
+          "night_60m_count": 0,
+          "sim_changed_recently": false,
+          "score": 0,
+          "level": "GREEN",
+          "analyzed": 4
+        },
+        "alert": null
+      }
+    },
+    "drop_attack": {
+      "http": 200,
+      "body": {
+        "score": 85,
+        "level": "RED",
+        "reasons": [
+          "🔴 Транзитный поток: 5 мелких входящих от 5 разных отправителей за 60 мин на 14800.0 ₽ — классический почерк вербовщика в дропы.",
+          "🔴 Сквозной транзит: выведено 14000 ₽ из 14800 ₽ входящих (95%) за час. Карту используют как «транзитную» — грозит блокировка по 115-ФЗ.",
+          "🔴 Смена SIM/устройства за последние 2 дня + всплеск переводов — возможен перехват SMS-кодов. Срочно проверьте номер в разделе «Безопасная смена номера»."
+        ],
+        "metrics": {
+          "small_incoming_60m_count": 5,
+          "small_incoming_60m_senders": 5,
+          "small_incoming_60m_sum": 14800.0,
+          "flow_through_ratio_60m": 0.95,
+          "incoming_24h": 29800.0,
+          "cash_24h": 5000.0,
+          "fanout_60m_receivers": 1,
+          "night_60m_count": 0,
+          "sim_changed_recently": true,
+          "score": 85,
+          "level": "RED",
+          "analyzed": 8
+        },
+        "alert": {
+          "lang": "uz",
+          "lang_name": "O'zbekcha",
+          "title": "🛑 STOP-DROP: urgent warning",
+          "body": "⛔ DIQQAT! Kartangizdan firibgarlar foydalanayotganga o'xshaydi.\n5 kishidan 14 800 ₽ tushum va mablag'ni nari o'tkazish — bu 'drop' sxemasi. 115-FZ bo'yicha blokirovka va JK 187-moddasi bo'yicha sud (6 yilgacha) tahdidi bor.\nHozir: 1) hech qayerga o'tkazmang, 2) 'Yordam' tugmasini bosing, 3) karta va kodlarni bermang.",
+          "score": 85
+        }
+      }
+    }
+  },
+  "cors_allow_origin": "*",
+  "local_5000_synthetic": {
+    "n": 10,
+    "median_ms": 37.9,
+    "max_ms": 40.2,
+    "note": "TestClient, sequential, no network; not production load test"
+  },
+  "versions": {
+    "fastapi": "0.142.4",
+    "pydantic": "2.13.5",
+    "uvicorn": "0.54.0",
+    "starlette": "1.7.0",
+    "httpx": "0.28.1"
+  },
+  "syntax": {
+    "files": 12,
+    "status": "PASS"
+  },
+  "pre_outgoing_five_incoming": {
+    "http": 200,
+    "body": {
+      "score": 45,
+      "level": "YELLOW",
+      "reasons": [
+        "🔴 Транзитный поток: 5 мелких входящих от 5 разных отправителей за 60 мин на 15000.0 ₽ — классический почерк вербовщика в дропы."
+      ],
+      "metrics": {
+        "small_incoming_60m_count": 5,
+        "small_incoming_60m_senders": 5,
+        "small_incoming_60m_sum": 15000.0,
+        "incoming_24h": 15000.0,
+        "cash_24h": 0,
+        "fanout_60m_receivers": 0,
+        "night_60m_count": 0,
+        "sim_changed_recently": false,
+        "score": 45,
+        "level": "YELLOW",
+        "analyzed": 5
+      },
+      "alert": null
+    }
+  },
+  "audit_date_client": "2026-10-08 Europe/Moscow",
+  "scope": "Synthetic, read-only audit. No product code changes. Runtime ephemeral fallback server stopped."
+}

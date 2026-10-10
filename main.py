@@ -11,11 +11,19 @@
 - Наблюдаемость-минимум: X-Request-ID в ответах, rules_version в analyze/health.
 
 MVP-слой sandbox-кейсов (зона ответственности):
-- Хранилище SQLite (src/db.py): кейсы переживают перезапуск сервера.
+- Хранилище PostgreSQL через src/db.py (PG_DSN), SQLite — fallback для локальной
+  разработки без Docker. Кейсы переживают перезапуск сервера.
 - Субъект только из заголовка X-Sandbox-Subject (src/identity.py); в теле он запрещён.
 - Идемпотентность по Idempotency-Key + payload_hash (src/sandbox_cases.py).
 - Единый error envelope: error_code / message / request_id (src/errors.py).
 - Машиночитаемые reason_codes в /api/analyze без изменения score (src/reason_codes.py).
+
+P1-слой (feature flags, по умолчанию выключено):
+- /api/v1/communication/* — строгий снимок -> решение, язык, шаблон (демо/sandbox);
+- /api/operator/*        — локальный экран оператора (loopback, без auth, только synthetic);
+- /api/v1/risk/advisory   — pre-transfer advisory (advisory_only, не блокировка);
+- /api/locales           — каталог локализаций и их честный статус проверки.
+Ни один маршрут не выполняет банковское действие.
 """
 import uuid
 from contextlib import asynccontextmanager
@@ -23,7 +31,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Query, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
@@ -43,6 +51,7 @@ from models import (
     SimChangeResponse,
     StopDropAlert,
 )
+from src.advisory import PlannedTransferAdvisoryV1, advise
 from src.alerts import SUPPORTED_LANGS, build_stop_drop_alert
 from src.config import (
     DATABASE_PATH,
@@ -56,33 +65,40 @@ from src.config import (
 from src.db import get_db, init_db
 from src.detector import analyze_transactions
 from src.errors import ApiError, ErrorDetail, error_body, router_error
+from src.flags import SANDBOX_BANNER, current_flags
 from src.identity import get_sandbox_subject, subject_hash_prefix
+from src.operator import require_operator_enabled
+from src.operator import router as operator_router
 from src.policy import RULES_VERSION, UTC
 from src.quiz import QUIZ, STORIES, check_quiz
 from src.sandbox_cases import compute_payload_hash, create_case as create_sandbox_case, \
     get_case_for_subject, get_idempotency_key, list_cases_for_subject
 from src.sim_security import start_number_change
+from anti_drop_ml.adapter import evaluate_snapshot
+from anti_drop_ml.contracts import RiskDecisionV1, RiskSnapshotV1
 
 configure_logging()
 log = get_logger("anti_drop")
 
 BASE_DIR = Path(__file__).resolve().parent
-VERSION = "0.4.0"
+VERSION = "0.4.0-p1"
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Схема SQLite создаётся до первого запроса. on_event устарел — lifespan уместнее."""
+    """Схема БД создаётся до первого запроса. on_event устарел — lifespan уместнее.
+
+    PG_DSN задан — поднимается пул psycopg2 к PostgreSQL, иначе SQLite-файл.
+    """
     init_db()
     log.info("startup app_version=%s database_path=%s sandbox_mode=%s",
              VERSION, DATABASE_PATH.resolve(), SANDBOX_MODE)
     yield
     log.info("shutdown app_version=%s", VERSION)
 
-
 app = FastAPI(
     title="Анти-Дроп API",
-    description="Учебный демонстратор: объяснимый детектор транзита, Стоп-Дроп алерты, квизы, тренажёр смены номера. Только синтетика, без банковских действий.",
+    description="Учебный демонстратор: объяснимый детектор транзита, локализованные предупреждения, sandbox-кейсы и локальный экран оператора. Только синтетика, без банковских действий.",
     version=VERSION,
     lifespan=lifespan,
     docs_url=None,  # T17: Swagger из локальных файлов, не CDN
@@ -90,6 +106,8 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+app.include_router(communication_router)
+app.include_router(operator_router)
 
 
 @app.middleware("http")
@@ -143,6 +161,9 @@ async def api_error_handler(request: Request, exc: ApiError) -> JSONResponse:
 @app.exception_handler(RequestValidationError)
 async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
     """Pydantic-ошибки -> тот же envelope, чтобы клиент видел error_code и field."""
+    if request.url.path == '/api/v1/risk/evaluate':
+        # Не отдаём отправленное тело обратно через ошибки валидации — только тип и путь.
+        return JSONResponse(status_code=422, content={'detail': [{'type': error['type'], 'loc': error['loc']} for error in exc.errors()]})
     details = []
     for err in exc.errors():
         loc = ".".join(str(p) for p in err.get("loc", ()) if p != "body") or None
@@ -195,13 +216,49 @@ def docs():
 
 @app.get("/api/health")
 def health() -> dict:
+    flags = current_flags()
     return {
         "status": "ok",
         "service": "anti-drop",
         "version": VERSION,
         "rules_version": RULES_VERSION,
         "server_time_utc": datetime.now(UTC).isoformat(timespec="seconds"),
-        "demo_mode": True,
+        "demo_mode": flags.demo_mode,
+        "p1_features": {
+            "localization_enabled": flags.localization_enabled,
+            "operator_ui_enabled": flags.operator_ui_enabled,
+            "operator_export_enabled": flags.operator_export_enabled,
+            "experiment_enabled": flags.experiment_enabled,
+            "experiment_allow_draft_treatment": flags.experiment_allow_draft_treatment,
+            "advisory_enabled": flags.advisory_enabled,
+            "experiment_id": flags.experiment_id,
+            "target_locale": flags.target_locale,
+            "event_sink": bool(flags.operator_log_path),
+        },
+        "limitations": [
+            "Sandbox demonstrator: no transfer is blocked, no money is frozen, no OTP or SMS is used.",
+            "Score is a deterministic rule score, not a probability of fraud.",
+            "The operator surface is loopback-only local demo without authentication.",
+            SANDBOX_BANNER,
+        ],
+    }
+
+
+@app.get("/api/locales", summary="Каталог локализаций P1: статус проверки перевода")
+def locales() -> dict:
+    from src.localization import registry
+
+    flags = current_flags()
+    packs = registry()
+    return {
+        "schema_version": "LocaleCatalogV1",
+        "enabled": flags.localization_enabled,
+        "control_locale": "ru-RU",
+        "target_locale": flags.target_locale,
+        "locales": packs.describe(),
+        "load_errors": packs.load_errors,
+        "statement": "Ровно один целевой языковой пакет. Всё, что ниже approved, помечается в UI как непроверенное.",
+        "synthetic": True,
     }
 
 
@@ -251,6 +308,11 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
         rules_version=res["metrics"].get("rules_version", RULES_VERSION),
         evaluation_id=evaluation_id,
     )
+
+
+@app.post("/api/v1/risk/evaluate", response_model=RiskDecisionV1, summary="Strict synthetic risk snapshot (score is not probability)")
+def evaluate_risk(req: RiskSnapshotV1) -> RiskDecisionV1:
+    return evaluate_snapshot(req)
 
 
 @app.post("/api/quiz", response_model=QuizResponse, summary="Проверить квиз (учебный приз, без выплат)")
@@ -389,6 +451,28 @@ def get_sandbox_case(
 ) -> SandboxCaseResponse:
     case = get_case_for_subject(conn, case_id, subject_ref)
     if case is None:
-        # 404, а не 403: иначе по коду ответа можно проверить существование чужого кейса.
+# 404, а не 403: иначе по коду ответа можно проверить существование чужого кейса.
         raise ApiError(404, "CASE_NOT_FOUND", "Кейс не найден.")
     return _to_response(case)
+
+
+@app.post("/api/v1/risk/advisory", summary="Pre-transfer advisory: подсказка, НЕ блокировка перевода")
+def pre_transfer_advisory(req: PlannedTransferAdvisoryV1) -> dict:
+    """Advisory-only. Ничего не блокирует, не замораживает и не отклоняет.
+
+    Возвращает status=advisory_only и banking_action='none'. Реальный банк
+    должен подтвердить сигнал; в MVP это synthetic/draft.
+    """
+    flags = current_flags()
+    if not flags.demo_mode:
+        raise HTTPException(status_code=503, detail="advisory requires ANTI_DROP_DEMO_MODE=true")
+    if not flags.advisory_enabled:
+        raise HTTPException(status_code=503, detail="pre-transfer advisory выключен; set ANTI_DROP_ADVISORY_ENABLED=true")
+    return advise(req).model_dump(mode="json")
+
+
+@app.get("/operator", include_in_schema=False)
+def operator_dashboard(request: Request) -> FileResponse:
+    """Локальный экран наблюдения. Включается только при явных флагах + loopback."""
+    require_operator_enabled(request)
+    return FileResponse(BASE_DIR / "static" / "operator.html")

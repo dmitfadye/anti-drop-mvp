@@ -1,0 +1,13 @@
+parameter,base_value,margin_low,margin_high,swing_rubles,swing_pct_of_margin,source,confidence
+opex_annual,9000000.0,1587500.0,-2012500.0,3600000.0,16.9412,assumption,low
+n_clients,500000.0,-1970000.0,1545000.0,3515000.0,16.5412,assumption,low
+contacts_per_client_year,0.01,-1412500.0,987500.0,2400000.0,11.2941,assumption,low
+cost_per_minute_rubles,400.0,-1412500.0,987500.0,2400000.0,11.2941,assumption,low
+minutes_saved_per_contact,3.0,-1412500.0,987500.0,2400000.0,11.2941,assumption,low
+delta_incremental_prevention,0.08,-932500.0,507500.0,1440000.0,6.7765,assumption,low
+l_bank_rubles_per_episode,45000.0,-932500.0,507500.0,1440000.0,6.7765,unknown,low
+q_risk_episodes_per_client_year,0.002,-932500.0,507500.0,1440000.0,6.7765,assumption,low
+call_share_after_false_alert,0.25,-50000.0,-375000.0,325000.0,1.5294,assumption,low
+false_alerts_per_client_year,0.01,-50000.0,-375000.0,325000.0,1.5294,evaluation,low
+handling_cost_per_contact_rubles,650.0,-50000.0,-375000.0,325000.0,1.5294,assumption,low
+k_initial_cost,18000000.0,-212500.0,-212500.0,0.0,0.0,assumption,low

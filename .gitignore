@@ -17,6 +17,46 @@ data/*.db-shm
 # PostgreSQL data (docker volume)
 pgdata/
 
-# Environment files
+# Local runtime and audit rendering artifacts
+.local/
+docs/competition-audit/.build/
+
+# Holdout split files duplicate the dataset; the manifest (episode ids,
+# subjects, time ranges) is the tracked artifact.
+reports/evaluation/holdout_development.jsonl
+reports/evaluation/holdout_holdout.jsonl
+reports/experiment/collected.csv
+
+# Local sandbox stores, event sinks and downloaded exports.
+# Reports/ stays tracked: those are synthetic artifacts meant to be reviewed.
+*.sqlite
+*.sqlite3
+operator_events.jsonl
+*.export.json
+*.export.csv
+
+# JavaScript dependencies, builds and test output
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets and local configuration
 .env
-.env.local
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs, caches and editor state
+*.log
+.cache/
+.turbo/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

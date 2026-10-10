@@ -1,0 +1,76 @@
+{
+  "schema_version": "FixtureGroupCatalogV1",
+  "group": "missing_data",
+  "dataset_version": "synthetic-episodes-p1-v1",
+  "label_sources": [
+    "synthetic_placeholder"
+  ],
+  "count": 5,
+  "episodes": [
+    {
+      "episode_id": "ep_34467c34b006ee4d",
+      "scenario": "missing_no_device_no_sim",
+      "group": "missing_data",
+      "episode_class": "edge",
+      "label": "risk",
+      "label_source": "synthetic_placeholder",
+      "label_basis": "neither device nor SIM available",
+      "adversarial": false,
+      "expected_behavior": "degraded data quality, no fabricated risk",
+      "is_holdout": false,
+      "subject_ref": "sub_34467c34b006ee4d"
+    },
+    {
+      "episode_id": "ep_3feb3692e267adbd",
+      "scenario": "missing_empty_history",
+      "group": "missing_data",
+      "episode_class": "edge",
+      "label": "normal",
+      "label_source": "synthetic_placeholder",
+      "label_basis": "no transactions at all",
+      "adversarial": false,
+      "expected_behavior": "insufficient_data status, score 0, never a fabricated level",
+      "is_holdout": false,
+      "subject_ref": "sub_3feb3692e267adbd"
+    },
+    {
+      "episode_id": "ep_70ed4125a0bcb6ab",
+      "scenario": "missing_no_counterparty_ref",
+      "group": "missing_data",
+      "episode_class": "edge",
+      "label": "risk",
+      "label_source": "synthetic_placeholder",
+      "label_basis": "no counterparty pseudonym on any transaction",
+      "adversarial": false,
+      "expected_behavior": "sender-diversity signal degrades; must not invent a counterparty",
+      "is_holdout": false,
+      "subject_ref": "sub_70ed4125a0bcb6ab"
+    },
+    {
+      "episode_id": "ep_9466acfb168b24b7",
+      "scenario": "missing_no_sim_field",
+      "group": "missing_data",
+      "episode_class": "edge",
+      "label": "risk",
+      "label_source": "synthetic_placeholder",
+      "label_basis": "sim_changed_days_ago absent",
+      "adversarial": false,
+      "expected_behavior": "SIM rule must not fire on unknown values",
+      "is_holdout": false,
+      "subject_ref": "sub_9466acfb168b24b7"
+    },
+    {
+      "episode_id": "ep_f2bbf278df183314",
+      "scenario": "missing_no_device_id",
+      "group": "missing_data",
+      "episode_class": "edge",
+      "label": "risk",
+      "label_source": "synthetic_placeholder",
+      "label_basis": "no device id on any transaction",
+      "adversarial": false,
+      "expected_behavior": "reduced confidence, reason codes still reported",
+      "is_holdout": false,
+      "subject_ref": "sub_f2bbf278df183314"
+    }
+  ]
+}

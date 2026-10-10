@@ -1,0 +1,107 @@
+[
+  {
+    "episode_id": "ep_b0950dcd3fe3cdf5",
+    "scenario": "ordinary_transfer",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_6384e43c02b1fbdf",
+    "scenario": "salary",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_57778ff6278a7d85",
+    "scenario": "family_collection",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_6c9eac9ef7f00f00",
+    "scenario": "family_collection_then_rent",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_c7cc8964d70a2efd",
+    "scenario": "relatives_transfer",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_491b893ffaa80fc8",
+    "scenario": "regular_payments",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_3915e1886a69f2e2",
+    "scenario": "salary_and_cash",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_3ab2152afa41f79e",
+    "scenario": "night_worker",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_a4b5a5d0bf8f5156",
+    "scenario": "new_device_without_sim",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_1687678ea0530e9a",
+    "scenario": "fresh_sim_without_burst",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_f711ea22b22bac0d",
+    "scenario": "many_inbound_without_outbound",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_d302db4a5fb0b4aa",
+    "scenario": "inbound_and_large_outbound",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_27acfd936216b16a",
+    "scenario": "fresh_sim_and_transit",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_f2b9b28a2d065659",
+    "scenario": "outbound_before_inbound",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_06d8b0176d3a9a6a",
+    "scenario": "window_59",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_81bef12d900b4dfd",
+    "scenario": "window_60",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_f5f22564562ce0b4",
+    "scenario": "window_61",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_f06b13ae803f9984",
+    "scenario": "amount_1",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_367f2f26f75387fa",
+    "scenario": "amount_499999",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_c9215af9c3e2bcb2",
+    "scenario": "amount_500000",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  },
+  {
+    "episode_id": "ep_1b98a983fae0c6f4",
+    "scenario": "amount_500001",
+    "label_basis": "handcrafted synthetic scenario intent, not detector output"
+  }
+]

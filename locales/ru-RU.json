@@ -1,0 +1,26 @@
+{
+  "schema_version": "LocalizationPackV1",
+  "locale": "ru-RU",
+  "language_code": "ru",
+  "display_name_native": "Русский",
+  "display_name_en": "Russian",
+  "direction": "ltr",
+  "script": "Cyrl",
+  "status": "draft",
+  "reviewers": [],
+  "messages": {
+    "alert.red.title": "Предупреждение: операции похожи на рискованную схему",
+    "alert.red.body": "За последний час поступило {amount} {currency} от нескольких отправителей, и сумма уходит дальше. Причина предупреждения: {reason_short}. Это сигнал для проверки, а не вывод о вашей вине.",
+    "alert.yellow.title": "Обратите внимание на операции",
+    "alert.yellow.body": "Часть операций отличается от вашего обычного поведения. Причина: {reason_short}. Сравните эти операции со своими.",
+    "cta.help": "Создать учебное обращение в демо-поддержку",
+    "cta.sandbox_notice": "Это демонстрационное песочное обращение. Реальная поддержка банка не вызывается, операции не ограничиваются.",
+    "legal.disclaimer": "Сообщение не является юридическим заключением и не указывает на вину. Решение о любых ограничениях принимает банк.",
+    "privacy.notice": "Демо работает только с синтетическими данными и псевдонимными ссылками. Персональные данные не собираются."
+  },
+  "template_ids": ["warning_ru_control_v1"],
+  "fallback_locale": "ru-RU",
+  "version": "loc-ru-v1",
+  "synthetic": true,
+  "notes": "Control/control-language pack. Copy needs bank legal review before any pilot; status intentionally draft."
+}

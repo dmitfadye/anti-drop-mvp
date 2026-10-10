@@ -1,3 +1,7 @@
+# Локальный запуск: PostgreSQL (песочница-хранилище) + API P1.
+# Ни Kafka, ни Redis, ни ClickHouse, ни Kubernetes. Это синтетический
+# демонстратор, не банковский runtime.
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -16,6 +20,35 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+
+  api:
+    build: .
+    image: anti-drop-p1:demo
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      ANTI_DROP_DEMO_MODE: "true"
+      ANTI_DROP_LOCALIZATION_ENABLED: "true"
+      # Включайте явно, когда нужен экран оператора.
+      ANTI_DROP_OPERATOR_UI_ENABLED: "false"
+      ANTI_DROP_OPERATOR_EXPORT_ENABLED: "false"
+      ANTI_DROP_EXPERIMENT_ENABLED: "false"
+      ANTI_DROP_ADVISORY_ENABLED: "false"
+      ANTI_DROP_OPERATOR_LOG: "/app/.local/operator_events.jsonl"
+      # Внутри compose-сети PostgreSQL доступен по имени сервиса и стандартному порту.
+      PG_DSN: "postgresql://anti_drop:anti_drop@postgres:5432/anti_drop"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./reports:/app/reports
+      - ./.local:/app/.local
+    restart: "no"
+    read_only: false
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
 
 volumes:
   pgdata:
