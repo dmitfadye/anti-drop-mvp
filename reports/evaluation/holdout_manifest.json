@@ -1,0 +1,826 @@
+{
+  "schema_version": "HoldoutManifestV1",
+  "holdout_percent_requested": 30,
+  "salt_version": "holdout-split-v1",
+  "method": "deterministic hash of subject_ref; latest episode of a held-out subject goes to holdout",
+  "invariants": {
+    "subject_disjoint": true,
+    "time_ordered_within_subject": true,
+    "rules_are_not_trained": true
+  },
+  "development_episodes": 55,
+  "holdout_episodes": 26,
+  "development_subjects": 53,
+  "holdout_subjects": 26,
+  "time_range_development": {
+    "from": "2026-10-08T12:00:00+00:00",
+    "to": "2026-10-08T12:00:00+00:00"
+  },
+  "time_range_holdout": {
+    "from": "2026-10-07T21:30:00+00:00",
+    "to": "2026-10-08T12:00:00+00:00"
+  },
+  "development_episode_ids": [
+    "ep_013c3ca1f5a5f0cc",
+    "ep_063c3eaa42d84136",
+    "ep_1663dfc3355166a9",
+    "ep_1687678ea0530e9a",
+    "ep_1ea2f2b4efece14f",
+    "ep_1f21eb663c9ab1af",
+    "ep_25cede50b84120ca",
+    "ep_27acfd936216b16a",
+    "ep_2a2e48d0882a1fc9",
+    "ep_306e09d08b43b1b2",
+    "ep_32f286aa16411431",
+    "ep_34467c34b006ee4d",
+    "ep_378ce2bf80f3858d",
+    "ep_38b14c0494919759",
+    "ep_3d301ade813df16b",
+    "ep_3feb3692e267adbd",
+    "ep_4447042b76f3ba26",
+    "ep_491b893ffaa80fc8",
+    "ep_4a54f3902faf4b82",
+    "ep_4be89270e01e8e5e",
+    "ep_511be28329418cc0",
+    "ep_57778ff6278a7d85",
+    "ep_5ad57569c7d094a3",
+    "ep_67ef6cd6acd8707b",
+    "ep_6b4985c79fda2798",
+    "ep_70ed4125a0bcb6ab",
+    "ep_70fe316f412c95a9",
+    "ep_7960f995a4910aca",
+    "ep_7aa361a34b1f7471",
+    "ep_7e6d1a1775f94640",
+    "ep_7f4b7eec5e10b25b",
+    "ep_816433b424971d92",
+    "ep_853d6e4f25381d7c",
+    "ep_87e716d251c69d35",
+    "ep_8b2ccfcb509a877c",
+    "ep_8f86663e496433ec",
+    "ep_9466acfb168b24b7",
+    "ep_9c3649da66ee4871",
+    "ep_a0868261b693c7f6",
+    "ep_b0950dcd3fe3cdf5",
+    "ep_b3a866462610de9f",
+    "ep_bac8031189f1b59f",
+    "ep_bcb5bd746b38c259",
+    "ep_cd2b26b9f482c5d4",
+    "ep_cf5ea4aff0b0ee6d",
+    "ep_e33e4c9f01040252",
+    "ep_e7d4ef0e18911230",
+    "ep_ecefbb61f9b25023",
+    "ep_ef1eabf1c8ba5cc3",
+    "ep_ef742c2f15351558",
+    "ep_f2b9b28a2d065659",
+    "ep_f2bbf278df183314",
+    "ep_f394f6412413c252",
+    "ep_f711ea22b22bac0d",
+    "ep_fd1dd2bd50bd5546"
+  ],
+  "holdout_episode_ids": [
+    "ep_0cc8ae050c265c32",
+    "ep_257fc2f918ce52a6",
+    "ep_29e2f32bc53153d6",
+    "ep_2b83f9393bf7bb16",
+    "ep_34e548d63a82700a",
+    "ep_3915e1886a69f2e2",
+    "ep_3ab2152afa41f79e",
+    "ep_4e18cd68fb63bbdd",
+    "ep_607308f777c9d998",
+    "ep_617a0c37ef0d8208",
+    "ep_642b904c6db901cc",
+    "ep_64d34c628bc3dda2",
+    "ep_6558129c4b0b3857",
+    "ep_6796fffd649b28cf",
+    "ep_7f74e6016f5a56a1",
+    "ep_8190dd99d4f03472",
+    "ep_9b7660479855ef1b",
+    "ep_9d39d118eef42eb0",
+    "ep_a4b5a5d0bf8f5156",
+    "ep_aef304eb6412d799",
+    "ep_c7cc8964d70a2efd",
+    "ep_d302db4a5fb0b4aa",
+    "ep_d5bf32e497244a19",
+    "ep_e39df66bab7b8e12",
+    "ep_f327cf5773d1700d",
+    "ep_f5923e5d14aea130"
+  ],
+  "subjects": [
+    {
+      "subject_ref": "sub_013c3ca1f5a5f0cc",
+      "bucket": 36,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_063c3eaa42d84136",
+      "bucket": 73,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_0cc8ae050c265c32",
+      "bucket": 29,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_1663dfc3355166a9",
+      "bucket": 55,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_1687678ea0530e9a",
+      "bucket": 64,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_1ea2f2b4efece14f",
+      "bucket": 54,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_1f21eb663c9ab1af",
+      "bucket": 35,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_257fc2f918ce52a6",
+      "bucket": 13,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_25cede50b84120ca",
+      "bucket": 81,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_27acfd936216b16a",
+      "bucket": 38,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_29e2f32bc53153d6",
+      "bucket": 2,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_2a2e48d0882a1fc9",
+      "bucket": 32,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_2b83f9393bf7bb16",
+      "bucket": 26,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_32f286aa16411431",
+      "bucket": 69,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_34467c34b006ee4d",
+      "bucket": 32,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_34e548d63a82700a",
+      "bucket": 3,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_378ce2bf80f3858d",
+      "bucket": 90,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_38b14c0494919759",
+      "bucket": 37,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_3915e1886a69f2e2",
+      "bucket": 21,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_3ab2152afa41f79e",
+      "bucket": 14,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-07T21:30:00+00:00",
+      "last_analysis_at": "2026-10-07T21:30:00+00:00"
+    },
+    {
+      "subject_ref": "sub_3d301ade813df16b",
+      "bucket": 74,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_3feb3692e267adbd",
+      "bucket": 46,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_4447042b76f3ba26",
+      "bucket": 54,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_491b893ffaa80fc8",
+      "bucket": 90,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_4a54f3902faf4b82",
+      "bucket": 30,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_4be89270e01e8e5e",
+      "bucket": 36,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_4e18cd68fb63bbdd",
+      "bucket": 4,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_511be28329418cc0",
+      "bucket": 53,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_57778ff6278a7d85",
+      "bucket": 37,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_5ad57569c7d094a3",
+      "bucket": 62,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_607308f777c9d998",
+      "bucket": 24,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_617a0c37ef0d8208",
+      "bucket": 6,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T01:15:00+00:00",
+      "last_analysis_at": "2026-10-08T01:15:00+00:00"
+    },
+    {
+      "subject_ref": "sub_642b904c6db901cc",
+      "bucket": 25,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_64d34c628bc3dda2",
+      "bucket": 14,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_6558129c4b0b3857",
+      "bucket": 8,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_6796fffd649b28cf",
+      "bucket": 20,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_67ef6cd6acd8707b",
+      "bucket": 55,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_6b4985c79fda2798",
+      "bucket": 52,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_70ed4125a0bcb6ab",
+      "bucket": 41,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_70fe316f412c95a9",
+      "bucket": 58,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_7960f995a4910aca",
+      "bucket": 67,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_7aa361a34b1f7471",
+      "bucket": 72,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_7e6d1a1775f94640",
+      "bucket": 46,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_7f4b7eec5e10b25b",
+      "bucket": 77,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_7f74e6016f5a56a1",
+      "bucket": 11,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_816433b424971d92",
+      "bucket": 85,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_8190dd99d4f03472",
+      "bucket": 24,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_87e716d251c69d35",
+      "bucket": 51,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_8b2ccfcb509a877c",
+      "bucket": 37,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_8f86663e496433ec",
+      "bucket": 92,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_9466acfb168b24b7",
+      "bucket": 86,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_9891fc4cad013077",
+      "bucket": 40,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 3,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_9b7660479855ef1b",
+      "bucket": 10,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_9c3649da66ee4871",
+      "bucket": 79,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_9d39d118eef42eb0",
+      "bucket": 9,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_a0868261b693c7f6",
+      "bucket": 76,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_a4b5a5d0bf8f5156",
+      "bucket": 28,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_aef304eb6412d799",
+      "bucket": 19,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_b0950dcd3fe3cdf5",
+      "bucket": 35,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_b3a866462610de9f",
+      "bucket": 34,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_bac8031189f1b59f",
+      "bucket": 52,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_bcb5bd746b38c259",
+      "bucket": 38,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_c7cc8964d70a2efd",
+      "bucket": 9,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_cd2b26b9f482c5d4",
+      "bucket": 35,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_cf5ea4aff0b0ee6d",
+      "bucket": 65,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_d302db4a5fb0b4aa",
+      "bucket": 6,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_d5bf32e497244a19",
+      "bucket": 21,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_e33e4c9f01040252",
+      "bucket": 69,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_e39df66bab7b8e12",
+      "bucket": 9,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_e7d4ef0e18911230",
+      "bucket": 54,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_ecefbb61f9b25023",
+      "bucket": 61,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_ef742c2f15351558",
+      "bucket": 42,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_f2b9b28a2d065659",
+      "bucket": 48,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_f2bbf278df183314",
+      "bucket": 81,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_f327cf5773d1700d",
+      "bucket": 27,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_f394f6412413c252",
+      "bucket": 39,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_f5923e5d14aea130",
+      "bucket": 27,
+      "split": "holdout",
+      "rule": "latest_episode_of_subject",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_f711ea22b22bac0d",
+      "bucket": 67,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    },
+    {
+      "subject_ref": "sub_fd1dd2bd50bd5546",
+      "bucket": 49,
+      "split": "development",
+      "rule": "all_episodes_development",
+      "episodes": 1,
+      "first_analysis_at": "2026-10-08T12:00:00+00:00",
+      "last_analysis_at": "2026-10-08T12:00:00+00:00"
+    }
+  ],
+  "warnings": [
+    "This split is bookkeeping for honest reporting, not a trained-model holdout.",
+    "Episodes are synthetic placeholders; a real holdout needs independent human-reviewed labels.",
+    "Wilson intervals on either side still assume independent episodes."
+  ]
+}

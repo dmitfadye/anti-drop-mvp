@@ -1,0 +1,209 @@
+{
+  "$defs": {
+    "EventMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "synthetic": {
+          "const": true,
+          "default": true,
+          "title": "Synthetic",
+          "type": "boolean"
+        },
+        "schema_version": {
+          "const": "ProductEventV1",
+          "default": "ProductEventV1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "template_version": {
+          "const": "warning-templates-2026.10.08.p1",
+          "default": "warning-templates-2026.10.08.p1",
+          "title": "Template Version",
+          "type": "string"
+        },
+        "latency_ms": {
+          "anyOf": [
+            {
+              "maximum": 3600000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latency Ms"
+        },
+        "http_status": {
+          "anyOf": [
+            {
+              "maximum": 599,
+              "minimum": 100,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Http Status"
+        }
+      },
+      "title": "EventMetadata",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "format": "uuid",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "event_type": {
+      "enum": [
+        "risk_evaluated",
+        "alert_delivered",
+        "alert_viewed",
+        "language_selected",
+        "help_started",
+        "case_created",
+        "case_confirmed",
+        "safe_action_confirmed",
+        "request_failed",
+        "experiment_assigned"
+      ],
+      "title": "Event Type",
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "evaluation_id": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Evaluation Id",
+      "type": "string"
+    },
+    "case_id": {
+      "anyOf": [
+        {
+          "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Case Id"
+    },
+    "experiment_arm": {
+      "anyOf": [
+        {
+          "enum": [
+            "control",
+            "treatment"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Experiment Arm"
+    },
+    "template_id": {
+      "anyOf": [
+        {
+          "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Template Id"
+    },
+    "language": {
+      "anyOf": [
+        {
+          "enum": [
+            "ru",
+            "uz",
+            "tg",
+            "ky",
+            "en",
+            "zh",
+            "ar"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Language"
+    },
+    "rule_version": {
+      "pattern": "^[a-zA-Z0-9._-]{1,80}$",
+      "title": "Rule Version",
+      "type": "string"
+    },
+    "threshold_version": {
+      "pattern": "^[a-zA-Z0-9._-]{1,80}$",
+      "title": "Threshold Version",
+      "type": "string"
+    },
+    "subject_pseudonym": {
+      "anyOf": [
+        {
+          "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Subject Pseudonym"
+    },
+    "outcome_code": {
+      "anyOf": [
+        {
+          "enum": [
+            "ok",
+            "failed",
+            "cancelled",
+            "confirmed_sandbox",
+            "unknown"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Outcome Code"
+    },
+    "metadata": {
+      "$ref": "#/$defs/EventMetadata"
+    }
+  },
+  "required": [
+    "event_id",
+    "event_type",
+    "timestamp",
+    "evaluation_id",
+    "rule_version",
+    "threshold_version"
+  ],
+  "title": "ProductEventV1",
+  "type": "object"
+}

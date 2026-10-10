@@ -1,0 +1,36 @@
+{
+  "schema_version": "blinding-map-v1",
+  "experiment_id": "exp-warning-language-2026.10",
+  "rule_version": null,
+  "note": "Open this only after collection is complete. It maps display_template_id to the real template, arm and locale. It is stored apart from the participant-facing export.",
+  "entries": [
+    {
+      "display_template_id": "blin_49153da43eb7361c",
+      "template_id": "warning_ru_control_v1",
+      "arm": "control",
+      "locale": "ru-RU",
+      "scenario_id": "transit_red"
+    },
+    {
+      "display_template_id": "blin_f2c7f9200d84db6f",
+      "template_id": "warning_uz_treatment_v1",
+      "arm": "treatment",
+      "locale": "uz-UZ",
+      "scenario_id": "transit_red"
+    },
+    {
+      "display_template_id": "blin_0db6252a0196b9d4",
+      "template_id": "warning_ru_control_yellow_v1",
+      "arm": "control",
+      "locale": "ru-RU",
+      "scenario_id": "salary_cash_yellow"
+    },
+    {
+      "display_template_id": "blin_30ff646dd39b8b7a",
+      "template_id": "warning_uz_treatment_yellow_v1",
+      "arm": "treatment",
+      "locale": "uz-UZ",
+      "scenario_id": "salary_cash_yellow"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": "UnderstandingRubricV1",
+  "experiment_id": "exp-warning-language-2026.10",
+  "questions": [
+    "q1: «Что сейчас произошло с моими операциями?» (open understanding check)",
+    "q2: «Что банк предлагает сделать дальше?» (next-step check)",
+    "q3: «Будет ли банк блокировать мои деньги?» (false-promise check: answer must be no)"
+  ],
+  "safe_actions": [
+    "safe_action_chosen",
+    "accepted_advisory"
+  ],
+  "unsafe_actions": [
+    "unsafe_action_chosen",
+    "declined_advisory"
+  ],
+  "status": "EMPTY_TEMPLATE_NOT_COLLECTED",
+  "note": "No participant answers exist in this repository. Any analysis must run on collected data."
+}

@@ -4,7 +4,7 @@
 - тот же ключ + то же тело -> тот же case_id, HTTP 200, Idempotency-Replayed: true;
 - тот же ключ + другое тело -> 422 IDEMPOTENCY_KEY_PAYLOAD_MISMATCH
   (существующий кейс не возвращаем и не переиспользуем);
-- гонка при вставке -> ловим IntegrityError и перечитываем запись.
+- гонка при вставке -> ловим конфликт уникальности и перечитываем запись.
 
 Область действия ключа — (subject_ref, idempotency_key), а не глобальный ключ:
 иначе субъект A мог бы занять ключ и заблокировать им субъекта B, а по коду
@@ -18,22 +18,29 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import sqlite3
+import uuid
 from datetime import datetime, timezone
-from uuid import uuid4
+from typing import Any, Optional, Tuple
 
 from fastapi import Header, Request
+from psycopg2.extras import RealDictCursor
 
 from src.config import MAX_IDEMPOTENCY_KEY_LENGTH, get_logger
+from src.db import _use_postgres
 from src.errors import ApiError
 from src.identity import subject_hash_prefix
 
 log = get_logger("anti_drop.cases")
 
+
+def _pg_cursor(conn: Any):
+    """Dict-курсор для PostgreSQL: строки как отображения колонка->значение,
+    аналогично sqlite3.Row. Дефолтный курсор отдаёт кортежи, с которыми
+    _row_to_case (доступ по именам) не работает."""
+    return conn.cursor(cursor_factory=RealDictCursor)
+
 HEADER_NAME = "Idempotency-Key"
 
-# fullmatch, а не ^...$: в Python '$' матчится перед завершающим '\n',
-# из-за чего ключ "abc\n" проходил бы валидацию.
 IDEMPOTENCY_KEY_PATTERN = r"[A-Za-z0-9._:-]{1,128}"
 KEY_RE = re.compile(IDEMPOTENCY_KEY_PATTERN)
 
@@ -60,7 +67,6 @@ def get_idempotency_key(
         default=None, alias=HEADER_NAME, description=IDEMPOTENCY_KEY_DESCRIPTION, examples=["idem-001"]
     ),
 ) -> str:
-    """Dependency FastAPI. Request даёт фактическое значение, Header — видимость в OpenAPI."""
     header_value = request.headers.get(HEADER_NAME)
     raw = header_value if header_value is not None else idempotency_key
     if raw is None or not raw.strip():
@@ -96,35 +102,74 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _row_to_case(row: sqlite3.Row) -> dict:
-    return {
-        "case_id": row["case_id"],
-        "status": row["status"],
-        "created_at": row["created_at"],
-        "subject_ref": row["subject_ref"],
-        "evaluation_id": row["evaluation_id"],
-        "selected_language": row["selected_language"],
-        "contact_reason": row["contact_reason"],
-        "sandbox": bool(row["sandbox"]),
-    }
-
-
+# Column list for SELECT queries
 _COLUMNS = (
     "case_id, subject_ref, evaluation_id, idempotency_key, payload_hash, "
     "status, created_at, updated_at, sandbox, selected_language, contact_reason"
 )
 
 
-def find_by_idempotency_key(conn: sqlite3.Connection, key: str, subject_ref: str) -> sqlite3.Row | None:
+def _row_to_case(row: Any) -> dict:
+    """Convert DB row to case dict (works for both psycopg2 and sqlite3 rows).
+
+    PostgreSQL возвращает TIMESTAMPTZ как datetime, SQLite — как TEXT:
+    приводим к ISO-строке здесь, чтобы контракт ответа был одинаковым.
+    """
+    return {
+        "case_id": row["case_id"],
+        "subject_ref": row["subject_ref"],
+        "evaluation_id": row["evaluation_id"],
+        "idempotency_key": row["idempotency_key"],
+        "payload_hash": row["payload_hash"],
+        "status": row["status"],
+        "created_at": _as_iso(row["created_at"]),
+        "updated_at": _as_iso(row["updated_at"]),
+        "sandbox": bool(row["sandbox"]),
+        "selected_language": row["selected_language"],
+        "contact_reason": row["contact_reason"],
+    }
+
+
+def _as_iso(value: Any) -> Any:
+    """datetime из PostgreSQL -> ISO-строка; остальное без изменений."""
+    if isinstance(value, datetime):
+        return value.isoformat()
+    return value
+
+
+def _use_postgres() -> bool:
+    from src.config import PG_DSN
+    return bool(PG_DSN)
+
+
+def _get_dialect(conn: Any) -> str:
+    if hasattr(conn, 'cursor') and hasattr(conn, 'dsn'):
+        return "pg"
+    return "sqlite"
+
+
+def find_by_idempotency_key(conn: Any, key: str, subject_ref: str) -> Any:
     """Поиск строго в пределах субъекта: глобальный поиск раскрывал бы чужие кейсы."""
-    return conn.execute(
-        f"SELECT {_COLUMNS} FROM sandbox_cases WHERE idempotency_key = ? AND subject_ref = ?",
-        (key, subject_ref),
-    ).fetchone()
+    if _use_postgres():
+        with _pg_cursor(conn) as cur:
+            cur.execute(
+                "SELECT case_id, subject_ref, evaluation_id, idempotency_key, payload_hash, "
+                "status, created_at, updated_at, sandbox, selected_language, contact_reason "
+                "FROM sandbox_cases WHERE idempotency_key = %s AND subject_ref = %s",
+                (key, subject_ref)
+            )
+            return cur.fetchone()
+    else:
+        return conn.execute(
+            "SELECT case_id, subject_ref, evaluation_id, idempotency_key, payload_hash, "
+            "status, created_at, updated_at, sandbox, selected_language, contact_reason "
+            "FROM sandbox_cases WHERE idempotency_key = ? AND subject_ref = ?",
+            (key, subject_ref)
+        ).fetchone()
 
 
 def create_case(
-    conn: sqlite3.Connection,
+    conn: Any,
     *,
     subject_ref: str,
     idempotency_key: str,
@@ -133,44 +178,59 @@ def create_case(
     contact_reason: str,
     payload_hash: str,
 ) -> tuple[dict, bool]:
-    """Возвращает (case, replayed). Ошибка БД поднимается наружу как 503."""
     existing = find_by_idempotency_key(conn, idempotency_key, subject_ref)
     if existing is not None:
         return _replay_or_mismatch(existing, payload_hash, subject_ref)
 
-    case_id = "case_" + uuid4().hex
+    case_id = "case_" + uuid.uuid4().hex
     now = _utc_now()
-    try:
-        conn.execute(
-            "INSERT INTO sandbox_cases ("
-            "case_id, subject_ref, evaluation_id, idempotency_key, payload_hash, "
-            "status, created_at, updated_at, sandbox, selected_language, contact_reason"
-            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (
-                case_id,
-                subject_ref,
-                evaluation_id,
-                idempotency_key,
-                payload_hash,
-                "created",
-                now,
-                None,
-                1,
-                selected_language,
-                contact_reason,
-            ),
-        )
-        conn.commit()
-    except sqlite3.IntegrityError:
-        # Гонка: параллельный запрос с тем же ключом и тем же субъектом вставил раньше нас.
-        row = find_by_idempotency_key(conn, idempotency_key, subject_ref)
-        if row is None:
-            log.exception("case_insert_conflict_without_row subject_hash=%s",
-                          subject_hash_prefix(subject_ref))
-            raise ApiError(503, "STORAGE_UNAVAILABLE", "Не удалось сохранить обращение. Попробуйте позже.")
-        log.info("case_conflict_resolved subject_hash=%s replayed=true",
-                 subject_hash_prefix(subject_ref))
-        return _replay_or_mismatch(row, payload_hash, subject_ref)
+
+    if _use_postgres():
+        with _pg_cursor(conn) as cur:
+            try:
+                cur.execute("""
+                    INSERT INTO sandbox_cases (
+                        case_id, subject_ref, evaluation_id, idempotency_key, payload_hash,
+                        status, created_at, updated_at, sandbox, selected_language, contact_reason
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (subject_ref, idempotency_key) DO UPDATE SET
+                        payload_hash = EXCLUDED.payload_hash
+                    RETURNING case_id, subject_ref, evaluation_id, idempotency_key, payload_hash,
+                              status, created_at, updated_at, sandbox, selected_language, contact_reason
+                """, (
+                    case_id, subject_ref, evaluation_id, idempotency_key, payload_hash,
+                    "created", now, None, True, selected_language, contact_reason
+                ))
+                row = cur.fetchone()
+                conn.commit()
+                if row:
+                    return _row_to_case(dict(row)), False
+            except Exception:
+                conn.rollback()
+                raise
+    else:
+        # SQLite path
+        existing = find_by_idempotency_key(conn, idempotency_key, subject_ref)
+        if existing is not None:
+            return _replay_or_mismatch(existing, payload_hash, subject_ref)
+
+        try:
+            conn.execute(
+                """INSERT INTO sandbox_cases (
+                    case_id, subject_ref, evaluation_id, idempotency_key, payload_hash,
+                    status, created_at, updated_at, sandbox, selected_language, contact_reason
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (case_id, subject_ref, evaluation_id, idempotency_key, payload_hash,
+                 "created", now, None, 1, selected_language, contact_reason)
+            )
+            conn.commit()
+        except Exception as exc:
+            if "UNIQUE constraint failed" in str(exc) or "unique constraint" in str(exc).lower():
+                row = find_by_idempotency_key(conn, idempotency_key, subject_ref)
+                if row is None:
+                    raise ApiError(503, "STORAGE_UNAVAILABLE", "Не удалось сохранить обращение. Попробуйте позже.")
+                return _replay_or_mismatch(row, payload_hash, subject_ref)
+            raise
 
     log.info("case_created case_id=%s subject_hash=%s evaluation_id=%s language=%s reason=%s",
              case_id, subject_hash_prefix(subject_ref), evaluation_id, selected_language, contact_reason)
@@ -186,44 +246,72 @@ def create_case(
     }, False
 
 
-def _replay_or_mismatch(row: sqlite3.Row, payload_hash: str, subject_ref: str) -> tuple[dict, bool]:
-    if row["payload_hash"] != payload_hash:
+def _replay_or_mismatch(row: Any, payload_hash: str, subject_ref: str) -> tuple[dict, bool]:
+    case = _row_to_case(row)
+    if case["payload_hash"] != payload_hash:
         log.info("idempotency_mismatch case_id=%s subject_hash=%s",
-                 row["case_id"], subject_hash_prefix(subject_ref))
+                 case["case_id"], subject_hash_prefix(subject_ref))
         raise ApiError(
             422,
             "IDEMPOTENCY_KEY_PAYLOAD_MISMATCH",
             "Idempotency-Key уже использован с другим содержимым запроса.",
-            field=HEADER_NAME,
+            field="Idempotency-Key",
         )
-    log.info("case_replayed case_id=%s subject_hash=%s", row["case_id"],
-             subject_hash_prefix(subject_ref))
-    return _row_to_case(row), True
+    log.info("case_replayed case_id=%s subject_hash=%s",
+             case["case_id"], subject_hash_prefix(subject_ref))
+    return case, True
 
 
-def get_case_for_subject(conn: sqlite3.Connection, case_id: str, subject_ref: str) -> dict | None:
-    """Поиск строго по (case_id, subject_ref).
-
-    Кейс чужого субъекта намеренно неразличим от несуществующего (404, не 403),
-    чтобы по коду ответа нельзя было проверить существование чужого кейса.
-    """
-    row = conn.execute(
-        f"SELECT {_COLUMNS} FROM sandbox_cases WHERE case_id = ? AND subject_ref = ?",
-        (case_id, subject_ref),
-    ).fetchone()
-    return _row_to_case(row) if row is not None else None
+def get_case_for_subject(conn: Any, case_id: str, subject_ref: str) -> dict | None:
+    if _use_postgres():
+        with _pg_cursor(conn) as cur:
+            cur.execute(
+                "SELECT case_id, subject_ref, evaluation_id, idempotency_key, payload_hash, "
+                "status, created_at, updated_at, sandbox, selected_language, contact_reason "
+                "FROM sandbox_cases WHERE case_id = %s AND subject_ref = %s",
+                (case_id, subject_ref)
+            )
+            row = cur.fetchone()
+            return _row_to_case(row) if row else None
+    else:
+        row = conn.execute(
+            "SELECT case_id, subject_ref, evaluation_id, idempotency_key, payload_hash, "
+            "status, created_at, updated_at, sandbox, selected_language, contact_reason "
+            "FROM sandbox_cases WHERE case_id = ? AND subject_ref = ?",
+            (case_id, subject_ref)
+        ).fetchone()
+        return _row_to_case(row) if row else None
 
 
 def list_cases_for_subject(
-    conn: sqlite3.Connection, subject_ref: str, limit: int, offset: int
+    conn: Any, subject_ref: str, limit: int, offset: int
 ) -> tuple[list[dict], int]:
-    """Возвращает (страница кейсов, total_count по субъекту)."""
-    rows = conn.execute(
-        f"SELECT {_COLUMNS} FROM sandbox_cases WHERE subject_ref = ? "
-        "ORDER BY created_at DESC, case_id DESC LIMIT ? OFFSET ?",
-        (subject_ref, limit, offset),
-    ).fetchall()
-    total = conn.execute(
-        "SELECT COUNT(*) FROM sandbox_cases WHERE subject_ref = ?", (subject_ref,)
-    ).fetchone()[0]
-    return [_row_to_case(r) for r in rows], int(total)
+    if _use_postgres():
+        with _pg_cursor(conn) as cur:
+            cur.execute(
+                "SELECT case_id, subject_ref, evaluation_id, idempotency_key, payload_hash, "
+                "status, created_at, updated_at, sandbox, selected_language, contact_reason "
+                "FROM sandbox_cases WHERE subject_ref = %s "
+                "ORDER BY created_at DESC, case_id DESC LIMIT %s OFFSET %s",
+                (subject_ref, limit, offset)
+            )
+            rows = cur.fetchall()
+            cur.execute(
+                "SELECT COUNT(*) AS total FROM sandbox_cases WHERE subject_ref = %s",
+                (subject_ref,)
+            )
+            total = cur.fetchone()["total"]
+            return [_row_to_case(dict(row)) for row in rows], int(total)
+    else:
+        rows = conn.execute(
+            "SELECT case_id, subject_ref, evaluation_id, idempotency_key, payload_hash, "
+            "status, created_at, updated_at, sandbox, selected_language, contact_reason "
+            "FROM sandbox_cases WHERE subject_ref = ? "
+            "ORDER BY created_at DESC, case_id DESC LIMIT ? OFFSET ?",
+            (subject_ref, limit, offset)
+        ).fetchall()
+        total = conn.execute(
+            "SELECT COUNT(*) FROM sandbox_cases WHERE subject_ref = ?",
+            (subject_ref,)
+        ).fetchone()[0]
+        return [_row_to_case(row) for row in rows], int(total)

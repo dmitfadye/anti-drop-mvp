@@ -1,0 +1,272 @@
+{
+  "schema_version": "BusinessThresholdV1",
+  "status": "ASSUMPTION_DRIVEN",
+  "inputs": {
+    "cost_false_alert_rubles": 650.0,
+    "cost_missed_risk_rubles": 45000.0,
+    "prevalence_assumption": 0.002,
+    "note": "costs and prevalence are ASSUMPTIONS supplied by the caller; no bank data exists"
+  },
+  "dataset_prevalence": 0.5892857142857143,
+  "prevalence_sensitivity": [
+    {
+      "prevalence": 0.001,
+      "note": "synthetic weighting; the dataset prevalence is 0.5893, so re-weighting changes the optimal threshold"
+    },
+    {
+      "prevalence": 0.005,
+      "note": "synthetic weighting; the dataset prevalence is 0.5893, so re-weighting changes the optimal threshold"
+    },
+    {
+      "prevalence": 0.02,
+      "note": "synthetic weighting; the dataset prevalence is 0.5893, so re-weighting changes the optimal threshold"
+    },
+    {
+      "prevalence": 0.05,
+      "note": "synthetic weighting; the dataset prevalence is 0.5893, so re-weighting changes the optimal threshold"
+    },
+    {
+      "prevalence": 0.5893,
+      "note": "synthetic weighting; the dataset prevalence is 0.5893, so re-weighting changes the optimal threshold"
+    }
+  ],
+  "best_threshold_by_cost": 0,
+  "rows": [
+    {
+      "score_threshold": 0,
+      "alerts": 56,
+      "TP": 33,
+      "FP": 23,
+      "FN": 0,
+      "expected_cost": 14950.0,
+      "expected_cost_per_1000_episodes": 266964.29,
+      "recall": 1.0,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 5,
+      "alerts": 41,
+      "TP": 31,
+      "FP": 10,
+      "FN": 2,
+      "expected_cost": 96500.0,
+      "expected_cost_per_1000_episodes": 1723214.29,
+      "recall": 0.9393939393939394,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 10,
+      "alerts": 41,
+      "TP": 31,
+      "FP": 10,
+      "FN": 2,
+      "expected_cost": 96500.0,
+      "expected_cost_per_1000_episodes": 1723214.29,
+      "recall": 0.9393939393939394,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 15,
+      "alerts": 39,
+      "TP": 31,
+      "FP": 8,
+      "FN": 2,
+      "expected_cost": 95200.0,
+      "expected_cost_per_1000_episodes": 1700000.0,
+      "recall": 0.9393939393939394,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 20,
+      "alerts": 39,
+      "TP": 31,
+      "FP": 8,
+      "FN": 2,
+      "expected_cost": 95200.0,
+      "expected_cost_per_1000_episodes": 1700000.0,
+      "recall": 0.9393939393939394,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 25,
+      "alerts": 39,
+      "TP": 31,
+      "FP": 8,
+      "FN": 2,
+      "expected_cost": 95200.0,
+      "expected_cost_per_1000_episodes": 1700000.0,
+      "recall": 0.9393939393939394,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 30,
+      "alerts": 37,
+      "TP": 31,
+      "FP": 6,
+      "FN": 2,
+      "expected_cost": 93900.0,
+      "expected_cost_per_1000_episodes": 1676785.71,
+      "recall": 0.9393939393939394,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 35,
+      "alerts": 37,
+      "TP": 31,
+      "FP": 6,
+      "FN": 2,
+      "expected_cost": 93900.0,
+      "expected_cost_per_1000_episodes": 1676785.71,
+      "recall": 0.9393939393939394,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 40,
+      "alerts": 37,
+      "TP": 31,
+      "FP": 6,
+      "FN": 2,
+      "expected_cost": 93900.0,
+      "expected_cost_per_1000_episodes": 1676785.71,
+      "recall": 0.9393939393939394,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 45,
+      "alerts": 37,
+      "TP": 31,
+      "FP": 6,
+      "FN": 2,
+      "expected_cost": 93900.0,
+      "expected_cost_per_1000_episodes": 1676785.71,
+      "recall": 0.9393939393939394,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 50,
+      "alerts": 31,
+      "TP": 31,
+      "FP": 0,
+      "FN": 2,
+      "expected_cost": 90000.0,
+      "expected_cost_per_1000_episodes": 1607142.86,
+      "recall": 0.9393939393939394,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 55,
+      "alerts": 30,
+      "TP": 30,
+      "FP": 0,
+      "FN": 3,
+      "expected_cost": 135000.0,
+      "expected_cost_per_1000_episodes": 2410714.29,
+      "recall": 0.9090909090909091,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 60,
+      "alerts": 30,
+      "TP": 30,
+      "FP": 0,
+      "FN": 3,
+      "expected_cost": 135000.0,
+      "expected_cost_per_1000_episodes": 2410714.29,
+      "recall": 0.9090909090909091,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 65,
+      "alerts": 30,
+      "TP": 30,
+      "FP": 0,
+      "FN": 3,
+      "expected_cost": 135000.0,
+      "expected_cost_per_1000_episodes": 2410714.29,
+      "recall": 0.9090909090909091,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 70,
+      "alerts": 30,
+      "TP": 30,
+      "FP": 0,
+      "FN": 3,
+      "expected_cost": 135000.0,
+      "expected_cost_per_1000_episodes": 2410714.29,
+      "recall": 0.9090909090909091,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 75,
+      "alerts": 4,
+      "TP": 4,
+      "FP": 0,
+      "FN": 29,
+      "expected_cost": 1305000.0,
+      "expected_cost_per_1000_episodes": 23303571.43,
+      "recall": 0.12121212121212122,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 80,
+      "alerts": 4,
+      "TP": 4,
+      "FP": 0,
+      "FN": 29,
+      "expected_cost": 1305000.0,
+      "expected_cost_per_1000_episodes": 23303571.43,
+      "recall": 0.12121212121212122,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 85,
+      "alerts": 2,
+      "TP": 2,
+      "FP": 0,
+      "FN": 31,
+      "expected_cost": 1395000.0,
+      "expected_cost_per_1000_episodes": 24910714.29,
+      "recall": 0.06060606060606061,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 90,
+      "alerts": 1,
+      "TP": 1,
+      "FP": 0,
+      "FN": 32,
+      "expected_cost": 1440000.0,
+      "expected_cost_per_1000_episodes": 25714285.71,
+      "recall": 0.030303030303030304,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 95,
+      "alerts": 1,
+      "TP": 1,
+      "FP": 0,
+      "FN": 32,
+      "expected_cost": 1440000.0,
+      "expected_cost_per_1000_episodes": 25714285.71,
+      "recall": 0.030303030303030304,
+      "prevalence_in_dataset": 0.5892857142857143
+    },
+    {
+      "score_threshold": 100,
+      "alerts": 0,
+      "TP": 0,
+      "FP": 0,
+      "FN": 33,
+      "expected_cost": 1485000.0,
+      "expected_cost_per_1000_episodes": 26517857.14,
+      "recall": 0.0,
+      "prevalence_in_dataset": 0.5892857142857143
+    }
+  ],
+  "warnings": [
+    "Costs and prevalence are assumptions, not measurements.",
+    "Expected cost scales linearly with episode volume and ignores clustering by subject.",
+    "A threshold chosen here must be re-derived on an independent holdout before a pilot."
+  ]
+}

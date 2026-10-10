@@ -1,0 +1,1398 @@
+{
+  "schema_version": "EvaluationMetricsV1",
+  "scope": {
+    "primary_episode_classes": [
+      "normal",
+      "risk",
+      "legitimate_negative"
+    ],
+    "edge_episode_classes": [
+      "edge"
+    ],
+    "positive_definition": "level == RED"
+  },
+  "overall": {
+    "total_episodes": 56,
+    "TP": 31,
+    "FP": 0,
+    "TN": 23,
+    "FN": 2,
+    "recall": {
+      "value": 0.9393939393939394,
+      "numerator": 31,
+      "denominator": 33,
+      "wilson_95_ci": [
+        0.8039341828220181,
+        0.9832194695709291
+      ]
+    },
+    "precision": {
+      "value": 1.0,
+      "numerator": 31,
+      "denominator": 31,
+      "wilson_95_ci": [
+        0.889740999265246,
+        0.9999999999999999
+      ]
+    },
+    "fpr": {
+      "value": 0.0,
+      "numerator": 0,
+      "denominator": 23,
+      "wilson_95_ci": [
+        0.0,
+        0.14312112541726274
+      ]
+    },
+    "fnr": {
+      "value": 0.06060606060606061,
+      "numerator": 2,
+      "denominator": 33,
+      "wilson_95_ci": [
+        0.016780530429070947,
+        0.19606581717798194
+      ]
+    },
+    "alert_rate": {
+      "value": 0.5535714285714286,
+      "numerator": 31,
+      "denominator": 56,
+      "wilson_95_ci": [
+        0.42412986131783886,
+        0.676134837487006
+      ]
+    },
+    "legitimate_negative_alert_rate": {
+      "value": 0.0,
+      "numerator": 0,
+      "denominator": 12,
+      "wilson_95_ci": [
+        0.0,
+        0.2425007574992425
+      ]
+    }
+  },
+  "overall_all_classes": {
+    "total_episodes": 81,
+    "TP": 34,
+    "FP": 0,
+    "TN": 31,
+    "FN": 16,
+    "recall": {
+      "value": 0.68,
+      "numerator": 34,
+      "denominator": 50,
+      "wilson_95_ci": [
+        0.5418944286372394,
+        0.792419559060006
+      ]
+    },
+    "precision": {
+      "value": 1.0,
+      "numerator": 34,
+      "denominator": 34,
+      "wilson_95_ci": [
+        0.8984820937803899,
+        1.0
+      ]
+    },
+    "fpr": {
+      "value": 0.0,
+      "numerator": 0,
+      "denominator": 31,
+      "wilson_95_ci": [
+        0.0,
+        0.11025900073475385
+      ]
+    },
+    "fnr": {
+      "value": 0.32,
+      "numerator": 16,
+      "denominator": 50,
+      "wilson_95_ci": [
+        0.20758044093999403,
+        0.45810557136276076
+      ]
+    },
+    "alert_rate": {
+      "value": 0.41975308641975306,
+      "numerator": 34,
+      "denominator": 81,
+      "wilson_95_ci": [
+        0.3183079093457035,
+        0.528465371686243
+      ]
+    },
+    "legitimate_negative_alert_rate": {
+      "value": 0.0,
+      "numerator": 0,
+      "denominator": 12,
+      "wilson_95_ci": [
+        0.0,
+        0.2425007574992425
+      ]
+    }
+  },
+  "breakdown": {
+    "episode_class": {
+      "normal": {
+        "total_episodes": 11,
+        "TP": 0,
+        "FP": 0,
+        "TN": 11,
+        "FN": 0,
+        "recall": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 11,
+          "wilson_95_ci": [
+            2.7755575615628914e-17,
+            0.2588400172488141
+          ]
+        },
+        "fnr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 11,
+          "wilson_95_ci": [
+            2.7755575615628914e-17,
+            0.2588400172488141
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      },
+      "risk": {
+        "total_episodes": 33,
+        "TP": 31,
+        "FP": 0,
+        "TN": 0,
+        "FN": 2,
+        "recall": {
+          "value": 0.9393939393939394,
+          "numerator": 31,
+          "denominator": 33,
+          "wilson_95_ci": [
+            0.8039341828220181,
+            0.9832194695709291
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 31,
+          "denominator": 31,
+          "wilson_95_ci": [
+            0.889740999265246,
+            0.9999999999999999
+          ]
+        },
+        "fpr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fnr": {
+          "value": 0.06060606060606061,
+          "numerator": 2,
+          "denominator": 33,
+          "wilson_95_ci": [
+            0.016780530429070947,
+            0.19606581717798194
+          ]
+        },
+        "alert_rate": {
+          "value": 0.9393939393939394,
+          "numerator": 31,
+          "denominator": 33,
+          "wilson_95_ci": [
+            0.8039341828220181,
+            0.9832194695709291
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      },
+      "legitimate_negative": {
+        "total_episodes": 12,
+        "TP": 0,
+        "FP": 0,
+        "TN": 12,
+        "FN": 0,
+        "recall": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 12,
+          "wilson_95_ci": [
+            0.0,
+            0.2425007574992425
+          ]
+        },
+        "fnr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 12,
+          "wilson_95_ci": [
+            0.0,
+            0.2425007574992425
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 12,
+          "wilson_95_ci": [
+            0.0,
+            0.2425007574992425
+          ]
+        }
+      },
+      "edge": {
+        "total_episodes": 25,
+        "TP": 3,
+        "FP": 0,
+        "TN": 8,
+        "FN": 14,
+        "recall": {
+          "value": 0.17647058823529413,
+          "numerator": 3,
+          "denominator": 17,
+          "wilson_95_ci": [
+            0.0619101371254899,
+            0.41029929017375777
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 3,
+          "denominator": 3,
+          "wilson_95_ci": [
+            0.43849391955098227,
+            1.0
+          ]
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 8,
+          "wilson_95_ci": [
+            0.0,
+            0.3244156195108769
+          ]
+        },
+        "fnr": {
+          "value": 0.8235294117647058,
+          "numerator": 14,
+          "denominator": 17,
+          "wilson_95_ci": [
+            0.5897007098262422,
+            0.9380898628745101
+          ]
+        },
+        "alert_rate": {
+          "value": 0.12,
+          "numerator": 3,
+          "denominator": 25,
+          "wilson_95_ci": [
+            0.04166741357068093,
+            0.2995619218337349
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      }
+    },
+    "label_source": {
+      "synthetic_placeholder": {
+        "total_episodes": 81,
+        "TP": 34,
+        "FP": 0,
+        "TN": 31,
+        "FN": 16,
+        "recall": {
+          "value": 0.68,
+          "numerator": 34,
+          "denominator": 50,
+          "wilson_95_ci": [
+            0.5418944286372394,
+            0.792419559060006
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 34,
+          "denominator": 34,
+          "wilson_95_ci": [
+            0.8984820937803899,
+            1.0
+          ]
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 31,
+          "wilson_95_ci": [
+            0.0,
+            0.11025900073475385
+          ]
+        },
+        "fnr": {
+          "value": 0.32,
+          "numerator": 16,
+          "denominator": 50,
+          "wilson_95_ci": [
+            0.20758044093999403,
+            0.45810557136276076
+          ]
+        },
+        "alert_rate": {
+          "value": 0.41975308641975306,
+          "numerator": 34,
+          "denominator": 81,
+          "wilson_95_ci": [
+            0.3183079093457035,
+            0.528465371686243
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 12,
+          "wilson_95_ci": [
+            0.0,
+            0.2425007574992425
+          ]
+        }
+      }
+    },
+    "is_holdout": {
+      "false": {
+        "total_episodes": 81,
+        "TP": 34,
+        "FP": 0,
+        "TN": 31,
+        "FN": 16,
+        "recall": {
+          "value": 0.68,
+          "numerator": 34,
+          "denominator": 50,
+          "wilson_95_ci": [
+            0.5418944286372394,
+            0.792419559060006
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 34,
+          "denominator": 34,
+          "wilson_95_ci": [
+            0.8984820937803899,
+            1.0
+          ]
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 31,
+          "wilson_95_ci": [
+            0.0,
+            0.11025900073475385
+          ]
+        },
+        "fnr": {
+          "value": 0.32,
+          "numerator": 16,
+          "denominator": 50,
+          "wilson_95_ci": [
+            0.20758044093999403,
+            0.45810557136276076
+          ]
+        },
+        "alert_rate": {
+          "value": 0.41975308641975306,
+          "numerator": 34,
+          "denominator": 81,
+          "wilson_95_ci": [
+            0.3183079093457035,
+            0.528465371686243
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 12,
+          "wilson_95_ci": [
+            0.0,
+            0.2425007574992425
+          ]
+        }
+      },
+      "true": {
+        "total_episodes": 0,
+        "TP": 0,
+        "FP": 0,
+        "TN": 0,
+        "FN": 0,
+        "recall": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fpr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fnr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      }
+    },
+    "sim_profile": {
+      "absent": {
+        "total_episodes": 1,
+        "TP": 0,
+        "FP": 0,
+        "TN": 1,
+        "FN": 0,
+        "recall": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "fnr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      },
+      "fresh_0d": {
+        "total_episodes": 3,
+        "TP": 2,
+        "FP": 0,
+        "TN": 1,
+        "FN": 0,
+        "recall": {
+          "value": 1.0,
+          "numerator": 2,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.34237195288961925,
+            1.0
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 2,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.34237195288961925,
+            1.0
+          ]
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "fnr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.0,
+            0.6576280471103807
+          ]
+        },
+        "alert_rate": {
+          "value": 0.6666666666666666,
+          "numerator": 2,
+          "denominator": 3,
+          "wilson_95_ci": [
+            0.2076549551264879,
+            0.9385096847238394
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        }
+      },
+      "fresh_1d": {
+        "total_episodes": 1,
+        "TP": 1,
+        "FP": 0,
+        "TN": 0,
+        "FN": 0,
+        "recall": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.20654329147389294,
+            1.0
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.20654329147389294,
+            1.0
+          ]
+        },
+        "fpr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fnr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "alert_rate": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.20654329147389294,
+            1.0
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      },
+      "fresh_2d": {
+        "total_episodes": 1,
+        "TP": 1,
+        "FP": 0,
+        "TN": 0,
+        "FN": 0,
+        "recall": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.20654329147389294,
+            1.0
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.20654329147389294,
+            1.0
+          ]
+        },
+        "fpr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fnr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "alert_rate": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.20654329147389294,
+            1.0
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      },
+      "null_only": {
+        "total_episodes": 73,
+        "TP": 30,
+        "FP": 0,
+        "TN": 29,
+        "FN": 14,
+        "recall": {
+          "value": 0.6818181818181818,
+          "numerator": 30,
+          "denominator": 44,
+          "wilson_95_ci": [
+            0.5344282746687306,
+            0.8000087006832644
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 30,
+          "denominator": 30,
+          "wilson_95_ci": [
+            0.8864829086095221,
+            1.0
+          ]
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 29,
+          "wilson_95_ci": [
+            0.0,
+            0.11697359446555587
+          ]
+        },
+        "fnr": {
+          "value": 0.3181818181818182,
+          "numerator": 14,
+          "denominator": 44,
+          "wilson_95_ci": [
+            0.19999129931673562,
+            0.46557172533126934
+          ]
+        },
+        "alert_rate": {
+          "value": 0.410958904109589,
+          "numerator": 30,
+          "denominator": 73,
+          "wilson_95_ci": [
+            0.30531095731906,
+            0.5255098480780166
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 11,
+          "wilson_95_ci": [
+            2.7755575615628914e-17,
+            0.2588400172488141
+          ]
+        }
+      },
+      "stale_30d": {
+        "total_episodes": 1,
+        "TP": 0,
+        "FP": 0,
+        "TN": 0,
+        "FN": 1,
+        "recall": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fpr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fnr": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.20654329147389294,
+            1.0
+          ]
+        },
+        "alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      },
+      "stale_3d": {
+        "total_episodes": 1,
+        "TP": 0,
+        "FP": 0,
+        "TN": 0,
+        "FN": 1,
+        "recall": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fpr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fnr": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.20654329147389294,
+            1.0
+          ]
+        },
+        "alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      }
+    },
+    "device_novelty": {
+      "false": {
+        "total_episodes": 79,
+        "TP": 33,
+        "FP": 0,
+        "TN": 30,
+        "FN": 16,
+        "recall": {
+          "value": 0.673469387755102,
+          "numerator": 33,
+          "denominator": 49,
+          "wilson_95_ci": [
+            0.5337894368740628,
+            0.7879267867073578
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 33,
+          "denominator": 33,
+          "wilson_95_ci": [
+            0.8957265699643882,
+            1.0
+          ]
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 30,
+          "wilson_95_ci": [
+            0.0,
+            0.113517091390478
+          ]
+        },
+        "fnr": {
+          "value": 0.32653061224489793,
+          "numerator": 16,
+          "denominator": 49,
+          "wilson_95_ci": [
+            0.21207321329264214,
+            0.4662105631259371
+          ]
+        },
+        "alert_rate": {
+          "value": 0.4177215189873418,
+          "numerator": 33,
+          "denominator": 79,
+          "wilson_95_ci": [
+            0.3152645504906467,
+            0.5278094606341988
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 11,
+          "wilson_95_ci": [
+            2.7755575615628914e-17,
+            0.2588400172488141
+          ]
+        }
+      },
+      "true": {
+        "total_episodes": 2,
+        "TP": 1,
+        "FP": 0,
+        "TN": 1,
+        "FN": 0,
+        "recall": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.20654329147389294,
+            1.0
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 1,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.20654329147389294,
+            1.0
+          ]
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "fnr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "alert_rate": {
+          "value": 0.5,
+          "numerator": 1,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.09452865480086614,
+            0.9054713451991339
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        }
+      }
+    },
+    "hour_bucket_local": {
+      "day_12_17": {
+        "total_episodes": 68,
+        "TP": 32,
+        "FP": 0,
+        "TN": 20,
+        "FN": 16,
+        "recall": {
+          "value": 0.6666666666666666,
+          "numerator": 32,
+          "denominator": 48,
+          "wilson_95_ci": [
+            0.5253984633247204,
+            0.783233986291032
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 32,
+          "denominator": 32,
+          "wilson_95_ci": [
+            0.8928172849426366,
+            1.0
+          ]
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 20,
+          "wilson_95_ci": [
+            0.0,
+            0.16113012549493322
+          ]
+        },
+        "fnr": {
+          "value": 0.3333333333333333,
+          "numerator": 16,
+          "denominator": 48,
+          "wilson_95_ci": [
+            0.2167660137089678,
+            0.47460153667527943
+          ]
+        },
+        "alert_rate": {
+          "value": 0.47058823529411764,
+          "numerator": 32,
+          "denominator": 68,
+          "wilson_95_ci": [
+            0.3567291108779441,
+            0.5875928418625294
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 10,
+          "wilson_95_ci": [
+            0.0,
+            0.2775401687666166
+          ]
+        }
+      },
+      "morning_06_11": {
+        "total_episodes": 5,
+        "TP": 0,
+        "FP": 0,
+        "TN": 5,
+        "FN": 0,
+        "recall": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 5,
+          "wilson_95_ci": [
+            0.0,
+            0.43449149475208104
+          ]
+        },
+        "fnr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 5,
+          "wilson_95_ci": [
+            0.0,
+            0.43449149475208104
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        }
+      },
+      "night_00_05": {
+        "total_episodes": 7,
+        "TP": 2,
+        "FP": 0,
+        "TN": 5,
+        "FN": 0,
+        "recall": {
+          "value": 1.0,
+          "numerator": 2,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.34237195288961925,
+            1.0
+          ]
+        },
+        "precision": {
+          "value": 1.0,
+          "numerator": 2,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.34237195288961925,
+            1.0
+          ]
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 5,
+          "wilson_95_ci": [
+            0.0,
+            0.43449149475208104
+          ]
+        },
+        "fnr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 2,
+          "wilson_95_ci": [
+            0.0,
+            0.6576280471103807
+          ]
+        },
+        "alert_rate": {
+          "value": 0.2857142857142857,
+          "numerator": 2,
+          "denominator": 7,
+          "wilson_95_ci": [
+            0.0822171657090155,
+            0.6410709098517873
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        }
+      },
+      "unknown": {
+        "total_episodes": 1,
+        "TP": 0,
+        "FP": 0,
+        "TN": 1,
+        "FN": 0,
+        "recall": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "precision": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "fpr": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "fnr": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        },
+        "alert_rate": {
+          "value": 0.0,
+          "numerator": 0,
+          "denominator": 1,
+          "wilson_95_ci": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "legitimate_negative_alert_rate": {
+          "value": null,
+          "numerator": 0,
+          "denominator": 0,
+          "wilson_95_ci": null
+        }
+      }
+    }
+  },
+  "edge_case_behavior_summary": {
+    "schema_version": "EdgeCaseBehaviorV1",
+    "episodes": 25,
+    "levels": {
+      "GREEN": 8,
+      "RED": 3,
+      "YELLOW": 14
+    },
+    "borderline_window_flagged": 3,
+    "insufficient_data_episodes": [
+      "ep_3feb3692e267adbd"
+    ],
+    "notes": [
+      "Edge fixtures test boundary behaviour, not accuracy; they are excluded from the primary confusion matrix.",
+      "Edge episodes with a risk pattern but only one firing rule are expected to stay YELLOW at the RED threshold.",
+      "Any RED on an edge fixture is listed in top_false_positive_patterns and needs review."
+    ]
+  },
+  "missing_data_rate": {
+    "schema_version": "MissingDataSummaryV1",
+    "episodes": 81,
+    "missing_sim": {
+      "episodes": 73,
+      "observed_episodes": 81,
+      "rate": 0.9012345679012346
+    },
+    "missing_device": {
+      "episodes": 78,
+      "observed_episodes": 81,
+      "rate": 0.9629629629629629
+    },
+    "any_missing": {
+      "episodes": 80,
+      "observed_episodes": 81,
+      "rate": 0.9876543209876543
+    },
+    "insufficient_data_status": 1,
+    "note": "Missing data lowers rule sensitivity; it never manufactures a reason code on its own. A rate is undefined when no episode was observed for that field, never shown as zero."
+  },
+  "error_patterns": {
+    "schema_version": "ErrorPatternsV1",
+    "false_positive_count": 0,
+    "false_negative_count": 16,
+    "top_false_positive_patterns": [],
+    "top_false_negative_patterns": [
+      {
+        "reason_code_shape": "multiple_small_inbound",
+        "count": 11,
+        "episode_ids": [
+          "ep_063c3eaa42d84136",
+          "ep_1663dfc3355166a9",
+          "ep_34467c34b006ee4d",
+          "ep_38b14c0494919759",
+          "ep_7aa361a34b1f7471",
+          "ep_8b2ccfcb509a877c",
+          "ep_8f86663e496433ec",
+          "ep_9466acfb168b24b7",
+          "ep_e33e4c9f01040252",
+          "ep_e7d4ef0e18911230",
+          "ep_f2bbf278df183314"
+        ],
+        "scenario_names": [
+          "edge_amount_499999",
+          "edge_amount_500000",
+          "edge_count_3",
+          "edge_count_4",
+          "edge_count_5",
+          "edge_sim_3",
+          "edge_sim_30",
+          "edge_sim_null",
+          "missing_no_device_id",
+          "missing_no_device_no_sim",
+          "missing_no_sim_field"
+        ],
+        "episode_classes": [
+          "edge"
+        ]
+      },
+      {
+        "reason_code_shape": "no_reason_code",
+        "count": 3,
+        "episode_ids": [
+          "ep_3d301ade813df16b",
+          "ep_642b904c6db901cc",
+          "ep_70ed4125a0bcb6ab"
+        ],
+        "scenario_names": [
+          "adversarial_single_counterparty_split",
+          "adversarial_wait_out_the_window",
+          "missing_no_counterparty_ref"
+        ],
+        "episode_classes": [
+          "edge",
+          "risk"
+        ]
+      },
+      {
+        "reason_code_shape": "borderline_window+multiple_small_inbound",
+        "count": 2,
+        "episode_ids": [
+          "ep_0cc8ae050c265c32",
+          "ep_cf5ea4aff0b0ee6d"
+        ],
+        "scenario_names": [
+          "edge_window_59",
+          "edge_window_60"
+        ],
+        "episode_classes": [
+          "edge"
+        ]
+      }
+    ],
+    "interpretation": [
+      "False positives on family collections are expected: a declared purpose does not change the observable flow.",
+      "False negatives concentrated on single-counterparty or out-of-window patterns are documented detector blind spots.",
+      "Both lists are synthetic fixtures; neither is a validated bank error profile."
+    ]
+  },
+  "language_invariance": {
+    "schema_version": "LanguageInvarianceV1",
+    "attempts": 486,
+    "rejected": 486,
+    "accepted": 0,
+    "all_rejected": true,
+    "statement": "The risk snapshot contract has no language, locale, citizenship or ethnicity field, so none of them can reach the rules. Language is a presentation attribute only."
+  },
+  "warnings": [
+    "Rule score is not probability. Warnings are not legal conclusions. No banking actions are performed.",
+    "Wilson intervals assume independent episodes; repeated subjects and synthetic labels do not establish bank accuracy.",
+    "PR threshold sweeps are descriptive; do not tune on a holdout used to report performance.",
+    "Primary metrics cover normal/risk/legitimate_negative episodes only; edge and missing-data fixtures are boundary checks.",
+    "The warning is post-event: without an approved pre-transfer mode the client is informed after the transaction, not before.",
+    "UNVALIDATED LABELS: synthetic_placeholder/unknown labels are pipeline fixtures, NOT validated banking accuracy.",
+    "Not an exclusively held-out evaluation. Independent human-reviewed holdout is required.",
+    "SMALL SAMPLE: 81 episodes. Rates move a lot with one episode; do not quote them externally.",
+    "Adversarial fixtures present (3): adversarial_single_counterparty_split, adversarial_wait_out_the_window, adversarial_zero_padding. They probe rule evasion and are expected to appear in the false-negative list.",
+    "NO BANK ADJUDICATION: no episode in this repository carries a bank-reviewed label.",
+    "Score bands are the rule score mapped to levels; nothing here is a calibrated probability of fraud."
+  ]
+}

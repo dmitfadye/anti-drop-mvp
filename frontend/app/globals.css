@@ -1,0 +1,33 @@
+:root {
+  --color-canvas: #eef3fa;
+  --color-surface: #ffffff;
+  --color-ink: #172c50;
+  --color-muted: #52637e;
+  --color-primary: #2458cb;
+  --color-primary-hover: #1946ac;
+  --color-soft: #e9f0ff;
+  --color-border: #dce4ef;
+  --color-focus: #0d47a1;
+  --color-success: #17633e;
+  --color-warning: #795000;
+  --color-error: #b42332;
+  --font-size-body: 16px;
+  --font-size-small: 14px;
+  --font-size-caption: 12px;
+  --transition-control: 120ms ease;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px;
+  --radius-small: 8px; --radius-medium: 16px; --radius-large: 24px;
+  --shadow-surface: 0 8px 32px #172c5008;
+  --font-body: 'Segoe UI', Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--color-canvas); color: var(--color-ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
+button, input { font: inherit; }
+a { color: inherit; }
+button, summary, a { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 5px; }
+::selection { background: #c8dcff; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

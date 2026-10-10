@@ -1,0 +1,183 @@
+{
+  "$defs": {
+    "DataQuality": {
+      "additionalProperties": false,
+      "properties": {
+        "has_missing_sim": {
+          "title": "Has Missing Sim",
+          "type": "boolean"
+        },
+        "has_missing_device": {
+          "title": "Has Missing Device",
+          "type": "boolean"
+        },
+        "future_events_rejected": {
+          "title": "Future Events Rejected",
+          "type": "boolean"
+        },
+        "duplicate_events_rejected": {
+          "title": "Duplicate Events Rejected",
+          "type": "boolean"
+        },
+        "future_events_excluded": {
+          "default": 0,
+          "title": "Future Events Excluded",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "has_missing_sim",
+        "has_missing_device",
+        "future_events_rejected",
+        "duplicate_events_rejected"
+      ],
+      "title": "DataQuality",
+      "type": "object"
+    },
+    "WindowUsed": {
+      "additionalProperties": false,
+      "properties": {
+        "short_minutes": {
+          "title": "Short Minutes",
+          "type": "integer"
+        },
+        "long_hours": {
+          "title": "Long Hours",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "short_minutes",
+        "long_hours"
+      ],
+      "title": "WindowUsed",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "RiskDecisionV1",
+      "default": "RiskDecisionV1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "evaluation_id": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Evaluation Id",
+      "type": "string"
+    },
+    "subject_ref": {
+      "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+      "title": "Subject Ref",
+      "type": "string"
+    },
+    "analysis_at": {
+      "format": "date-time",
+      "title": "Analysis At",
+      "type": "string"
+    },
+    "rule_version": {
+      "title": "Rule Version",
+      "type": "string"
+    },
+    "threshold_version": {
+      "title": "Threshold Version",
+      "type": "string"
+    },
+    "level": {
+      "enum": [
+        "GREEN",
+        "YELLOW",
+        "RED"
+      ],
+      "title": "Level",
+      "type": "string"
+    },
+    "score": {
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Score",
+      "type": "integer"
+    },
+    "score_interpretation": {
+      "const": "deterministic_rule_score_not_probability",
+      "default": "deterministic_rule_score_not_probability",
+      "title": "Score Interpretation",
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "enum": [
+          "multiple_small_inbound",
+          "large_outbound_after_inbound",
+          "sim_changed_recently",
+          "device_novelty_with_baseline",
+          "rapid_in_out_pattern",
+          "borderline_window",
+          "insufficient_data",
+          "cashout_ratio",
+          "fanout_transfers",
+          "night_activity"
+        ],
+        "type": "string"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "score_contributions": {
+      "additionalProperties": {
+        "maximum": 100,
+        "minimum": 0,
+        "type": "integer"
+      },
+      "propertyNames": {
+        "enum": [
+          "multiple_small_inbound",
+          "large_outbound_after_inbound",
+          "sim_changed_recently",
+          "device_novelty_with_baseline",
+          "rapid_in_out_pattern",
+          "borderline_window",
+          "insufficient_data",
+          "cashout_ratio",
+          "fanout_transfers",
+          "night_activity"
+        ]
+      },
+      "title": "Score Contributions",
+      "type": "object"
+    },
+    "window_used": {
+      "$ref": "#/$defs/WindowUsed"
+    },
+    "data_quality": {
+      "$ref": "#/$defs/DataQuality"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "insufficient_data",
+        "rejected_input"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "evaluation_id",
+    "subject_ref",
+    "analysis_at",
+    "rule_version",
+    "threshold_version",
+    "level",
+    "score",
+    "reason_codes",
+    "score_contributions",
+    "window_used",
+    "data_quality",
+    "status"
+  ],
+  "title": "RiskDecisionV1",
+  "type": "object"
+}

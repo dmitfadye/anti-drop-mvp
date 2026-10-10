@@ -1,0 +1,9 @@
+configuration,rule,disabled,recall,fpr,alert_rate,delta_recall,delta_fpr,delta_alert_rate,TP,FP,TN,FN
+baseline_all_rules,none,,0.9393939393939394,0.0,0.5535714285714286,0.0,0.0,0.0,31,0,23,2
+without_rule,multiple_small_inbound,multiple_small_inbound,0.030303030303030304,0.0,0.017857142857142856,-0.9090909090909092,0.0,-0.5357142857142857,1,0,23,32
+without_rule,large_outbound_after_inbound,large_outbound_after_inbound,0.15151515151515152,0.0,0.08928571428571429,-0.787878787878788,0.0,-0.4642857142857143,5,0,23,28
+without_rule,cashout_ratio,cashout_ratio,0.9393939393939394,0.0,0.5535714285714286,0.0,0.0,0.0,31,0,23,2
+without_rule,fanout_transfers,fanout_transfers,0.9090909090909091,0.0,0.5357142857142857,-0.030303030303030387,0.0,-0.017857142857142905,30,0,23,3
+without_rule,night_activity,night_activity,0.9393939393939394,0.0,0.5535714285714286,0.0,0.0,0.0,31,0,23,2
+without_rule,sim_changed_recently,sim_changed_recently,0.9393939393939394,0.0,0.5535714285714286,0.0,0.0,0.0,31,0,23,2
+without_rule,device_novelty_with_baseline,device_novelty_with_baseline,0.9393939393939394,0.0,0.5535714285714286,0.0,0.0,0.0,31,0,23,2

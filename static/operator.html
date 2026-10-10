@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operator sandbox — Анти-Дроп</title>
+<link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к списку кейсов</a>
+
+<header class="banner" style="background:linear-gradient(90deg,#1f2937,#334155 60%,#b45309)">
+  <div class="banner__inner">
+    <div class="banner__row">
+      <div>
+        <h1 style="margin:0;font-size:1.35rem">🖥️ Операторская песочница</h1>
+        <p id="sandboxBanner" style="margin:.25rem 0 0;font-size:.95rem;font-weight:700"></p>
+      </div>
+      <div class="banner__row">
+        <span class="chip">нет авторизации • только loopback</span>
+        <a class="chip" href="/">← Клиентский экран</a>
+        <a class="chip" href="/api/operator/status-machine">status machine</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="layout" id="main">
+  <p class="error-box" id="opErr" role="alert" hidden></p>
+
+  <section class="card" aria-labelledby="metricsTitle">
+    <h2 class="card__title" id="metricsTitle">Метрики песочницы</h2>
+    <div class="metric-grid" id="metrics" aria-live="polite">
+      <p class="legal-note">Загрузка…</p>
+    </div>
+    <p class="legal-note" id="metricsNote"></p>
+  </section>
+
+  <section class="card" aria-labelledby="casesTitle">
+    <h2 class="card__title" id="casesTitle">Песочные кейсы</h2>
+    <div class="filter-grid">
+      <div class="field">
+        <label for="fLevel">Уровень риска</label>
+        <select id="fLevel"><option value="">любой</option><option value="RED">RED</option><option value="YELLOW">YELLOW</option><option value="GREEN">GREEN</option></select>
+      </div>
+      <div class="field">
+        <label for="fStatus">Статус</label>
+        <select id="fStatus"><option value="">любой</option></select>
+      </div>
+      <div class="field">
+        <label for="fLocale">Язык</label>
+        <select id="fLocale"><option value="">любой</option><option value="ru-RU">ru-RU</option><option value="uz-UZ">uz-UZ</option></select>
+      </div>
+      <div class="field">
+        <label for="fArm">Эксперимент (arm)</label>
+        <select id="fArm"><option value="">любой</option><option value="control">control</option><option value="treatment">treatment</option></select>
+      </div>
+      <div class="field">
+        <label for="fClass">Класс эпизода</label>
+        <select id="fClass">
+          <option value="">любой</option>
+          <option value="normal">normal</option><option value="risk">risk</option>
+          <option value="legitimate_negative">legitimate_negative</option>
+          <option value="edge">edge</option><option value="unknown">unknown</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fFrom">Создан с (UTC)</label>
+        <input id="fFrom" type="text" placeholder="2026-10-08T00:00:00Z">
+      </div>
+      <div class="field">
+        <label for="fTo">Создан по (UTC)</label>
+        <input id="fTo" type="text" placeholder="2026-10-09T00:00:00Z">
+      </div>
+    </div>
+    <div class="controls" style="margin-block-start:.75rem">
+      <button class="btn btn--primary" id="btnRefresh" type="button">🔄 Обновить</button>
+      <button class="btn" id="btnExportJson" type="button">⬇ Экспорт JSON</button>
+      <button class="btn" id="btnExportCsv" type="button">⬇ Экспорт CSV (redacted)</button>
+      <button class="btn" id="btnReset" type="button">↺ Сбросить фильтры</button>
+    </div>
+    <p class="legal-note" id="exportNote"></p>
+    <div class="table-scroll" style="margin-block-start:.75rem">
+      <table>
+        <caption>Только псевдонимные ссылки и коды. Персональных данных, телефонов, карт и OTP нет.</caption>
+        <thead><tr>
+          <th scope="col">case_id</th><th scope="col">Создан</th><th scope="col">Статус</th>
+          <th scope="col">Уровень</th><th scope="col">Score</th><th scope="col">Язык</th>
+          <th scope="col">Arm</th><th scope="col">Шаблон</th><th scope="col">Причины</th>
+        </tr></thead>
+        <tbody id="caseRows"></tbody>
+      </table>
+    </div>
+    <p class="legal-note" id="casesNote" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="card" id="detailCard" aria-labelledby="detailTitle" hidden>
+    <h2 class="card__title" id="detailTitle">Карточка кейса</h2>
+    <p class="legal-note">Выберите строку в таблице, чтобы открыть карточку.</p>
+    <div id="detail"></div>
+    <div class="controls" style="margin-block-start:.75rem">
+      <div class="field">
+        <label for="nextStatus">Новый статус</label>
+        <select id="nextStatus"></select>
+      </div>
+      <div class="field">
+        <label for="noteCode">Код заметки (allowlist)</label>
+        <select id="noteCode"><option value="">без заметки</option></select>
+      </div>
+      <div class="field">
+        <label for="actorRole">Роль оператора</label>
+        <select id="actorRole"></select>
+      </div>
+      <button class="btn btn--primary" id="btnApply" type="button">Применить переход</button>
+    </div>
+    <p class="legal-note" id="detailNote"></p>
+  </section>
+</main>
+
+<script src="/static/js/operator.js"></script>
+</body>
+</html>
