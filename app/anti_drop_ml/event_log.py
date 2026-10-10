@@ -45,10 +45,16 @@ def append_event(event: dict, path: str | os.PathLike[str] | None) -> ProductEve
         return None
     line = json.dumps(validated.model_dump(mode='json'), sort_keys=True, ensure_ascii=False)
     target = Path(path)
-    with _LOCK:
-        target.parent.mkdir(parents=True, exist_ok=True)
-        with target.open('a', encoding='utf-8', newline='\n') as stream:
-            stream.write(line + '\n')
+    try:
+        with _LOCK:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with target.open('a', encoding='utf-8', newline='\n') as stream:
+                stream.write(line + '\n')
+    except OSError:
+        # Sink is observability, not the request: a read-only mount or a
+        # root-owned bind dir must degrade to no-op, never to HTTP 500.
+        print(f'[event_log] sink unwritable ({target}); event dropped', flush=True)
+        return None
     return validated
 
 

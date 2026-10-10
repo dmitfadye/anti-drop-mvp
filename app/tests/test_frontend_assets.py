@@ -178,5 +178,33 @@ class TestHonestyInTheUi(unittest.TestCase):
             self.assertNotIn("'correct'", markup)
 
 
+class TestScenarioRefsAreContractValid(unittest.TestCase):
+    """UI scenario refs must satisfy the RiskSnapshotV1 Ref pattern.
+
+    Regression: human-readable counterparty names ('cp_relay001') were once
+    shipped in SCENARIOS and every demo scenario failed with HTTP 422.
+    The contract (anti_drop_ml/contracts.py) is intentionally strict.
+    """
+
+    REF_PATTERN = re.compile(r'^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$')
+
+    def test_every_ref_literal_matches_the_contract(self):
+        literals = set(re.findall(r"'((?:sub|cp|dev|evt|src)_[^']*)'", APP_JS_CODE))
+        self.assertTrue(literals, 'expected scenario ref literals in app.js')
+        for ref in sorted(literals):
+            with self.subTest(ref=ref):
+                self.assertRegex(ref, self.REF_PATTERN,
+                                 f'{ref!r} would be rejected with 422: use a hex pseudonym')
+
+    def test_every_scenario_counterparty_is_defined(self):
+        block = re.search(r'const CP_REF = \{(.*?)\};', APP_JS_CODE, flags=re.S)
+        self.assertIsNotNone(block, 'CP_REF map missing in app.js')
+        defined = set(re.findall(r'(\w+):', block.group(1)))
+        used = set(re.findall(r'CP_REF\.(\w+)', APP_JS_CODE))
+        self.assertTrue(used, 'expected CP_REF usages in scenarios')
+        self.assertEqual(used - defined, set(),
+                         'scenario uses an undefined counterparty (would send undefined)')
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -13,49 +13,91 @@
 const SUBJECT_REF = 'sub_00000000cafe0001';
 const ANALYSIS_AT = '2026-10-08T12:00:00Z';
 
+/* Counterparty pseudonyms. The RiskSnapshotV1 contract only accepts
+ * `^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$` (anti-injection
+ * boundary, see anti_drop_ml/contracts.py) — human-readable names like
+ * 'cp_relay001' are rejected with 422. Rows below carry the hex refs;
+ * CP_LABEL keeps the human-readable table captions. */
+const CP_REF = {
+  employer: 'cp_10000000ca1e0001',
+  shop: 'cp_20000000ca1e0001',
+  pharmacy: 'cp_30000000ca1e0001',
+  grocery: 'cp_40000000ca1e0001',
+  relay1: 'cp_50000000ca1e0001',
+  relay2: 'cp_50000000ca1e0002',
+  relay3: 'cp_50000000ca1e0003',
+  relay4: 'cp_50000000ca1e0004',
+  relay5: 'cp_50000000ca1e0005',
+  atm: 'cp_60000000ca1e0001',
+  friend1: 'cp_70000000ca1e0001',
+  friend2: 'cp_70000000ca1e0002',
+  friend3: 'cp_70000000ca1e0003',
+  friend4: 'cp_70000000ca1e0004',
+  friend5: 'cp_70000000ca1e0005',
+  landlord: 'cp_80000000ca1e0001'
+};
+const CP_LABEL = {
+  cp_10000000ca1e0001: 'работодатель',
+  cp_20000000ca1e0001: 'магазин',
+  cp_30000000ca1e0001: 'аптека',
+  cp_40000000ca1e0001: 'продукты',
+  cp_50000000ca1e0001: 'отправитель_1',
+  cp_50000000ca1e0002: 'отправитель_2',
+  cp_50000000ca1e0003: 'отправитель_3',
+  cp_50000000ca1e0004: 'отправитель_4',
+  cp_50000000ca1e0005: 'кошелёк_вербовщика',
+  cp_60000000ca1e0001: 'банкомат',
+  cp_70000000ca1e0001: 'друг_1',
+  cp_70000000ca1e0002: 'друг_2',
+  cp_70000000ca1e0003: 'друг_3',
+  cp_70000000ca1e0004: 'друг_4',
+  cp_70000000ca1e0005: 'друг_5',
+  cp_80000000ca1e0001: 'арендодатель'
+};
+
 const SCENARIOS = {
   normal: {
     label: 'Обычная активность',
     analysisAt: ANALYSIS_AT,
     transactions: [
-      ['2026-10-07T09:00:00Z', 'in', 'salary', 6000000, 'cp_employer01', 90],
-      ['2026-10-07T12:10:00Z', 'out', 'other', 120000, 'cp_shop0001', 90],
-      ['2026-10-07T15:40:00Z', 'out', 'other', 80000, 'cp_pharmacy1', 90],
-      ['2026-10-07T09:15:00Z', 'out', 'other', 150000, 'cp_grocery01', 90]
+      ['2026-10-07T09:00:00Z', 'in', 'salary', 6000000, CP_REF.employer, 90],
+      ['2026-10-07T12:10:00Z', 'out', 'other', 120000, CP_REF.shop, 90],
+      ['2026-10-07T15:40:00Z', 'out', 'other', 80000, CP_REF.pharmacy, 90],
+      ['2026-10-07T09:15:00Z', 'out', 'other', 150000, CP_REF.grocery, 90]
     ]
   },
   attack: {
     label: 'Дроп-схема (транзит + вывод)',
     analysisAt: '2026-10-07T12:00:00Z',
     transactions: [
-      ['2026-10-07T10:00:00Z', 'in', 'salary', 1500000, 'cp_employer01', 1],
-      ['2026-10-07T11:02:00Z', 'in', 'transfer', 300000, 'cp_relay001', 1],
-      ['2026-10-07T11:07:00Z', 'in', 'transfer', 250000, 'cp_relay002', 1],
-      ['2026-10-07T11:12:00Z', 'in', 'transfer', 400000, 'cp_relay003', 1],
-      ['2026-10-07T11:20:00Z', 'in', 'transfer', 180000, 'cp_relay004', 1],
-      ['2026-10-07T11:25:00Z', 'in', 'transfer', 350000, 'cp_relay005', 1],
-      ['2026-10-07T11:40:00Z', 'out', 'transfer', 1300000, 'cp_relay005', 1],
-      ['2026-10-07T11:45:00Z', 'out', 'cash_withdrawal', 500000, 'cp_atm00001', 1]
+      ['2026-10-07T10:00:00Z', 'in', 'salary', 1500000, CP_REF.employer, 1],
+      ['2026-10-07T11:02:00Z', 'in', 'transfer', 300000, CP_REF.relay1, 1],
+      ['2026-10-07T11:07:00Z', 'in', 'transfer', 250000, CP_REF.relay2, 1],
+      ['2026-10-07T11:12:00Z', 'in', 'transfer', 400000, CP_REF.relay3, 1],
+      ['2026-10-07T11:20:00Z', 'in', 'transfer', 180000, CP_REF.relay4, 1],
+      ['2026-10-07T11:25:00Z', 'in', 'transfer', 350000, CP_REF.relay5, 1],
+      ['2026-10-07T11:40:00Z', 'out', 'transfer', 1300000, CP_REF.relay5, 1],
+      ['2026-10-07T11:45:00Z', 'out', 'cash_withdrawal', 500000, CP_REF.atm, 1]
     ]
   },
   family: {
     label: 'Сбор с друзьями (legitimate negative)',
     analysisAt: '2026-10-07T12:00:00Z',
     transactions: [
-      ['2026-10-07T11:20:00Z', 'in', 'family_collection', 300000, 'cp_friend01', 90],
-      ['2026-10-07T11:25:00Z', 'in', 'family_collection', 300000, 'cp_friend02', 90],
-      ['2026-10-07T11:30:00Z', 'in', 'family_collection', 300000, 'cp_friend03', 90],
-      ['2026-10-07T11:35:00Z', 'in', 'family_collection', 300000, 'cp_friend04', 90],
-      ['2026-10-07T11:40:00Z', 'in', 'family_collection', 300000, 'cp_friend05', 90],
-      ['2026-10-07T11:50:00Z', 'out', 'transfer', 200000, 'cp_landlord1', 90]
+      ['2026-10-07T11:20:00Z', 'in', 'family_collection', 300000, CP_REF.friend1, 90],
+      ['2026-10-07T11:25:00Z', 'in', 'family_collection', 300000, CP_REF.friend2, 90],
+      ['2026-10-07T11:30:00Z', 'in', 'family_collection', 300000, CP_REF.friend3, 90],
+      ['2026-10-07T11:35:00Z', 'in', 'family_collection', 300000, CP_REF.friend4, 90],
+      ['2026-10-07T11:40:00Z', 'in', 'family_collection', 300000, CP_REF.friend5, 90],
+      ['2026-10-07T11:50:00Z', 'out', 'transfer', 200000, CP_REF.landlord, 90]
     ]
   },
   salary: {
     label: 'Зарплата и снятие наличных (legitimate negative)',
     analysisAt: '2026-10-07T12:00:00Z',
     transactions: [
-      ['2026-10-07T09:00:00Z', 'in', 'salary', 6000000, 'cp_employer01', 90],
-      ['2026-10-07T11:00:00Z', 'out', 'cash_withdrawal', 5000000, 'cp_atm00001', 90]
+      ['2026-10-07T09:00:00Z', 'in', 'salary', 6000000, CP_REF.employer, 90],
+      ['2026-10-07T11:00:00Z', 'out', 'cash_withdrawal', 5000000, CP_REF.atm, 90]
     ]
   }
 };
@@ -132,10 +174,18 @@ async function api(path, body, method = 'POST', extraHeaders = {}, returnMeta = 
       signal: controller.signal
     });
     if (!response.ok) {
+      // Structured envelope ({error_code, message}) first, then legacy
+      // string detail, then the bare status. Never swallow the message:
+      // a bare 'HTTP 422' hides which field failed validation.
       let detail = `HTTP ${response.status}`;
       try {
         const payload = await response.json();
-        detail = typeof payload.detail === 'string' ? payload.detail : `HTTP ${response.status}`;
+        if (payload && typeof payload.message === 'string' && payload.message) {
+          const code = payload.error_code ? ` (${payload.error_code})` : '';
+          detail = `HTTP ${response.status}${code}: ${payload.message}`;
+        } else if (payload && typeof payload.detail === 'string') {
+          detail = payload.detail;
+        }
       } catch (ignored) { /* keep the status code as the message */ }
       throw new Error(detail);
     }
@@ -203,7 +253,7 @@ function renderTransactions(scenarioKey) {
   SCENARIOS[scenarioKey].transactions.forEach((row) => {
     const tr = document.createElement('tr');
     const cells = [row[0].replace('T', ' ').replace('Z', ''), row[2],
-      (row[3] / 100).toLocaleString('ru-RU'), row[4]];
+      (row[3] / 100).toLocaleString('ru-RU'), CP_LABEL[row[4]] || row[4]];
     cells.forEach((value) => {
       const td = document.createElement('td');
       td.textContent = value;
