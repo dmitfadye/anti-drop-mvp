@@ -115,8 +115,10 @@ function setBusy(busy, label) {
 }
 
 /* One request helper: aborts the previous call, always disables the buttons,
- * and reports failures as text rather than throwing markup into the DOM. */
-async function api(path, body, method = 'POST') {
+ * and reports failures as text rather than throwing markup into the DOM.
+ * extraHeaders carry sandbox identity (X-Sandbox-Subject, Idempotency-Key);
+ * returnMeta additionally reports the Idempotency-Replayed flag. */
+async function api(path, body, method = 'POST', extraHeaders = {}, returnMeta = false) {
   if (state.inFlight) return null;
   setBusy(true, labelFor(path));
   hideError();
@@ -125,7 +127,7 @@ async function api(path, body, method = 'POST') {
   try {
     const response = await fetch(path, {
       method,
-      headers: body ? { 'Content-Type': 'application/json' } : {},
+      headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...extraHeaders },
       body: body ? JSON.stringify(body) : undefined,
       signal: controller.signal
     });
@@ -137,7 +139,11 @@ async function api(path, body, method = 'POST') {
       } catch (ignored) { /* keep the status code as the message */ }
       throw new Error(detail);
     }
-    return await response.json();
+    const data = await response.json();
+    if (returnMeta) {
+      return { data, replayed: response.headers.get('Idempotency-Replayed') === 'true' };
+    }
+    return data;
   } catch (error) {
     const aborted = error.name === 'AbortError';
     showError(aborted
@@ -152,7 +158,7 @@ async function api(path, body, method = 'POST') {
 
 function labelFor(path) {
   if (path.includes('/api/analyze') || path.includes('/communication/evaluate')) return 'Проверка сценария';
-  if (path.includes('/api/cases') || path.includes('/operator/cases')) return 'Создание песочного обращения';
+  if (path.includes('/sandbox/cases') || path.includes('/api/cases') || path.includes('/operator/cases')) return 'Создание песочного обращения';
   if (path.includes('/api/quiz')) return 'Проверка квиза';
   if (path.includes('/api/sim')) return 'Учебная смена номера';
   if (path.includes('/content') || path.includes('/locales')) return 'Загрузка данных';
@@ -293,16 +299,28 @@ async function contactSupport() {
     showError('Сначала нажмите «Проверить»: без решения обращение не создаётся.');
     return;
   }
-  const summary = `Песочное обращение: уровень ${state.lastDecision.level}, score ${state.lastDecision.score}, ` +
-    `evaluation ${state.lastDecision.evaluation_id.slice(0, 12)}`;
-  const legacy = await api('/api/cases', { summary, lang: $('lang').value,
-    score: state.lastDecision.score, idempotency_key: `${SUBJECT_REF}-${state.lastDecision.evaluation_id.slice(0, 12)}` });
-  if (legacy) {
-    $('ticket').textContent = `✅ Создано учебное песочное обращение ${legacy.case_id}, статус ${legacy.status}. ` +
-      'Поддержка банка не вызывается, операции не ограничиваются, деньги не двигаются.';
+  // Sandbox-кейс вместо legacy /api/cases (тот отвечает 410 LEGACY_CASES_DISABLED).
+  // Субъект только из заголовка, тело без subject_ref (граница доверия).
+  // Язык кейса — короткий код из локали UI (ru-RU -> ru).
+  const decision = state.lastDecision;
+  const locale = ($('lang') && $('lang').value) || 'ru-RU';
+  const language = String(locale).split('-')[0] || 'ru';
+  const idempotencyKey = `${SUBJECT_REF}-${decision.evaluation_id}`;
+  const result = await api('/sandbox/cases', {
+    evaluation_id: decision.evaluation_id,
+    selected_language: language,
+    contact_reason: 'suspicious_transfer_request'
+  }, 'POST', {
+    'X-Sandbox-Subject': SUBJECT_REF,
+    'Idempotency-Key': idempotencyKey
+  }, true);
+  if (!result) {
+    $('ticket').textContent = '⚠️ Обращение не создано. Поддержка не вызывалась, ничего не заморожено.';
     return;
   }
-  $('ticket').textContent = '⚠️ Обращение не создано. Поддержка не вызывалась, ничего не заморожено.';
+  const c = result.data || {};
+  $('ticket').textContent = (result.replayed ? '↺ Повторный запрос — кейс не дублируется. ' : '✅ Обращение зарегистрировано в песочнице. ') +
+    `Кейс: ${c.case_id}, статус: ${c.status}. Оценка эпизода: ${decision.score}/100 (сумма правил, не вероятность).${c.notice ? ` ${c.notice}` : ''}`;
 }
 
 /* ------------------------------------------------------------ localization */
