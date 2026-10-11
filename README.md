@@ -55,7 +55,7 @@ docker compose ps
 - API process health: http://127.0.0.1:8010/api/health
 - БД и schema readiness: http://127.0.0.1:8010/api/ready
 
-Используйте именно `127.0.0.1`. Для другого адреса/порта измените `APP_ORIGIN` и пересоздайте frontend. Нормальный Compose публикует только frontend/API на loopback; PostgreSQL наружу не публикуется.
+Используйте именно `127.0.0.1`. Для другого адреса/порта измените `APP_ORIGIN` и пересоздайте frontend. Compose публикует frontend/API/PostgreSQL только на loopback (`3000`/`8010`/`5433`); наружу за хост ничего не выходит.
 
 Остановка: `docker compose stop`. Повторный запуск: `docker compose up -d`. Не удаляйте volume, если нужен сохранённый прогресс. Старые существующие БД автоматически не конвертируются.
 
