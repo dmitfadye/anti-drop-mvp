@@ -21,16 +21,13 @@ test('real backend: scenarios, alert, sequential quiz and verified phone wizard'
     .getByRole('navigation', { name: 'Основная навигация' })
     .getByRole('link', { name: 'Онбординг + квиз', exact: true })
     .click();
-  await page.getByRole('button', { name: 'Начать обучение' }).click();
-  await expect(
-    page.getByRole('button', { name: 'Следующий этап' }),
-  ).toBeVisible();
-  await page.getByRole('tab', { name: 'Квиз', exact: true }).click();
+  await page.getByRole('button', { name: 'Тест Сразу проверьте знания' }).click();
+  await page.getByRole('button', { name: /Безопасные переводы/ }).click();
   for (let i = 0; i < 5; i++) {
     await page.getByRole('radio').first().check();
     await page
       .getByRole('button', {
-        name: i === 4 ? 'Получить результат' : 'Далее',
+        name: i === 4 ? 'Получить результат' : 'Далее →',
         exact: true,
       })
       .click();
@@ -73,8 +70,27 @@ test('real backend: scenarios, alert, sequential quiz and verified phone wizard'
   await expect(page.getByRole('status')).toContainText('5000');
 });
 
+test('real backend: article completion persists after page reload', async ({ page }) => {
+  await page.goto('/#learning');
+  await page.getByRole('button', { name: 'Статья Прочитайте в своём темпе' }).click();
+  await page.getByRole('button', { name: /Безопасные переводы/ }).click();
+  await expect(page.getByText('Что такое дроппер простыми словами', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Перейти к вопросу' }).click();
+  await page.getByRole('radio', { name: 'Ложь', exact: true }).check();
+  const saved = page.waitForResponse(response => response.url().endsWith('/api/v1/learning/completions') && response.request().method() === 'POST');
+  await page.getByRole('button', { name: 'Получить результат' }).click();
+  const response = await saved;
+  expect(response.ok()).toBeTruthy();
+  const body = await response.json();
+  expect(body.result.passed).toBe(true);
+  expect(body.progress.completed_modules).toContain('m1_safe_transfers');
+  await expect(page.getByText('Занятие завершено. Прогресс сохранён.')).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('button', { name: /Безопасные переводы/ })).toContainText('Завершён');
+});
+
 test('API failure allows retry', async ({ page }) => {
-  await page.route('**/api/analyze', (route) => route.fulfill({ status: 503 }));
+  await page.route('**/api/demo/sandbox', (route) => route.fulfill({ status: 503 }));
   await page.goto('/#monitoring');
   await page.getByText('Проверить учебный сценарий', { exact: false }).click();
   await page.getByRole('button', { name: 'Обычные операции' }).click();
@@ -82,7 +98,7 @@ test('API failure allows retry', async ({ page }) => {
   await expect(
     page.getByRole('alert').filter({ hasText: 'Сервис недоступен' }),
   ).toBeVisible();
-  await page.unroute('**/api/analyze');
+  await page.unroute('**/api/demo/sandbox');
   await page.getByRole('button', { name: 'Проверить', exact: true }).click();
   await expect(page.getByText(/Низкий риск ·/)).toBeVisible();
 });
@@ -104,9 +120,9 @@ test('loaded content reflows on mobile', async ({ page }) => {
     fullPage: true,
   });
   await page.goto('/#learning');
-  await page.getByRole('button', { name: 'Начать обучение' }).click();
-  await page.getByRole('tab', { name: 'Квиз', exact: true }).click();
-  await expect(page.getByRole('group')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Тест Сразу проверьте знания' }).click();
+  await page.getByRole('button', { name: /Безопасные переводы/ }).click();
+  await expect(page.locator('#learning').getByRole('radio')).toHaveCount(4);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
