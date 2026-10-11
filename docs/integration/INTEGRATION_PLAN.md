@@ -40,6 +40,6 @@ Root Python layout сохранён: перенос в `app/` не даёт не
 
 Существующую legacy master-БД не мигрировать на новую схему автоматически: одноимённые tables отличаются. Fresh isolated PostgreSQL — проверяемый путь; импорт старых данных требует отдельного mapping/backup plan. Applied root revision не переписывать.
 
-Recovery tags созданы локально: `recovery/2026-10-11/{frontend,backend,master,zima,my-branch}`. Исходные worktrees, patch, branches сохранены. Откат приложения — checkout проверенного commit в отдельном worktree; откат БД — восстановление проверенного backup в новую БД, без удаления существующего volume. Не использовать destructive reset или force push.
+Recovery tags опубликованы: `recovery/2026-10-11/{frontend,backend,master,zima,my-branch,learning-cards,learning-server,unified}`. Единственная рабочая ветка — master; остальные удалены по явному разрешению пользователя, исходные worktrees и patch сохранены. Откат приложения — checkout проверенного commit/tag в отдельном worktree; откат БД — восстановление проверенного backup в новую БД, без удаления существующего volume. Не использовать destructive reset или force push.
 
 Согласованные gates: unit/PG concurrency/ownership/rollback/restart/migrations, TS/lint/build, Playwright desktop/mobile/API/failure, Compose startup/runtime role, source/license/config/secret review. Фактические результаты — QUALITY_REPORT.md, предполагаемые результаты не считать PASS.

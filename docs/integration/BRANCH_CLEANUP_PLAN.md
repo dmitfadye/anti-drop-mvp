@@ -13,8 +13,16 @@
 | feature/learning-cards (local) | 680602366a0d2dc09c4e6e0c09aba6c36d72d21e | Учебный frontend/CI browser config, выборочно перенесён; root BFF edits в worktree | исходная ветка/worktree сохранены | KEEP; незакоммиченные BFF edits в feature worktree запрещают удаление |
 | integration/antidrop-unified | см. текущий git rev-parse HEAD / PR | Release candidate; ещё не approved merge | reviewable commits / PR | KEEP активная review ветка |
 
-Recovery tags пока локальные. Они защищают commits, а не незакоммиченные файлы. Нельзя удалять ветку только по ancestry/merged flag: проверить сохранённое поведение и deferred operator. Не удалять worktrees, patch, tags или volumes в рамках branch cleanup. Точный будущий список должен различать local и remote refs и содержать актуальные полные SHA. При изменившемся tip операцию исключить и сообщить владельцу.
+При первоначальном аудите recovery tags были локальными; перед cleanup они опубликованы (см. Completed cleanup). Они защищают commits, а не незакоммиченные файлы. Нельзя удалять ветку только по ancestry/merged flag: проверить сохранённое поведение и deferred operator. Не удалять worktrees, patch, tags или volumes в рамках branch cleanup. При изменившемся tip операцию исключить и сообщить владельцу.
 
 ## Authorized final cleanup
 
 Keep local/remote master only. Archive all source tips under recovery/2026-10-11/*, including learning-cards, learning-server and unified. Publish recovery tags before deleting remote branches. Detach linked worktrees before deleting their local branches; keep their files and any uncommitted changes. Recheck remote tip SHAs; do not delete a branch whose tip changed unexpectedly. Archive tags preserve deferred operator sources and historical layouts. No force push, worktree deletion or volume deletion.
+
+## Completed cleanup — 2026-10-11
+
+Published master74bcc2b by fast-forward push. Published all8 recovery tags, then checked source tips against the audit. Deleted remote frontend-test-brach@8bdec6c, my-branch@11d78b2 and zima@19162ec in one atomic push. Deleted local backend-antidrop-postgres@0fb475f, feature/learning-cards@6806023, feature/learning-server@b032ae4, frontend-test-brach@8bdec6c and integration/antidrop-unified@74bcc2b after detaching their worktrees. `git branch -a` and remote refs confirm master is the sole branch.
+
+All worktree directories and local data remain. Dirty learning frontend files were byte-compared with the unified implementation and matched; the older generator change in learning-server is included in the newer unified generator. Their on-disk copies remain intact. Original untracked inventory was preserved as `.local/BRANCH_INVENTORY.pre-integration.md` before switching the primary directory to master. No force push or data deletion.
+
+Tags: `recovery/2026-10-11/{backend,frontend,learning-cards,learning-server,master,my-branch,unified,zima}`. Inspect with `git show <tag>:<path>` or restore to a separate worktree from a tag. These are archival tags, not additional maintained branches.

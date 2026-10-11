@@ -37,6 +37,8 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: '3.12'
+          # Dependency installation is small; avoid a stalled post-job cache upload.
+          enable-cache: 'false'
       - run: uv sync --frozen
       - name: PostgreSQL migrations and backend regression tests
         run: |

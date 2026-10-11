@@ -73,6 +73,7 @@ docker compose ps
 | `BACKEND_URL` | Next runtime upstream; Compose `http://api:8000`, native `http://127.0.0.1:8010` |
 | `TEST_DATABASE_URL` | Только отдельная `antidrop_test*` БД для PG-тестов |
 | `PLAYWRIGHT_CHANNEL` | `chromium` для Linux/Chromium, иначе установленный Edge |
+| `COMPOSE_PROJECT_NAME` | Необязательное стабильное имя локального стенда; сохраняйте его при переносе папки, чтобы использовать прежний volume |
 
 Безопасный шаблон — `.env.example`, но быстрый старт использует генератор. Не публикуйте `.env` или `.local/demo-client.json`.
 
@@ -98,7 +99,7 @@ npm run dev
 ```powershell
 docker compose stop api frontend
 docker compose -f compose.yaml -f compose.dev.yaml up -d postgres
-docker compose run --rm migrate
+docker compose -f compose.yaml -f compose.dev.yaml run --rm migrate
 uv run --frozen uvicorn main:app --reload --host 127.0.0.1 --port 8010 --env-file .env
 ```
 
