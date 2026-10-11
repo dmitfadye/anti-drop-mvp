@@ -16,4 +16,6 @@
 | Пакеты и locks | npm/package-lock и uv/uv.lock; runtime requirements export из frozen lock | 5 связанных HIGH dev advisories без совместимого patch; runtime audit отдельно |
 | Исторические font/docs claims | Onest authoritative; старые QA помечены историческими; Asket licenses сохранены | Не обещается точное соответствие отсутствующему исходному растру |
 
-Все выбранные файлы переносились выборочно, а не автоматическим принятием newest commit. SHA источников и recovery references — BRANCH_INVENTORY.md и BRANCH_CLEANUP_PLAN.md. Изменения entrypoints/contracts/Compose проверяются совместно перед контрольной точкой B.
+Все выбранные файлы переносились выборочно, а не автоматическим принятием newest commit. SHA источников и recovery references — BRANCH_INVENTORY.md и BRANCH_CLEANUP_PLAN.md. Изменения entrypoints/contracts/Compose проверены совместно.
+
+После coherent implementation commit02ac9f6 выполнен merge origin/master@f6c6c7c с `-s ours` (785a6ea). Это намеренное согласование истории после выборочного переноса функциональности: tested tree остаётся тем же, source history сохраняется родителем, unsafe app/.venv310 и старое хранилище не возвращаются. Не было force push или автоматического выбора newest commit. Пользователь затем явно разрешил публикацию в master и удаление других веток. Дальнейшие source tips сохраняются recovery tags.

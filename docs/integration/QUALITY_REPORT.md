@@ -22,4 +22,8 @@ Follow root README. Use `uv sync --frozen`, isolated `TEST_DATABASE_URL`, `pytes
 
 This is a synthetic MVP with one shared demo profile, virtual rewards and draft educational/translations content. No bank integration, real cashback, real leaderboard percentile, production identity, streak freeze, or independently validated fraud accuracy. Optional legacy operator runtime is deferred until it has authenticated PostgreSQL storage; its source commits remain recoverable from archive tags. Vendored virtual environments and unsafe browser-supplied identity/storage were intentionally excluded.
 
-Clean-clone deployment and GitHub publication status are recorded in the release verification section as they complete. GitHub CI is additional evidence, not implied by local success.
+## Release verification
+
+Clean clone of committed785a6ea into a separate directory, without existing dependencies/configuration: generated new random credentials; built all Docker images; created a new isolated volume/database; migrated from empty; all3 persistent services healthy. Port-only ignored override used3010/8020 to keep the primary demo running. Browser article completion/reload and RED85 -> case/read passed. CLI evaluation/replay/retrieval passed. Restart of all3 services retained both case records and XP60. Clone working tree remained clean; local configuration/artifacts ignored. Docker reused downloaded dependency layers; it did not copy host dependencies or secret configuration.
+
+Publication is authorized directly to master by the user. GitHub CI status is verified separately after push; local success does not imply remote CI success.
