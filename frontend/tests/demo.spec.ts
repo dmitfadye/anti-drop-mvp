@@ -21,11 +21,8 @@ test('real backend: scenarios, alert, sequential quiz and verified phone wizard'
     .getByRole('navigation', { name: 'Основная навигация' })
     .getByRole('link', { name: 'Онбординг + квиз', exact: true })
     .click();
-  await page.getByRole('button', { name: 'Начать обучение' }).click();
-  await expect(
-    page.getByRole('button', { name: 'Следующий этап' }),
-  ).toBeVisible();
-  await page.getByRole('tab', { name: 'Квиз', exact: true }).click();
+  await page.getByRole('button', { name: 'Тест Сразу проверьте знания' }).click();
+  await page.getByRole('button', { name: /Безопасные переводы/ }).click();
   for (let i = 0; i < 5; i++) {
     await page.getByRole('radio').first().check();
     await page
@@ -74,7 +71,7 @@ test('real backend: scenarios, alert, sequential quiz and verified phone wizard'
 });
 
 test('API failure allows retry', async ({ page }) => {
-  await page.route('**/api/analyze', (route) => route.fulfill({ status: 503 }));
+  await page.route('**/api/demo/sandbox', (route) => route.fulfill({ status: 503 }));
   await page.goto('/#monitoring');
   await page.getByText('Проверить учебный сценарий', { exact: false }).click();
   await page.getByRole('button', { name: 'Обычные операции' }).click();
@@ -82,7 +79,7 @@ test('API failure allows retry', async ({ page }) => {
   await expect(
     page.getByRole('alert').filter({ hasText: 'Сервис недоступен' }),
   ).toBeVisible();
-  await page.unroute('**/api/analyze');
+  await page.unroute('**/api/demo/sandbox');
   await page.getByRole('button', { name: 'Проверить', exact: true }).click();
   await expect(page.getByText(/Низкий риск ·/)).toBeVisible();
 });
@@ -104,9 +101,9 @@ test('loaded content reflows on mobile', async ({ page }) => {
     fullPage: true,
   });
   await page.goto('/#learning');
-  await page.getByRole('button', { name: 'Начать обучение' }).click();
-  await page.getByRole('tab', { name: 'Квиз', exact: true }).click();
-  await expect(page.getByRole('group')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Тест Сразу проверьте знания' }).click();
+  await page.getByRole('button', { name: /Безопасные переводы/ }).click();
+  await expect(page.locator('#learning').getByRole('radio')).toHaveCount(4);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
