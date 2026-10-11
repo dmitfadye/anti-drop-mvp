@@ -32,6 +32,7 @@ from src.alerts import SUPPORTED_LANGS, build_stop_drop_alert
 from src.database import DatabaseNotConfigured
 from src.http_boundary import RequestBoundary
 from src.sandbox import ErrorModel, router as sandbox_router
+from src.learning import router as learning_router
 from src.detector import analyze_transactions
 from src.policy import RULES_VERSION, UTC
 from src.quiz import QUIZ, STORIES, check_quiz
@@ -52,6 +53,7 @@ app = FastAPI(
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 app.include_router(sandbox_router, responses={code: {'model': ErrorModel} for code in (401, 403, 404, 409, 410, 413, 422, 503)})
+app.include_router(learning_router, responses={code: {'model': ErrorModel} for code in (401, 404, 409, 422, 503)})
 
 
 @app.exception_handler(RequestValidationError)
