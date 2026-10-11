@@ -1,0 +1,25 @@
+{
+  "schema_version": "FixtureProvenanceV1",
+  "generator": "generate-synthetic-fixtures-v1",
+  "dataset_version": "synthetic-episodes-p1-v1",
+  "random_seed": 20261008,
+  "generated_at": "2026-10-08T12:00:00+00:00",
+  "deterministic": true,
+  "label_sources": [
+    "synthetic_placeholder"
+  ],
+  "human_reviewed_count": 0,
+  "bank_adjudicated_count": 0,
+  "detector_thresholds_used_to_build_fixtures": {
+    "small_txn_max_minor": 500000,
+    "transit_window_min": 60,
+    "red_transit_count": 5,
+    "red_transit_senders": 3
+  },
+  "statement": "All episodes are synthetic. label_source is synthetic_placeholder for every row. No human review, no bank adjudication and no real customer data was used. Metrics computed on this set are pipeline behaviour, NOT validated banking accuracy.",
+  "adversarial_cases": [
+    "adversarial_single_counterparty_split",
+    "adversarial_zero_padding",
+    "adversarial_staggered_out_of_window"
+  ]
+}

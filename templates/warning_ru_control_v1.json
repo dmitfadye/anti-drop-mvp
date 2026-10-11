@@ -1,0 +1,20 @@
+{
+  "schema_version": "TemplateVariantV1",
+  "template_id": "warning_ru_control_v1",
+  "version": "1",
+  "locale": "ru-RU",
+  "risk_level": "RED",
+  "status": "draft",
+  "arm": "control",
+  "experiment_id": "exp-warning-language-2026.10",
+  "title_key": "alert.red.title",
+  "body_key": "alert.red.body",
+  "cta_key": "cta.help",
+  "legal_review_required": true,
+  "native_review_required": true,
+  "variables_allowed": ["amount", "currency", "reason_short", "next_step"],
+  "forbidden_phrases": ["заблокирован", "заморожено", "6 лет", "otp", "кешбэк"],
+  "reviewers": [],
+  "created_at": "2026-10-08T12:00:00Z",
+  "approved_at": null
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": "InvalidContractCatalogV1",
+  "count": 24,
+  "expected_status": 422,
+  "scenarios": [
+    "duplicate_event_id",
+    "duplicate_source_event_id",
+    "future_occurred_at",
+    "zero_amount_transfer",
+    "negative_amount",
+    "mixed_subject_ref",
+    "naive_occurred_at",
+    "invalid_timezone",
+    "invalid_occurred_at",
+    "amount_not_integer",
+    "amount_as_string",
+    "float_amount",
+    "foreign_currency",
+    "bool_amount",
+    "sim_as_bool",
+    "raw_pii_field",
+    "raw_pii_top_level",
+    "salary_outbound",
+    "cash_withdrawal_inbound",
+    "naive_analysis_at",
+    "unknown_top_level_field",
+    "unknown_episode_class",
+    "invalid_device_ref",
+    "analysis_at_not_datetime"
+  ]
+}

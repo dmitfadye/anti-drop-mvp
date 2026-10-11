@@ -1,0 +1,87 @@
+{
+  "schema_version": "FinancialAssumptionsV1",
+  "dataset_version": "financial-assumptions-v1",
+  "synthetic": true,
+  "currency": "RUB",
+  "notice": "SYNTHETIC PLACEHOLDER ASSUMPTIONS. No bank data, no pilot measurement and no interview data was available when these values were written. Every parameter below is a question for the pilot, not a known quantity. The base case is deliberately close to break-even: a comfortable base would be a fabricated base.",
+  "parameters": {
+    "n_clients": {
+      "value": 500000,
+      "source": "assumption",
+      "confidence": "low",
+      "note": "Illustrative pilot reach for one language. NOT a confirmed bank population."
+    },
+    "q_risk_episodes_per_client_year": {
+      "value": 0.002,
+      "source": "assumption",
+      "confidence": "low",
+      "note": "Prevalence assumption: share of clients with a drop-risk episode in a year. Deliberately conservative and NOT measured; it scales the entire benefit side."
+    },
+    "delta_incremental_prevention": {
+      "value": 0.08,
+      "source": "assumption",
+      "confidence": "low",
+      "note": "Share of risk episodes prevented ONLY because of the new communication layer, on top of existing protection. Requires an approved treatment template and a powered A/B to confirm."
+    },
+    "l_bank_rubles_per_episode": {
+      "value": 45000,
+      "source": "unknown",
+      "confidence": "low",
+      "note": "Bank loss per prevented drop episode. No bank data available; bundles recovery effort, fraud handling and write-off assumptions."
+    },
+    "contacts_per_client_year": {
+      "value": 0.01,
+      "source": "assumption",
+      "confidence": "low",
+      "note": "Client-initiated support contacts per client per year across the pilot population."
+    },
+    "minutes_saved_per_contact": {
+      "value": 3,
+      "source": "assumption",
+      "confidence": "low",
+      "note": "Agent minutes saved because a structured sandbox case arrives with context. UNVERIFIED."
+    },
+    "cost_per_minute_rubles": {
+      "value": 400,
+      "source": "assumption",
+      "confidence": "low",
+      "note": "Fully loaded agent cost per minute."
+    },
+    "false_alerts_per_client_year": {
+      "value": 0.01,
+      "source": "evaluation",
+      "confidence": "low",
+      "note": "Derived from SYNTHETIC fixture false-alert rates only. NOT validated bank precision."
+    },
+    "call_share_after_false_alert": {
+      "value": 0.25,
+      "source": "assumption",
+      "confidence": "low",
+      "note": "Share of false alerts that trigger a support call."
+    },
+    "handling_cost_per_contact_rubles": {
+      "value": 650,
+      "source": "assumption",
+      "confidence": "low",
+      "note": "Cost of handling one false-alert contact."
+    },
+    "k_initial_cost": {
+      "value": 18000000,
+      "source": "assumption",
+      "confidence": "low",
+      "note": "One-off cost: build, bank integration, translation review, legal review, security review, pilot setup."
+    },
+    "opex_annual": {
+      "value": 9000000,
+      "source": "assumption",
+      "confidence": "low",
+      "note": "Annual run cost: maintenance, template re-review, monitoring, data-contract upkeep, evaluation reruns."
+    }
+  },
+  "pinned_zero": {
+    "revenue_uplift": 0,
+    "rewards": 0,
+    "inference_cost": 0,
+    "note": "Revenue uplift is unproven, cashback is not part of this layer, and there is no ML inference to pay for."
+  }
+}

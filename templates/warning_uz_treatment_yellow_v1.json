@@ -1,0 +1,20 @@
+{
+  "schema_version": "TemplateVariantV1",
+  "template_id": "warning_uz_treatment_yellow_v1",
+  "version": "1",
+  "locale": "uz-UZ",
+  "risk_level": "YELLOW",
+  "status": "draft",
+  "arm": "treatment",
+  "experiment_id": "exp-warning-language-2026.10",
+  "title_key": "alert.yellow.title",
+  "body_key": "alert.yellow.body",
+  "cta_key": "cta.help",
+  "legal_review_required": true,
+  "native_review_required": true,
+  "variables_allowed": ["amount", "currency", "reason_short"],
+  "forbidden_phrases": ["заблокирован", "заморожено", "6 лет", "otp", "кешбэк", "bloklangan", "muzlatilgan"],
+  "reviewers": [],
+  "created_at": "2026-10-08T12:00:00Z",
+  "approved_at": null
+}

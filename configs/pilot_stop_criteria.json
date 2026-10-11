@@ -1,0 +1,135 @@
+{
+  "schema_version": "PilotStopCriteriaV1",
+  "synthetic_demo": true,
+  "notice": "STOP PLAN, NOT A PILOT AUTHORISATION. Nothing here has been approved by a bank. Every gate is 'pending' until a real owner signs it.",
+  "immediate_stop": [
+    {
+      "code": "confirmed_cross_subject_leak",
+      "description": "Data or decision from one client observed in another client's context",
+      "severity": "immediate",
+      "action": "kill the feature flag, preserve logs, notify data protection owner"
+    },
+    {
+      "code": "unauthorised_banking_action",
+      "description": "Any attempt to block, freeze, reverse or decline a real payment",
+      "severity": "immediate",
+      "action": "kill the flag, disable the integration endpoint, escalate to the bank owner"
+    },
+    {
+      "code": "real_pii_exposure",
+      "description": "Real personal data entered the sandbox, logs or an export",
+      "severity": "immediate",
+      "action": "kill the flag, purge the artefact, start the incident process"
+    },
+    {
+      "code": "unauthorised_payment_or_blocking_attempt",
+      "description": "Any code path that can create a payment block or hold without an explicit human approval",
+      "severity": "immediate",
+      "action": "kill the flag, remove the path, code review required before any restart"
+    },
+    {
+      "code": "legal_or_privacy_incident",
+      "description": "Complaint about accusatory wording, data handling or legal claims",
+      "severity": "immediate",
+      "action": "pause, route to legal/compliance, do not resume without written approval"
+    }
+  ],
+  "pause_and_review": [
+    {
+      "code": "fpr_above_gate",
+      "metric": "legitimate_negative_alert_rate",
+      "gate": "<= agreed FPR gate (must be set by the bank before the pilot; currently unset)",
+      "action": "pause, review thresholds and legitimate-negative coverage"
+    },
+    {
+      "code": "recall_below_gate",
+      "metric": "recall on adjudicated holdout",
+      "gate": ">= agreed recall gate (must be set by the bank before the pilot; currently unset)",
+      "action": "pause, do not lower thresholds without a new ablation report"
+    },
+    {
+      "code": "support_load_above_capacity",
+      "metric": "contacts per 1000 alerts per working day",
+      "gate": "<= staffed capacity agreed with the support owner",
+      "action": "pause, staff the channel or stop sending warnings"
+    },
+    {
+      "code": "accusatory_tone_complaints",
+      "metric": "complaint count per 1000 warnings",
+      "gate": "zero tolerated accusations of guilt in qualitative feedback",
+      "action": "pause, revise copy, re-run translation and legal review"
+    },
+    {
+      "code": "translation_error",
+      "metric": "native-reviewer defect count per template",
+      "gate": "zero open severity-1 translation defects",
+      "action": "pause the arm, fall back to the control language with a visible fallback marker"
+    },
+    {
+      "code": "technical_error_rate_above_threshold",
+      "metric": "request_failed events / total events",
+      "gate": "<= 2%",
+      "action": "pause, fix, re-run the smoke suite"
+    },
+    {
+      "code": "no_primary_uplift_after_powered_sample",
+      "metric": "safe action rate difference with CI",
+      "gate": "sample size from the power plan reached and CI includes zero",
+      "action": "stop the experiment, keep the control, report the null result"
+    }
+  ],
+  "rollback": {
+    "steps": [
+      "set the adaptive layer feature flag to false",
+      "return clients to the standard bank warning",
+      "keep the bank's own protection untouched; never disable base antifraud",
+      "keep append-only logs for the incident review",
+      "publish a short incident note with what was seen, when and what changed"
+    ],
+    "target_time_to_rollback": "<= 15 minutes from decision",
+    "owner": "demo_operator plus bank pilot owner (not yet assigned)",
+    "tested": false
+  },
+  "pilot_stages": [
+    {
+      "id": "feasibility_usability",
+      "sample": "200-500 volunteers",
+      "scope": "first target language, understanding and delivery only",
+      "proves_fraud_roi": false,
+      "note": "Does not prove fraud ROI. Measures comprehension and whether the message arrives at all."
+    },
+    {
+      "id": "read_only_shadow",
+      "sample": "approved historical or pseudonymised set",
+      "scope": "compare the layer against the current signal, change no payments",
+      "proves_fraud_roi": false,
+      "note": "Shadow only. No transfer is affected in any way."
+    },
+    {
+      "id": "powered_ux_ab",
+      "sample": "size from the power plan",
+      "scope": "control receives current protection, treatment receives the new communication layer",
+      "proves_fraud_roi": false,
+      "note": "Primary uplift with confidence interval, plus guardrails. A null result is a valid result."
+    }
+  ],
+  "entry_gates": {
+    "owner_assigned": { "status": "pending", "owner": "", "evidence": "" },
+    "data_legal_security_approvals": { "status": "pending", "owner": "", "evidence": "" },
+    "reviewed_templates": { "status": "blocked", "owner": "", "evidence": "both locales are draft; no native or legal reviewer has signed" },
+    "access_controls": { "status": "pending", "owner": "", "evidence": "this repository has no authentication" },
+    "data_contract": { "status": "pending", "owner": "", "evidence": "synthetic contract only" },
+    "instrumented_baseline": { "status": "partial", "owner": "", "evidence": "synthetic evaluation harness exists and reruns" },
+    "power_plan": { "status": "partial", "owner": "", "evidence": "helper exists; baseline rates are assumptions" },
+    "support_capacity": { "status": "pending", "owner": "", "evidence": "" },
+    "stop_rollback_plan": { "status": "partial", "owner": "", "evidence": "this file; rollback has not been rehearsed" }
+  },
+  "required_owners": [
+    "bank_pilot_owner",
+    "compliance_or_legal_reviewer",
+    "native_language_reviewer",
+    "data_protection_owner",
+    "security_owner",
+    "support_capacity_owner"
+  ]
+}
