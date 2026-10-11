@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 COOLDOWN_HOURS = 24
 COOLDOWN_P2P_LIMIT = 5000  # лимит исходящих P2P в кулдаун, ₽
@@ -15,6 +15,8 @@ def canonical_phone(phone: str) -> str:
     p = phone.strip().replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
     if re.fullmatch(r"8\d{10}", p):  # российская «восьмёрка» -> +7
         p = "+7" + p[1:]
+    if p.isascii() and p.isdigit():
+        p = "+" + p
     return p
 
 
@@ -43,11 +45,11 @@ def start_number_change(old_phone: str, new_phone: str, otp_ok_old: bool, otp_ok
     if errors:
         return {"ok": False, "errors": errors}
 
-    until = datetime.now() + timedelta(hours=COOLDOWN_HOURS)
+    until = datetime.now(timezone.utc) + timedelta(hours=COOLDOWN_HOURS)
     return {
         "ok": True,
         "new_phone": new_c,
-        "cooldown_until": until.strftime("%Y-%m-%d %H:%M"),
+        "cooldown_until": until.isoformat(timespec="seconds"),
         "limits": {
             "p2p_per_transfer": COOLDOWN_P2P_LIMIT,
             "note": f"24 часа: исходящие P2P до {COOLDOWN_P2P_LIMIT} ₽, смена номера только через поддержку с паспортом.",

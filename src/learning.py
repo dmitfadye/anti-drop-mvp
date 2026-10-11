@@ -90,7 +90,7 @@ def progress(state, today):
             'rank_progress_percent': percent, 'streak_days': streak,
             'last_completed_date': state['last_completed_date'],
             'completed_modules': sorted(state['completed_modules']),
-            'rewards': [{'days': days, 'title': f'{days} дней подряд: +{points} учебных баллов',
+            'rewards': [{'days': days, 'title': f'{days} дней подряд: +{points} учебных баллов' + (' и +1 учебная категория кешбэка' if days == 30 else ''),
                          'points': points, 'unlocked': days in state['unlocked_rewards'],
                          'selected_category': entitlements[latest_period] if days == 30 and latest_period else None,
                          'reward_period': latest_period if days == 30 else None}

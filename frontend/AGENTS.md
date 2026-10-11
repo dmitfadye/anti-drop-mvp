@@ -32,6 +32,6 @@
 - Latest reference is the single overview screenshot in the user conversation, approximately 1672 x 941. It supersedes the earlier collages.
 - User explicitly authorized proceeding from the inline image without a source file or further questions.
 - See ../docs/frontend/APPROVED_VISUAL_SPEC.md; do not redesign other screens.
-- Work exclusively in frontend-test-brach; preserve hash navigation and backend contracts.
+- Historical implementation branch: frontend-test-brach. The user authorized consolidation into master on2026-10-11; preserve hash navigation and backend contracts in the unified project.
 - Use locally hosted Onest with its SIL OFL license, strict TypeScript and BEM CSS Modules.
 - Verify actual browser screenshots at reference size and 1440, 1024, 768, 390px; run typecheck, lint, build and Playwright.

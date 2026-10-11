@@ -28,7 +28,7 @@ class TestDetector(unittest.TestCase):
         self.assertGreaterEqual(res["score"], 50)
 
     def test_empty(self):
-        self.assertEqual(analyze_transactions([])["level"], "GREEN")
+        self.assertEqual(analyze_transactions([])["level"], "INSUFFICIENT_DATA")
 
     def test_cashout_alone_is_yellow_exact(self):
         # Изолированный обнал: ровно 25 баллов -> YELLOW (было: слабая проверка в обе стороны).

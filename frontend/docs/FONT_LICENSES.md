@@ -1,5 +1,5 @@
 ﻿# Font assets
 
-The downloaded free Asket styles are now included locally. See ../../docs/frontend/FONT_SPEC.md and ../public/fonts/ATTRIBUTION.md for exact files, weights, source, license and verified Cyrillic coverage.
+The active interface uses locally hosted Onest Variable under SIL OFL 1.1. See [attribution](../public/fonts/ATTRIBUTION.md) and [license](../public/fonts/Onest-OFL.txt). No external font request is needed.
 
-The free four-style bundle from https://www.1001fonts.com/asket-font.html is distributed under CC BY-ND 3.0. Three unmodified OTF files are included. Paid normal-width Asket Light/Regular and Halvar Breitschrift are not included. Halvar remains a documented missing asset, with Asket ExtraBold temporarily used for headings.
+Historical Asket assets remain unmodified under their original CC BY-ND 3.0 license and are not loaded by the current interface. Halvar is not included or required. Older QA documents describe earlier iterations; [approved specification](../../docs/frontend/APPROVED_VISUAL_SPEC.md) is authoritative.

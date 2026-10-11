@@ -16,8 +16,8 @@
           "type": "string"
         },
         "template_version": {
-          "const": "warning-templates-2026.10.08.p1",
-          "default": "warning-templates-2026.10.08.p1",
+          "default": "warning-templates-2026.10.08.p2",
+          "pattern": "^[a-zA-Z0-9._-]{1,80}$",
           "title": "Template Version",
           "type": "string"
         },
@@ -48,6 +48,78 @@
           ],
           "default": null,
           "title": "Http Status"
+        },
+        "localization_version": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9._-]{1,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Localization Version"
+        },
+        "template_status": {
+          "anyOf": [
+            {
+              "enum": [
+                "draft",
+                "native_reviewed",
+                "legal_reviewed",
+                "approved",
+                "deprecated"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Template Status"
+        },
+        "assignment_method": {
+          "anyOf": [
+            {
+              "const": "deterministic_hash",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assignment Method"
+        },
+        "question_id": {
+          "anyOf": [
+            {
+              "pattern": "^q[0-9]{1,2}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Question Id"
+        },
+        "score_value": {
+          "anyOf": [
+            {
+              "maximum": 100,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score Value"
         }
       },
       "title": "EventMetadata",
@@ -72,7 +144,12 @@
         "case_confirmed",
         "safe_action_confirmed",
         "request_failed",
-        "experiment_assigned"
+        "experiment_assigned",
+        "template_rendered",
+        "translation_fallback",
+        "understanding_survey_submitted",
+        "scoring_recorded",
+        "pre_transfer_advised"
       ],
       "title": "Event Type",
       "type": "string"
@@ -100,6 +177,19 @@
       "default": null,
       "title": "Case Id"
     },
+    "experiment_id": {
+      "anyOf": [
+        {
+          "pattern": "^exp-[a-z0-9.-]{1,60}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Experiment Id"
+    },
     "experiment_arm": {
       "anyOf": [
         {
@@ -119,7 +209,7 @@
     "template_id": {
       "anyOf": [
         {
-          "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+          "pattern": "^[a-z0-9_]{3,64}$",
           "type": "string"
         },
         {
@@ -149,6 +239,19 @@
       ],
       "default": null,
       "title": "Language"
+    },
+    "locale": {
+      "anyOf": [
+        {
+          "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]{2,8})?$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Locale"
     },
     "rule_version": {
       "pattern": "^[a-zA-Z0-9._-]{1,80}$",
@@ -181,7 +284,18 @@
             "failed",
             "cancelled",
             "confirmed_sandbox",
-            "unknown"
+            "unknown",
+            "arm_control",
+            "arm_treatment",
+            "rendered_draft_translation",
+            "fallback_to_control_locale",
+            "understood_next_step",
+            "did_not_understand",
+            "safe_action_chosen",
+            "unsafe_action_chosen",
+            "declined_advisory",
+            "accepted_advisory",
+            "rejected_input"
           ],
           "type": "string"
         },

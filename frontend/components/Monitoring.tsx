@@ -15,6 +15,7 @@ type Transaction = {
   sim_changed_days_ago: number;
 };
 type Analysis = {
+  evaluation_id: string;
   score: number;
   level: 'GREEN' | 'YELLOW' | 'RED';
   reasons: string[];
@@ -62,6 +63,10 @@ const languages = [
   ['ar', 'العربية'],
 ];
 export function Monitoring() {
+  const [scenario, setScenario] = useState<'normal' | 'attack'>('normal');
+  const [sandboxCase, setSandboxCase] = useState<{ case_id: string; next_step: string } | null>(null);
+  const [caseVerified, setCaseVerified] = useState(false);
+  const [caseKey, setCaseKey] = useState('');
   const [draft, setDraft] = useState({ period: '7', type: 'all', risk: 'all' });
   const [filters, setFilters] = useState(draft);
   const [page, setPage] = useState(1);
@@ -79,7 +84,11 @@ export function Monitoring() {
       (filters.risk === 'all' || filters.risk === e.risk),
   );
   const pages = Math.max(1, Math.ceil(filtered.length / 5));
-  function loadScenario(key: string) {
+  function loadScenario(key: 'normal' | 'attack') {
+    setScenario(key);
+    setSandboxCase(null);
+    setCaseVerified(false);
+    setCaseKey(crypto.randomUUID());
     setTransactions(
       scenarios[key].map(([time, type, amount, counterparty], i) => ({
         id: String(i),
@@ -104,7 +113,10 @@ export function Monitoring() {
     setSupport(false);
     setAlertHidden(false);
     try {
-      setAnalysis(await request<Analysis>('analyze', { transactions, lang }));
+      setAnalysis(await request<Analysis>('demo/sandbox', { action: 'analyze', scenario, lang }));
+      setSandboxCase(null);
+      setCaseVerified(false);
+      setCaseKey(crypto.randomUUID());
     } catch (e) {
       setError(
         e instanceof Error ? e.message : 'Не удалось проверить операции.',
@@ -112,6 +124,29 @@ export function Monitoring() {
     } finally {
       setBusy(false);
     }
+  }
+  async function saveCase() {
+    if (!analysis) return;
+    setBusy(true);
+    setError('');
+    try {
+      setSandboxCase(await request<{ case_id: string; next_step: string }>('demo/sandbox', {
+        action: 'create', evaluation_id: analysis.evaluation_id, lang, idempotency_key: caseKey,
+      }));
+      setSupport(true);
+    } catch (e) { setError(e instanceof Error ? e.message : 'Не удалось сохранить кейс.'); }
+    finally { setBusy(false); }
+  }
+  async function verifyCase() {
+    if (!sandboxCase) return;
+    setBusy(true);
+    setError('');
+    setCaseVerified(false);
+    try {
+      const result = await request<{ case_id: string }>(`demo/sandbox?case_id=${encodeURIComponent(sandboxCase.case_id)}`);
+      setCaseVerified(result.case_id === sandboxCase.case_id);
+    } catch (e) { setError(e instanceof Error ? e.message : 'Не удалось прочитать кейс.'); }
+    finally { setBusy(false); }
   }
   return (
     <section
@@ -325,7 +360,8 @@ export function Monitoring() {
             <div className={styles['workspace__toolbar']}>
               <button
                 className={styles['workspace__button']}
-                onClick={() => setSupport(true)}
+                disabled={busy}
+                onClick={() => void saveCase()}
               >
                 Поддержка — демо
               </button>
@@ -343,6 +379,22 @@ export function Monitoring() {
                 приложение.
               </p>
             )}
+          </article>
+        )}
+        {analysis && !analysis.alert && (
+          <button className={styles['workspace__button']} disabled={busy} onClick={() => void saveCase()}>
+            Создать учебное обращение
+          </button>
+        )}
+        {sandboxCase && (
+          <article className={styles['workspace__card']} aria-live="polite">
+            <h3>Учебный кейс сохранён</h3>
+            <p>Кейс: <strong>{sandboxCase.case_id}</strong></p>
+            <p>{sandboxCase.next_step}</p>
+            <button className={styles['workspace__button']} disabled={busy} onClick={() => void verifyCase()}>
+              Проверить сохранённый кейс
+            </button>
+            {caseVerified && <p role="status">Кейс получен из PostgreSQL: идентификатор совпадает.</p>}
           </article>
         )}
       </details>

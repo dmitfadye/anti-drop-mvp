@@ -3,6 +3,12 @@
     "RiskTransactionV1": {
       "additionalProperties": false,
       "properties": {
+        "source": {
+          "default": "src_00000000",
+          "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+          "title": "Source",
+          "type": "string"
+        },
         "event_id": {
           "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
           "title": "Event Id",
@@ -215,6 +221,15 @@
     "analysis_at": {
       "format": "date-time",
       "title": "Analysis At",
+      "type": "string"
+    },
+    "source_type": {
+      "default": "synthetic",
+      "enum": [
+        "synthetic",
+        "sandbox"
+      ],
+      "title": "Source Type",
       "type": "string"
     },
     "timezone_policy": {

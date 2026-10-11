@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from datetime import timezone
 from zoneinfo import ZoneInfo
 
-RULES_VERSION = "2026-10-08.p1"
+RULES_VERSION = "2026-10-08.p2"
 PROJECT_TZ = ZoneInfo("Europe/Moscow")
 UTC = timezone.utc
 

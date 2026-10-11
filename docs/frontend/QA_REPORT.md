@@ -1,5 +1,7 @@
 # QA report — 2026-10-08
 
+Historical report for an earlier frontend iteration. Current font is Onest; Halvar and Asket are not startup requirements. See APPROVED_VISUAL_SPEC.md and ../integration/QUALITY_REPORT.md for the current integrated result.
+
 Branch: frontend-test-brach. Local implementation; no push or deployment.
 
 ## Automated validation

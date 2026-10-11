@@ -1,0 +1,44 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "error_code": {
+      "title": "Error Code",
+      "type": "string"
+    },
+    "field": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Field"
+    },
+    "detail": {
+      "title": "Detail",
+      "type": "string"
+    },
+    "request_id": {
+      "title": "Request Id",
+      "type": "string"
+    },
+    "errors": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Errors",
+      "type": "array"
+    }
+  },
+  "required": [
+    "error_code",
+    "detail",
+    "request_id"
+  ],
+  "title": "ErrorModel",
+  "type": "object"
+}

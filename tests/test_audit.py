@@ -53,7 +53,7 @@ class TestTimePolicy(unittest.TestCase):
 
     def test_detector_bad_ts_never_crashes(self):
         res = analyze_transactions([T("мусор", "purchase", 100), T(None, "purchase", 50)])  # type: ignore[arg-type]
-        self.assertEqual(res["level"], "GREEN")
+        self.assertEqual(res["level"], "INSUFFICIENT_DATA")
         self.assertEqual(res["metrics"].get("excluded_bad_ts"), 2)
 
 
@@ -106,7 +106,7 @@ class TestCountingHonesty(unittest.TestCase):
         txns = [T(f"2026-10-07 14:{m:02d}:00", "incoming_p2p", 0, f"s{i}", tid=str(i))
                 for i, m in enumerate([2, 7, 12, 20, 25])]
         res = analyze_transactions(txns)
-        self.assertEqual(res["level"], "GREEN")  # было: YELLOW/45 (E14)
+        self.assertEqual(res["level"], "INSUFFICIENT_DATA")  # было: YELLOW/45 (E14)
         self.assertEqual(res["metrics"]["excluded_zero_count"], 5)
 
     def test_out_before_in_no_flowthrough(self):
@@ -157,17 +157,13 @@ class TestAlertContract(unittest.TestCase):
 class TestHonestMocks(unittest.TestCase):
     """T02/T18: учебные кейсы и призы вместо выдуманных действий."""
 
-    def test_case_idempotent(self):
-        payload = {"summary": "тест", "lang": "ru", "score": 85, "idempotency_key": "demo-key-1"}
-        c1 = client.post("/api/cases", json=payload).json()
-        c2 = client.post("/api/cases", json=payload).json()
-        self.assertEqual(c1["case_id"], c2["case_id"])
-        self.assertTrue(c1["demo"] and c1["status"] == "open-sandbox")
+    def test_unscoped_memory_case_creation_is_retired(self):
+        response = client.post('/api/cases', json={'summary': 'synthetic'})
+        self.assertEqual(response.status_code, 410)
+        self.assertEqual(response.json()['error_code'], 'LEGACY_CASE_API_RETIRED')
 
-    def test_case_status_and_404(self):
-        c = client.post("/api/cases", json={"summary": "тест"}).json()
-        self.assertEqual(client.get(f"/api/cases/{c['case_id']}").status_code, 200)
-        self.assertEqual(client.get("/api/cases/CASE-NOPE1234").status_code, 404)
+    def test_unscoped_memory_case_read_is_retired(self):
+        self.assertEqual(client.get('/api/cases/CASE-NOPE1234').status_code, 410)
 
     def test_quiz_reward_simulated(self):
         body = client.post("/api/quiz", json={"answers": [1, 1, 1, 1, 0]}).json()

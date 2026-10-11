@@ -1,0 +1,53 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "evaluation_id": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Evaluation Id",
+      "type": "string"
+    },
+    "selected_language": {
+      "default": "ru",
+      "enum": [
+        "ru",
+        "en",
+        "uz",
+        "tg",
+        "ky",
+        "zh",
+        "ar"
+      ],
+      "title": "Selected Language",
+      "type": "string"
+    },
+    "contact_reason": {
+      "enum": [
+        "explain_risk",
+        "suspicious_request",
+        "need_assistance"
+      ],
+      "title": "Contact Reason",
+      "type": "string"
+    },
+    "client_comment": {
+      "anyOf": [
+        {
+          "maxLength": 500,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Synthetic only; fingerprinted, not retained",
+      "title": "Client Comment"
+    }
+  },
+  "required": [
+    "evaluation_id",
+    "contact_reason"
+  ],
+  "title": "SandboxCaseCreate",
+  "type": "object"
+}

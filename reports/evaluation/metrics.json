@@ -1,10 +1,10 @@
 {
   "schema_version": "EvaluationMetricsV1",
   "overall": {
-    "total_episodes": 21,
+    "total_episodes": 24,
     "TP": 2,
     "FP": 1,
-    "TN": 18,
+    "TN": 21,
     "FN": 0,
     "recall": {
       "value": 1.0,
@@ -25,12 +25,12 @@
       ]
     },
     "fpr": {
-      "value": 0.05263157894736842,
+      "value": 0.045454545454545456,
       "numerator": 1,
-      "denominator": 19,
+      "denominator": 22,
       "wilson_95_ci": [
-        0.009351752490529969,
-        0.2463921533654521
+        0.008069219301147859,
+        0.21798489499518053
       ]
     },
     "fnr": {
@@ -43,21 +43,21 @@
       ]
     },
     "alert_rate": {
-      "value": 0.14285714285714285,
+      "value": 0.125,
       "numerator": 3,
-      "denominator": 21,
+      "denominator": 24,
       "wilson_95_ci": [
-        0.04980921798213492,
-        0.346364941492295
+        0.04344255039315584,
+        0.3100428814785757
       ]
     },
     "legitimate_negative_alert_rate": {
-      "value": 0.1111111111111111,
+      "value": 0.09090909090909091,
       "numerator": 1,
-      "denominator": 9,
+      "denominator": 11,
       "wilson_95_ci": [
-        0.019890371327130535,
-        0.4350062147680601
+        0.01623175226282597,
+        0.3773646254862038
       ]
     }
   },
@@ -168,10 +168,10 @@
         }
       },
       "legitimate_negative": {
-        "total_episodes": 9,
+        "total_episodes": 11,
         "TP": 0,
         "FP": 1,
-        "TN": 8,
+        "TN": 10,
         "FN": 0,
         "recall": {
           "value": null,
@@ -189,12 +189,12 @@
           ]
         },
         "fpr": {
-          "value": 0.1111111111111111,
+          "value": 0.09090909090909091,
           "numerator": 1,
-          "denominator": 9,
+          "denominator": 11,
           "wilson_95_ci": [
-            0.019890371327130535,
-            0.4350062147680601
+            0.01623175226282597,
+            0.3773646254862038
           ]
         },
         "fnr": {
@@ -204,29 +204,29 @@
           "wilson_95_ci": null
         },
         "alert_rate": {
-          "value": 0.1111111111111111,
+          "value": 0.09090909090909091,
           "numerator": 1,
-          "denominator": 9,
+          "denominator": 11,
           "wilson_95_ci": [
-            0.019890371327130535,
-            0.4350062147680601
+            0.01623175226282597,
+            0.3773646254862038
           ]
         },
         "legitimate_negative_alert_rate": {
-          "value": 0.1111111111111111,
+          "value": 0.09090909090909091,
           "numerator": 1,
-          "denominator": 9,
+          "denominator": 11,
           "wilson_95_ci": [
-            0.019890371327130535,
-            0.4350062147680601
+            0.01623175226282597,
+            0.3773646254862038
           ]
         }
       },
       "edge": {
-        "total_episodes": 8,
+        "total_episodes": 9,
         "TP": 0,
         "FP": 0,
-        "TN": 8,
+        "TN": 9,
         "FN": 0,
         "recall": {
           "value": null,
@@ -243,10 +243,10 @@
         "fpr": {
           "value": 0.0,
           "numerator": 0,
-          "denominator": 8,
+          "denominator": 9,
           "wilson_95_ci": [
             0.0,
-            0.3244156195108769
+            0.2991527535509594
           ]
         },
         "fnr": {
@@ -258,10 +258,10 @@
         "alert_rate": {
           "value": 0.0,
           "numerator": 0,
-          "denominator": 8,
+          "denominator": 9,
           "wilson_95_ci": [
             0.0,
-            0.3244156195108769
+            0.2991527535509594
           ]
         },
         "legitimate_negative_alert_rate": {
@@ -274,10 +274,10 @@
     },
     "label_source": {
       "synthetic_placeholder": {
-        "total_episodes": 21,
+        "total_episodes": 24,
         "TP": 2,
         "FP": 1,
-        "TN": 18,
+        "TN": 21,
         "FN": 0,
         "recall": {
           "value": 1.0,
@@ -298,12 +298,12 @@
           ]
         },
         "fpr": {
-          "value": 0.05263157894736842,
+          "value": 0.045454545454545456,
           "numerator": 1,
-          "denominator": 19,
+          "denominator": 22,
           "wilson_95_ci": [
-            0.009351752490529969,
-            0.2463921533654521
+            0.008069219301147859,
+            0.21798489499518053
           ]
         },
         "fnr": {
@@ -316,31 +316,31 @@
           ]
         },
         "alert_rate": {
-          "value": 0.14285714285714285,
+          "value": 0.125,
           "numerator": 3,
-          "denominator": 21,
+          "denominator": 24,
           "wilson_95_ci": [
-            0.04980921798213492,
-            0.346364941492295
+            0.04344255039315584,
+            0.3100428814785757
           ]
         },
         "legitimate_negative_alert_rate": {
-          "value": 0.1111111111111111,
+          "value": 0.09090909090909091,
           "numerator": 1,
-          "denominator": 9,
+          "denominator": 11,
           "wilson_95_ci": [
-            0.019890371327130535,
-            0.4350062147680601
+            0.01623175226282597,
+            0.3773646254862038
           ]
         }
       }
     },
     "is_holdout": {
       "false": {
-        "total_episodes": 21,
+        "total_episodes": 24,
         "TP": 2,
         "FP": 1,
-        "TN": 18,
+        "TN": 21,
         "FN": 0,
         "recall": {
           "value": 1.0,
@@ -361,12 +361,12 @@
           ]
         },
         "fpr": {
-          "value": 0.05263157894736842,
+          "value": 0.045454545454545456,
           "numerator": 1,
-          "denominator": 19,
+          "denominator": 22,
           "wilson_95_ci": [
-            0.009351752490529969,
-            0.2463921533654521
+            0.008069219301147859,
+            0.21798489499518053
           ]
         },
         "fnr": {
@@ -379,21 +379,21 @@
           ]
         },
         "alert_rate": {
-          "value": 0.14285714285714285,
+          "value": 0.125,
           "numerator": 3,
-          "denominator": 21,
+          "denominator": 24,
           "wilson_95_ci": [
-            0.04980921798213492,
-            0.346364941492295
+            0.04344255039315584,
+            0.3100428814785757
           ]
         },
         "legitimate_negative_alert_rate": {
-          "value": 0.1111111111111111,
+          "value": 0.09090909090909091,
           "numerator": 1,
-          "denominator": 9,
+          "denominator": 11,
           "wilson_95_ci": [
-            0.019890371327130535,
-            0.4350062147680601
+            0.01623175226282597,
+            0.3773646254862038
           ]
         }
       },

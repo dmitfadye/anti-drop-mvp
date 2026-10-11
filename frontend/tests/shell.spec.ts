@@ -106,6 +106,15 @@ test('keyboard, search, notifications, resize and reduced motion', async ({
 });
 
 test('approved overview, popover dismissal, theme and feature links', async ({ page }) => {
+  // This shell test verifies navigation without depending on a running API.
+  // The separate learning and real-backend suites verify content and failures.
+  await page.route('**/api/v1/learning/catalog', route => route.fulfill({ json: { modules: [] } }));
+  await page.route('**/api/v1/learning/progress', route => route.fulfill({ json: {
+    xp: 0, rank: { id: 'new', title: 'Новичок', min_xp: 0 }, next_rank: null,
+    points_to_next: 0, rank_progress_percent: 0, streak_days: 0,
+    completed_modules: [], rewards: [], categories: [], percentile: null,
+    rank_note: 'Рейтинг пока недоступен: нет сравнительной выборки.', demo: true,
+  } }));
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });

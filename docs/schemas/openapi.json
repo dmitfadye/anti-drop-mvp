@@ -1,0 +1,2913 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Анти-Дроп API",
+    "description": "Учебный демонстратор: объяснимый детектор транзита, Стоп-Дроп алерты, квизы, тренажёр смены номера. Только синтетика, без банковских действий.",
+    "version": "0.4.0"
+  },
+  "paths": {
+    "/sandbox/evaluations": {
+      "post": {
+        "tags": [
+          "Persistent synthetic sandbox"
+        ],
+        "summary": "Persist Evaluation",
+        "operationId": "persist_evaluation_sandbox_evaluations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RiskSnapshotV1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskDecisionV1"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/sandbox/evaluations/{evaluation_id}": {
+      "get": {
+        "tags": [
+          "Persistent synthetic sandbox"
+        ],
+        "summary": "Read Evaluation",
+        "operationId": "read_evaluation_sandbox_evaluations__evaluation_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "evaluation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Evaluation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskDecisionV1"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/sandbox/cases": {
+      "post": {
+        "tags": [
+          "Persistent synthetic sandbox"
+        ],
+        "summary": "Create Sandbox Case",
+        "operationId": "create_sandbox_case_sandbox_cases_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SandboxCaseCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SandboxCaseResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Persistent synthetic sandbox"
+        ],
+        "summary": "List Cases",
+        "operationId": "list_cases_sandbox_cases_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SandboxCaseResponse"
+                  },
+                  "title": "Response List Cases Sandbox Cases Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/sandbox/cases/{case_id}": {
+      "get": {
+        "tags": [
+          "Persistent synthetic sandbox"
+        ],
+        "summary": "Read Case",
+        "operationId": "read_case_sandbox_cases__case_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SandboxCaseResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/learning/catalog": {
+      "get": {
+        "tags": [
+          "Synthetic financial education"
+        ],
+        "summary": "Catalog",
+        "operationId": "catalog_api_v1_learning_catalog_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/learning/progress": {
+      "get": {
+        "tags": [
+          "Synthetic financial education"
+        ],
+        "summary": "Get Progress",
+        "operationId": "get_progress_api_v1_learning_progress_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/learning/completions": {
+      "post": {
+        "tags": [
+          "Synthetic financial education"
+        ],
+        "summary": "Complete",
+        "operationId": "complete_api_v1_learning_completions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/learning/rewards/30/claim": {
+      "post": {
+        "tags": [
+          "Synthetic financial education"
+        ],
+        "summary": "Claim",
+        "operationId": "claim_api_v1_learning_rewards_30_claim_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RewardClaim"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/communication/locales": {
+      "get": {
+        "tags": [
+          "communication"
+        ],
+        "summary": "Available localization packs with honest review status",
+        "operationId": "locales_api_v1_communication_locales_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Locales Api V1 Communication Locales Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/communication/templates": {
+      "get": {
+        "tags": [
+          "communication"
+        ],
+        "summary": "Warning template variants and their approval state",
+        "operationId": "templates_api_v1_communication_templates_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Templates Api V1 Communication Templates Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/communication/evaluate": {
+      "post": {
+        "tags": [
+          "communication"
+        ],
+        "summary": "Strict snapshot -> decision, arm and warning",
+        "operationId": "communicate_api_v1_communication_evaluate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommunicateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Communicate Api V1 Communication Evaluate Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/communication/preview": {
+      "post": {
+        "tags": [
+          "communication"
+        ],
+        "summary": "Preview any warning template for an already-made level (always badged)",
+        "description": "Compare control vs treatment copy without touching rules or the experiment.\n\nThis is a preview for demonstration only: it does not assign an arm, does\nnot log an experiment event and always returns the template status plus the\nmandatory draft badge.",
+        "operationId": "preview_api_v1_communication_preview_post",
+        "parameters": [
+          {
+            "name": "level",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "RED",
+                "YELLOW"
+              ],
+              "type": "string",
+              "title": "Level"
+            }
+          },
+          {
+            "name": "template_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Template Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Preview Api V1 Communication Preview Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/communication/events": {
+      "post": {
+        "tags": [
+          "communication"
+        ],
+        "summary": "Append one synthetic client event to the local sink",
+        "operationId": "record_event_api_v1_communication_events_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Payload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Record Event Api V1 Communication Events Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/risk/advisory": {
+      "post": {
+        "tags": [
+          "Synthetic advisory"
+        ],
+        "summary": "Pre Transfer Advisory",
+        "operationId": "pre_transfer_advisory_api_v1_risk_advisory_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlannedTransferAdvisoryV1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Pre Transfer Advisory Api V1 Risk Advisory Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Api Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/langs": {
+      "get": {
+        "summary": "Langs",
+        "operationId": "langs_api_langs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Langs Api Langs Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ready": {
+      "get": {
+        "summary": "Readiness of persistent synthetic services",
+        "operationId": "readiness_api_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/content": {
+      "get": {
+        "summary": "Content",
+        "description": "Публичный контент онбординга. Правильные ответы НЕ отдаём — проверка на сервере.",
+        "operationId": "content_api_content_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Content Api Content Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analyze": {
+      "post": {
+        "summary": "Проверить транзакции одного клиента на дроп-схему",
+        "operationId": "analyze_api_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risk/evaluate": {
+      "post": {
+        "summary": "Strict synthetic risk snapshot (score is not probability)",
+        "operationId": "evaluate_risk_api_v1_risk_evaluate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RiskSnapshotV1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskDecisionV1"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/quiz": {
+      "post": {
+        "summary": "Проверить квиз (учебный приз, без выплат)",
+        "operationId": "quiz_api_quiz_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuizRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sim": {
+      "post": {
+        "summary": "Тренажёр смены номера (SMS не отправляются)",
+        "operationId": "sim_change_api_sim_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimChangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimChangeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases": {
+      "post": {
+        "summary": "Устаревший API кейсов: заменён /sandbox/cases",
+        "operationId": "create_support_case_api_cases_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportCase"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/api/cases/{case_id}": {
+      "get": {
+        "summary": "Устаревший API кейсов: заменён /sandbox/cases/{id}",
+        "operationId": "case_status_api_cases__case_id__get",
+        "deprecated": true,
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportCase"
+                }
+              }
+            }
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalyzeRequest": {
+        "properties": {
+          "transactions": {
+            "items": {
+              "$ref": "#/components/schemas/Transaction"
+            },
+            "type": "array",
+            "maxItems": 5000,
+            "title": "Transactions"
+          },
+          "lang": {
+            "type": "string",
+            "maxLength": 5,
+            "minLength": 2,
+            "title": "Lang",
+            "default": "ru"
+          },
+          "subject_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject Id",
+            "description": "Проверяемый клиент; чужие user_id отклоняются"
+          },
+          "analysis_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Analysis At",
+            "description": "Точка анализа; операции позже неё исключаются"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transactions"
+        ],
+        "title": "AnalyzeRequest"
+      },
+      "AnalyzeResponse": {
+        "properties": {
+          "score": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "GREEN",
+              "YELLOW",
+              "RED",
+              "INSUFFICIENT_DATA"
+            ],
+            "title": "Level"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "metrics": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metrics"
+          },
+          "alert": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StopDropAlert"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rules_version": {
+            "type": "string",
+            "title": "Rules Version",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "score",
+          "level",
+          "reasons",
+          "metrics"
+        ],
+        "title": "AnalyzeResponse"
+      },
+      "CaseCreateRequest": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Summary",
+            "description": "Краткое описание ситуации со слов клиента"
+          },
+          "lang": {
+            "type": "string",
+            "maxLength": 5,
+            "minLength": 2,
+            "title": "Lang",
+            "default": "ru"
+          },
+          "score": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "default": 0
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary"
+        ],
+        "title": "CaseCreateRequest"
+      },
+      "CommunicateRequest": {
+        "properties": {
+          "snapshot": {
+            "$ref": "#/components/schemas/RiskSnapshotV1"
+          },
+          "preferred_locale": {
+            "type": "string",
+            "title": "Preferred Locale",
+            "default": "ru-RU"
+          },
+          "subject_pseudonym": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject Pseudonym"
+          },
+          "emit_events": {
+            "type": "boolean",
+            "title": "Emit Events",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "snapshot"
+        ],
+        "title": "CommunicateRequest"
+      },
+      "CompletionRequest": {
+        "properties": {
+          "module_id": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Module Id"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "quiz",
+              "lesson",
+              "article"
+            ],
+            "title": "Format"
+          },
+          "answers": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "maxProperties": 100,
+            "title": "Answers"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._:-]+$",
+            "title": "Idempotency Key"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "module_id",
+          "format",
+          "answers",
+          "idempotency_key"
+        ],
+        "title": "CompletionRequest"
+      },
+      "DataQuality": {
+        "properties": {
+          "has_missing_sim": {
+            "type": "boolean",
+            "title": "Has Missing Sim"
+          },
+          "has_missing_device": {
+            "type": "boolean",
+            "title": "Has Missing Device"
+          },
+          "future_events_rejected": {
+            "type": "boolean",
+            "title": "Future Events Rejected"
+          },
+          "duplicate_events_rejected": {
+            "type": "boolean",
+            "title": "Duplicate Events Rejected"
+          },
+          "future_events_excluded": {
+            "type": "integer",
+            "title": "Future Events Excluded",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "has_missing_sim",
+          "has_missing_device",
+          "future_events_rejected",
+          "duplicate_events_rejected"
+        ],
+        "title": "DataQuality"
+      },
+      "ErrorModel": {
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "title": "Error Code"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "errors": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Errors"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "error_code",
+          "detail",
+          "request_id"
+        ],
+        "title": "ErrorModel"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PlannedTransferAdvisoryV1": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "PlannedTransferAdvisoryV1",
+            "title": "Schema Version",
+            "default": "PlannedTransferAdvisoryV1"
+          },
+          "analysis_mode": {
+            "type": "string",
+            "const": "pre_transfer_advisory",
+            "title": "Analysis Mode",
+            "default": "pre_transfer_advisory"
+          },
+          "subject_ref": {
+            "type": "string",
+            "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+            "title": "Subject Ref"
+          },
+          "analysis_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Analysis At"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/RiskTransactionV1"
+            },
+            "type": "array",
+            "maxItems": 5000,
+            "title": "History"
+          },
+          "planned_transfer": {
+            "$ref": "#/components/schemas/PlannedTransferV1"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "subject_ref",
+          "analysis_at",
+          "history",
+          "planned_transfer"
+        ],
+        "title": "PlannedTransferAdvisoryV1"
+      },
+      "PlannedTransferV1": {
+        "properties": {
+          "planned_event_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{2,40}$",
+            "title": "Planned Event Id"
+          },
+          "requested_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Requested At"
+          },
+          "direction": {
+            "type": "string",
+            "const": "out",
+            "title": "Direction",
+            "default": "out"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "transfer",
+              "cash_deposit",
+              "cash_withdrawal",
+              "other"
+            ],
+            "title": "Type",
+            "default": "transfer"
+          },
+          "amount_minor": {
+            "type": "integer",
+            "maximum": 100000000000000.0,
+            "minimum": 1.0,
+            "title": "Amount Minor"
+          },
+          "currency": {
+            "type": "string",
+            "const": "RUB",
+            "title": "Currency",
+            "default": "RUB"
+          },
+          "counterparty_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Ref"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "mobile_app",
+              "branch",
+              "api_sandbox"
+            ],
+            "title": "Channel"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "planned_event_id",
+          "requested_at",
+          "amount_minor",
+          "channel"
+        ],
+        "title": "PlannedTransferV1"
+      },
+      "QuizDetail": {
+        "properties": {
+          "q": {
+            "type": "string",
+            "title": "Q"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "explain": {
+            "type": "string",
+            "title": "Explain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "q",
+          "ok",
+          "explain"
+        ],
+        "title": "QuizDetail"
+      },
+      "QuizRequest": {
+        "properties": {
+          "answers": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Answers",
+            "description": "Индексы выбранных вариантов по каждому вопросу"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answers"
+        ],
+        "title": "QuizRequest"
+      },
+      "QuizResponse": {
+        "properties": {
+          "score": {
+            "type": "integer",
+            "title": "Score"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "passed": {
+            "type": "boolean",
+            "title": "Passed"
+          },
+          "cashback": {
+            "type": "integer",
+            "title": "Cashback"
+          },
+          "reward_status": {
+            "type": "string",
+            "title": "Reward Status",
+            "default": "simulated"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/QuizDetail"
+            },
+            "type": "array",
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "score",
+          "total",
+          "passed",
+          "cashback",
+          "message",
+          "details"
+        ],
+        "title": "QuizResponse"
+      },
+      "RewardClaim": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "groceries",
+              "transport",
+              "communication",
+              "education",
+              "health"
+            ],
+            "title": "Category"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._:-]+$",
+            "title": "Idempotency Key"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "category",
+          "idempotency_key"
+        ],
+        "title": "RewardClaim"
+      },
+      "RiskDecisionV1": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "RiskDecisionV1",
+            "title": "Schema Version",
+            "default": "RiskDecisionV1"
+          },
+          "evaluation_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Evaluation Id"
+          },
+          "subject_ref": {
+            "type": "string",
+            "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+            "title": "Subject Ref"
+          },
+          "analysis_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Analysis At"
+          },
+          "rule_version": {
+            "type": "string",
+            "title": "Rule Version"
+          },
+          "threshold_version": {
+            "type": "string",
+            "title": "Threshold Version"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "GREEN",
+              "YELLOW",
+              "RED",
+              "INSUFFICIENT_DATA"
+            ],
+            "title": "Level"
+          },
+          "score": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score"
+          },
+          "score_interpretation": {
+            "type": "string",
+            "const": "deterministic_rule_score_not_probability",
+            "title": "Score Interpretation",
+            "default": "deterministic_rule_score_not_probability"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "multiple_small_inbound",
+                "large_outbound_after_inbound",
+                "sim_changed_recently",
+                "device_novelty_with_baseline",
+                "rapid_in_out_pattern",
+                "borderline_window",
+                "insufficient_data",
+                "cashout_ratio",
+                "fanout_transfers",
+                "night_activity"
+              ]
+            },
+            "type": "array",
+            "title": "Reason Codes"
+          },
+          "score_contributions": {
+            "additionalProperties": {
+              "type": "integer",
+              "maximum": 100.0,
+              "minimum": 0.0
+            },
+            "propertyNames": {
+              "enum": [
+                "multiple_small_inbound",
+                "large_outbound_after_inbound",
+                "sim_changed_recently",
+                "device_novelty_with_baseline",
+                "rapid_in_out_pattern",
+                "borderline_window",
+                "insufficient_data",
+                "cashout_ratio",
+                "fanout_transfers",
+                "night_activity"
+              ]
+            },
+            "type": "object",
+            "title": "Score Contributions"
+          },
+          "window_used": {
+            "$ref": "#/components/schemas/WindowUsed"
+          },
+          "data_quality": {
+            "$ref": "#/components/schemas/DataQuality"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "insufficient_data",
+              "rejected_input"
+            ],
+            "title": "Status"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Warnings"
+          },
+          "sandbox": {
+            "type": "boolean",
+            "const": true,
+            "title": "Sandbox",
+            "default": true
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "synthetic",
+              "sandbox"
+            ],
+            "title": "Source Type",
+            "default": "synthetic"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evaluation_id",
+          "subject_ref",
+          "analysis_at",
+          "rule_version",
+          "threshold_version",
+          "level",
+          "score",
+          "reason_codes",
+          "score_contributions",
+          "window_used",
+          "data_quality",
+          "status"
+        ],
+        "title": "RiskDecisionV1"
+      },
+      "RiskSnapshotV1": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "RiskSnapshotV1",
+            "title": "Schema Version"
+          },
+          "subject_ref": {
+            "type": "string",
+            "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+            "title": "Subject Ref"
+          },
+          "analysis_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Analysis At"
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "synthetic",
+              "sandbox"
+            ],
+            "title": "Source Type",
+            "default": "synthetic"
+          },
+          "timezone_policy": {
+            "type": "string",
+            "const": "normalize_to_utc",
+            "title": "Timezone Policy"
+          },
+          "allow_future_events": {
+            "type": "boolean",
+            "title": "Allow Future Events",
+            "default": false
+          },
+          "transactions": {
+            "items": {
+              "$ref": "#/components/schemas/RiskTransactionV1"
+            },
+            "type": "array",
+            "maxItems": 5000,
+            "title": "Transactions"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/SnapshotMetadata"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "schema_version",
+          "subject_ref",
+          "analysis_at",
+          "timezone_policy",
+          "transactions"
+        ],
+        "title": "RiskSnapshotV1"
+      },
+      "RiskTransactionV1": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+            "title": "Source",
+            "default": "src_00000000"
+          },
+          "event_id": {
+            "type": "string",
+            "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$",
+            "title": "Event Id"
+          },
+          "source_event_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Event Id"
+          },
+          "subject_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject Ref"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "in",
+              "out"
+            ],
+            "title": "Direction"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "transfer",
+              "cash_deposit",
+              "cash_withdrawal",
+              "salary",
+              "family_collection",
+              "other"
+            ],
+            "title": "Type"
+          },
+          "amount_minor": {
+            "type": "integer",
+            "maximum": 100000000000000.0,
+            "minimum": 0.0,
+            "title": "Amount Minor"
+          },
+          "currency": {
+            "type": "string",
+            "const": "RUB",
+            "title": "Currency"
+          },
+          "counterparty_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Ref"
+          },
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "sim_changed_days_ago": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sim Changed Days Ago"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "occurred_at",
+          "direction",
+          "type",
+          "amount_minor",
+          "currency"
+        ],
+        "title": "RiskTransactionV1"
+      },
+      "SandboxCaseCreate": {
+        "properties": {
+          "evaluation_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Evaluation Id"
+          },
+          "selected_language": {
+            "type": "string",
+            "enum": [
+              "ru",
+              "en",
+              "uz",
+              "tg",
+              "ky",
+              "zh",
+              "ar"
+            ],
+            "title": "Selected Language",
+            "default": "ru"
+          },
+          "contact_reason": {
+            "type": "string",
+            "enum": [
+              "explain_risk",
+              "suspicious_request",
+              "need_assistance"
+            ],
+            "title": "Contact Reason"
+          },
+          "client_comment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Comment",
+            "description": "Synthetic only; fingerprinted, not retained"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evaluation_id",
+          "contact_reason"
+        ],
+        "title": "SandboxCaseCreate"
+      },
+      "SandboxCaseResponse": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Case Id"
+          },
+          "evaluation_id": {
+            "type": "string",
+            "title": "Evaluation Id"
+          },
+          "status": {
+            "type": "string",
+            "const": "registered-sandbox",
+            "title": "Status"
+          },
+          "selected_language": {
+            "type": "string",
+            "title": "Selected Language"
+          },
+          "contact_reason": {
+            "type": "string",
+            "title": "Contact Reason"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "sandbox": {
+            "type": "boolean",
+            "const": true,
+            "title": "Sandbox",
+            "default": true
+          },
+          "next_step": {
+            "type": "string",
+            "title": "Next Step",
+            "default": "Тестовое обращение зарегистрировано. Реальное обращение в банк не отправлялось."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "case_id",
+          "evaluation_id",
+          "status",
+          "selected_language",
+          "contact_reason",
+          "created_at"
+        ],
+        "title": "SandboxCaseResponse"
+      },
+      "SimChangeRequest": {
+        "properties": {
+          "old_phone": {
+            "type": "string",
+            "maxLength": 32,
+            "title": "Old Phone"
+          },
+          "new_phone": {
+            "type": "string",
+            "maxLength": 32,
+            "title": "New Phone"
+          },
+          "otp_ok_old": {
+            "type": "boolean",
+            "title": "Otp Ok Old",
+            "default": false
+          },
+          "otp_ok_new": {
+            "type": "boolean",
+            "title": "Otp Ok New",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "old_phone",
+          "new_phone"
+        ],
+        "title": "SimChangeRequest"
+      },
+      "SimChangeResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "demo": {
+            "type": "boolean",
+            "title": "Demo",
+            "default": true
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": ""
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Errors",
+            "default": []
+          },
+          "new_phone": {
+            "type": "string",
+            "title": "New Phone",
+            "default": ""
+          },
+          "cooldown_until": {
+            "type": "string",
+            "title": "Cooldown Until",
+            "default": ""
+          },
+          "limits": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Limits",
+            "default": {}
+          },
+          "checklist": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Checklist",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "title": "SimChangeResponse"
+      },
+      "SnapshotMetadata": {
+        "properties": {
+          "dataset_version": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "pattern": "^[a-zA-Z0-9._-]+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Version"
+          },
+          "label_source": {
+            "type": "string",
+            "enum": [
+              "human_reviewed",
+              "synthetic_placeholder",
+              "bank_adjudicated",
+              "unknown"
+            ],
+            "title": "Label Source",
+            "default": "unknown"
+          },
+          "is_holdout": {
+            "type": "boolean",
+            "title": "Is Holdout",
+            "default": false
+          },
+          "episode_class": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "risk",
+              "legitimate_negative",
+              "edge",
+              "unknown"
+            ],
+            "title": "Episode Class",
+            "default": "unknown"
+          },
+          "episode_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(sub|cp|dev|evt|src|ep|case|tpl)_[a-f0-9]{8,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Episode Id"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "risk",
+                  "normal"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SnapshotMetadata"
+      },
+      "StopDropAlert": {
+        "properties": {
+          "lang": {
+            "type": "string",
+            "title": "Lang"
+          },
+          "lang_name": {
+            "type": "string",
+            "title": "Lang Name"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lang",
+          "lang_name",
+          "title",
+          "body",
+          "score"
+        ],
+        "title": "StopDropAlert"
+      },
+      "SupportCase": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "open-sandbox"
+          },
+          "demo": {
+            "type": "boolean",
+            "title": "Demo",
+            "default": true
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "default": ""
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "default": ""
+          },
+          "lang": {
+            "type": "string",
+            "title": "Lang",
+            "default": "ru"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score",
+            "default": 0
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id"
+        ],
+        "title": "SupportCase"
+      },
+      "Transaction": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Id",
+            "default": "0"
+          },
+          "user_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "User Id",
+            "default": "anon"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ts",
+            "description": "ISO дата-время. Наивные метки считаются московским временем."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "incoming_p2p",
+              "outgoing_p2p",
+              "cash_withdraw",
+              "purchase",
+              "incoming_salary"
+            ],
+            "title": "Type",
+            "default": "purchase"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)"
+              }
+            ],
+            "title": "Amount",
+            "examples": [
+              3000
+            ]
+          },
+          "counterparty": {
+            "type": "string",
+            "maxLength": 256,
+            "title": "Counterparty",
+            "default": ""
+          },
+          "device_id": {
+            "type": "string",
+            "maxLength": 256,
+            "title": "Device Id",
+            "default": ""
+          },
+          "sim_changed_days_ago": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sim Changed Days Ago",
+            "description": "Дней с замены SIM; null = неизвестно"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ts",
+          "amount"
+        ],
+        "title": "Transaction"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WindowUsed": {
+        "properties": {
+          "short_minutes": {
+            "type": "integer",
+            "title": "Short Minutes"
+          },
+          "long_hours": {
+            "type": "integer",
+            "title": "Long Hours"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "short_minutes",
+          "long_hours"
+        ],
+        "title": "WindowUsed"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

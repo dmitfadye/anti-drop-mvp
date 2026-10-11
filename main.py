@@ -1,22 +1,18 @@
-"""Анти-Дроп MVP — FastAPI-бэкенд.
+"""Synthetic FastAPI backend with owned PostgreSQL sandbox cases.
 
-Запуск:  .venv/bin/uvicorn main:app --reload   ->  http://localhost:8000
-Документация API (Swagger, локальные ассеты): http://localhost:8000/docs
-
-Исправления по аудиту:
-- T17: Tailwind и Swagger UI — локальные файлы из static/, внешнего JS нет.
-- T14/E21: CORS '*' убран — фронт same-origin, кросс-доменные вызовы не нужны.
-- T02: обращение в поддержку — серверный sandbox-кейс POST /api/cases
-  с устойчивым case_id и идемпотентностью (учебный, не банковское действие).
-- Наблюдаемость-минимум: X-Request-ID в ответах, rules_version в analyze/health.
+Local Swagger assets, bounded/redacted input and server request IDs.
+Legacy analysis remains available; unscoped memory cases are retired.
+No bank actions or external inference calls are performed.
 """
 import uuid
 from datetime import datetime
 from pathlib import Path
+from sqlalchemy import text
 
 from fastapi import FastAPI, HTTPException
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from sqlalchemy.exc import SQLAlchemyError
 from fastapi.exceptions import RequestValidationError
-from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.responses import JSONResponse
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import FileResponse
@@ -34,7 +30,11 @@ from models import (
     SupportCase,
 )
 from src.alerts import SUPPORTED_LANGS, build_stop_drop_alert
-from src.cases import create_case, get_case
+from src.database import DatabaseNotConfigured, get_engine
+from src.http_boundary import RequestBoundary
+from src.sandbox import ErrorModel, router as sandbox_router
+from src.learning import router as learning_router
+from src.p1 import router as p1_router
 from src.detector import analyze_transactions
 from src.policy import RULES_VERSION, UTC
 from src.quiz import QUIZ, STORIES, check_quiz
@@ -43,7 +43,7 @@ from anti_drop_ml.adapter import evaluate_snapshot
 from anti_drop_ml.contracts import RiskDecisionV1, RiskSnapshotV1
 
 BASE_DIR = Path(__file__).resolve().parent
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 
 app = FastAPI(
     title="Анти-Дроп API",
@@ -54,19 +54,40 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+app.include_router(sandbox_router, responses={code: {'model': ErrorModel} for code in (401, 403, 404, 409, 410, 413, 422, 503)})
+app.include_router(learning_router, responses={code: {'model': ErrorModel} for code in (401, 404, 409, 422, 503)})
+app.include_router(p1_router)
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_error(request, exc):
-    if request.url.path == '/api/v1/risk/evaluate':
-        # Do not echo a mistakenly submitted raw payload through validation errors.
-        return JSONResponse(status_code=422, content={'detail': [{'type': error['type'], 'loc': error['loc']} for error in exc.errors()]})
-    return await request_validation_exception_handler(request, exc)
+    errors = [{'type': error['type'], 'loc': error['loc'][:-1] + ('[unknown_field]',) if error['type'] == 'extra_forbidden' else error['loc']} for error in exc.errors()]
+    return JSONResponse(status_code=422, content={'error_code': 'VALIDATION_ERROR',
+        'field': '.'.join(str(part) for part in errors[0]['loc']) if errors else None,
+        'detail': 'Request validation failed', 'errors': errors, 'request_id': request.state.request_id})
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_error(request, exc):
+    return JSONResponse(status_code=exc.status_code, content={'error_code': {
+        401: 'UNAUTHORIZED', 403: 'FORBIDDEN', 404: 'NOT_FOUND', 409: 'IDEMPOTENCY_CONFLICT',
+        410: 'LEGACY_CASE_API_RETIRED', 422: 'VALIDATION_ERROR', 503: 'SERVICE_UNAVAILABLE',
+    }.get(exc.status_code, 'REQUEST_REJECTED'), 'field': None, 'detail': exc.detail,
+        'request_id': request.state.request_id}, headers=exc.headers)
+
+
+@app.exception_handler(SQLAlchemyError)
+@app.exception_handler(DatabaseNotConfigured)
+async def database_error(request, exc):
+    # Never expose SQL, connection credentials, bind parameters or raw submitted data.
+    return JSONResponse(status_code=503, content={'error_code': 'DATABASE_UNAVAILABLE',
+        'field': None, 'detail': 'Persistent sandbox is unavailable; no success was confirmed',
+        'request_id': request.state.request_id})
 
 
 @app.middleware("http")
 async def request_id_middleware(request, call_next):
-    request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:12]
+    request_id = getattr(request.state, 'request_id', uuid.uuid4().hex)
     response = await call_next(request)
     response.headers["X-Request-ID"] = request_id
     return response
@@ -105,6 +126,14 @@ def langs() -> dict[str, str]:
     return SUPPORTED_LANGS
 
 
+@app.get('/api/ready', summary='Readiness of persistent synthetic services')
+def readiness():
+    with get_engine().connect() as connection:
+        connection.execute(text('SELECT 1 FROM risk_evaluations LIMIT 1'))
+        connection.execute(text('SELECT 1 FROM learning_profiles LIMIT 1'))
+    return {'status': 'ready', 'database': 'postgresql', 'demo_mode': True}
+
+
 @app.get("/api/content")
 def content() -> dict:
     """Публичный контент онбординга. Правильные ответы НЕ отдаём — проверка на сервере."""
@@ -120,9 +149,12 @@ def content() -> dict:
 
 @app.post("/api/analyze", response_model=AnalyzeResponse, summary="Проверить транзакции одного клиента на дроп-схему")
 def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
+    # Compatibility replay uses latest historical event, capped at boundary time.
+    # Strict snapshots always require an explicit deterministic analysis_at.
+    analysis_at = req.analysis_at or min(max((t.ts for t in req.transactions), default=datetime.now(UTC)), datetime.now(UTC))
     res = analyze_transactions(
         [t.model_dump() for t in req.transactions],
-        now=req.analysis_at,
+        now=analysis_at,
     )
     alert = None
     if res["level"] == "RED":
@@ -131,7 +163,7 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
             **build_stop_drop_alert(
                 req.lang,
                 m.get("small_incoming_60m_sum", 0),
-                m.get("small_incoming_60m_senders", 0),
+                m.get("small_incoming_60m_senders", 0) if "large_outbound_after_inbound" in m.get("score_contributions", {}) else 0,
                 res["score"],
             )
         )
@@ -163,15 +195,14 @@ def sim_change(req: SimChangeRequest) -> SimChangeResponse:
     return SimChangeResponse(ok=True, **{k: v for k, v in out.items() if k != "ok"})
 
 
-@app.post("/api/cases", response_model=SupportCase, summary="Создать учебный кейс обращения (sandbox)")
+@app.post("/api/cases", response_model=SupportCase, deprecated=True, responses={410: {'model': ErrorModel}}, summary="Устаревший API кейсов: заменён /sandbox/cases")
 def create_support_case(req: CaseCreateRequest) -> SupportCase:
-    case = create_case(req.summary, req.lang, req.score, req.idempotency_key)
-    return SupportCase(**{k: v for k, v in case.items() if k != "deduped"})
+    raise HTTPException(410, 'Unscoped memory cases retired; use authenticated POST /sandbox/cases with a persisted evaluation')
 
 
-@app.get("/api/cases/{case_id}", response_model=SupportCase, summary="Статус учебного кейса")
+@app.get("/api/cases/{case_id}", response_model=SupportCase, deprecated=True, responses={410: {'model': ErrorModel}}, summary="Устаревший API кейсов: заменён /sandbox/cases/{id}")
 def case_status(case_id: str) -> SupportCase:
-    case = get_case(case_id)
-    if case is None:
-        raise HTTPException(status_code=404, detail="Кейс не найден (хранилище — память одного процесса)")
-    return SupportCase(**case)
+    raise HTTPException(410, 'Unscoped memory cases retired; use authenticated GET /sandbox/cases/{case_id}')
+
+
+app.add_middleware(RequestBoundary)

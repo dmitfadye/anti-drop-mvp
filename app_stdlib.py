@@ -179,12 +179,16 @@ class Handler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", 0))
         except ValueError:
             return self._json({"error": "Некорректный Content-Length"}, 400)
+        if length < 0:
+            return self._json({"error": "Invalid Content-Length"}, 400)
         if length > MAX_BODY:  # T12: не читаем сверх лимита
             return self._json({"error": "Тело запроса слишком большое"}, 413)
         try:
             body = json.loads(self.rfile.read(length) or b"{}")
         except json.JSONDecodeError:
             return self._json({"error": "Некорректный JSON"}, 400)
+        if not isinstance(body, dict):
+            return self._json({"error": "JSON object required"}, 422)
         path = urlparse(self.path).path
 
         if path == "/api/analyze":
@@ -213,7 +217,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    srv = HTTPServer(("0.0.0.0", PORT), Handler)
+    srv = HTTPServer(("127.0.0.1", PORT), Handler)
     print(f"🛡️  Анти-Дроп MVP: http://localhost:{PORT}\n"
           "Демо жюри: нажмите «Симулировать атаку вербовщика».\nОстановка: Ctrl+C")
     try:

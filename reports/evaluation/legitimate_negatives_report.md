@@ -3,10 +3,10 @@
 Not validated banking accuracy. These cases test false-positive sensitivity.
 
 {
-  "total_episodes": 9,
+  "total_episodes": 11,
   "TP": 0,
   "FP": 1,
-  "TN": 8,
+  "TN": 10,
   "FN": 0,
   "recall": {
     "value": null,
@@ -24,12 +24,12 @@ Not validated banking accuracy. These cases test false-positive sensitivity.
     ]
   },
   "fpr": {
-    "value": 0.1111111111111111,
+    "value": 0.09090909090909091,
     "numerator": 1,
-    "denominator": 9,
+    "denominator": 11,
     "wilson_95_ci": [
-      0.019890371327130535,
-      0.4350062147680601
+      0.01623175226282597,
+      0.3773646254862038
     ]
   },
   "fnr": {
@@ -39,21 +39,21 @@ Not validated banking accuracy. These cases test false-positive sensitivity.
     "wilson_95_ci": null
   },
   "alert_rate": {
-    "value": 0.1111111111111111,
+    "value": 0.09090909090909091,
     "numerator": 1,
-    "denominator": 9,
+    "denominator": 11,
     "wilson_95_ci": [
-      0.019890371327130535,
-      0.4350062147680601
+      0.01623175226282597,
+      0.3773646254862038
     ]
   },
   "legitimate_negative_alert_rate": {
-    "value": 0.1111111111111111,
+    "value": 0.09090909090909091,
     "numerator": 1,
-    "denominator": 9,
+    "denominator": 11,
     "wilson_95_ci": [
-      0.019890371327130535,
-      0.4350062147680601
+      0.01623175226282597,
+      0.3773646254862038
     ]
   }
 }
