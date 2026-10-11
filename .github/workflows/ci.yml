@@ -1,0 +1,83 @@
+name: Verify synthetic AntiDrop
+
+on:
+  pull_request:
+  push:
+    branches: [master, integration/antidrop-unified]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-bookworm
+        env:
+          POSTGRES_DB: antidrop_test_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic_ci_only
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d antidrop_test_ci"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    env:
+      DATABASE_URL: postgresql+psycopg://postgres:synthetic_ci_only@127.0.0.1:5432/antidrop_test_ci
+      TEST_DATABASE_URL: postgresql+psycopg://postgres:synthetic_ci_only@127.0.0.1:5432/antidrop_test_ci
+      SANDBOX_TOKENS: '{"ci-synthetic-demo-token-for-tests-only-20261011":"sub_11111111"}'
+      SANDBOX_WEB_TOKEN: ci-synthetic-demo-token-for-tests-only-20261011
+      SANDBOX_WEB_SUBJECT: sub_11111111
+      BACKEND_URL: http://127.0.0.1:8000
+      APP_ORIGIN: http://127.0.0.1:3001
+      PLAYWRIGHT_CHANNEL: chromium
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+      - run: uv sync --frozen
+      - name: PostgreSQL migrations and backend regression tests
+        run: |
+          uv run --frozen alembic upgrade head
+          uv run --frozen alembic check
+          uv run --frozen pytest -q
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - name: Frontend validation and production build
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run typecheck
+          npm run build
+      - name: Start synthetic backend
+        run: |
+          uv run --frozen uvicorn main:app --host 127.0.0.1 --port 8000 > /tmp/antidrop-api.log 2>&1 &
+          uv run --frozen python - <<'PY'
+          import time, urllib.request
+          for attempt in range(30):
+              try:
+                  urllib.request.urlopen('http://127.0.0.1:8000/api/ready', timeout=2)
+                  break
+              except OSError:
+                  time.sleep(0.5)
+          else:
+              raise SystemExit('Synthetic API readiness timed out')
+          PY
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Browser and BFF regression tests
+        run: npm run test:e2e
+        working-directory: frontend
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-failures
+          path: frontend/test-results/
+          retention-days: 7
