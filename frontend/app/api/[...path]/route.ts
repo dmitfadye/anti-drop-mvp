@@ -3,7 +3,7 @@ import { backend, boundedJson, DemoServiceError, rejectForeignOrigin, serviceErr
 export const dynamic = 'force-dynamic';
 type Context = { params: Promise<{ path: string[] }> };
 const publicGet = new Set(['health', 'ready', 'langs', 'content', 'v1/learning/catalog']);
-const publicPost = new Set(['analyze', 'quiz', 'sim', 'v1/risk/evaluate']);
+const publicPost = new Set(['analyze', 'quiz', 'sim', 'v1/risk/evaluate', 'v1/learning/practice']);
 const privateGet = new Set(['v1/learning/progress']);
 const privatePost = new Set(['v1/learning/completions', 'v1/learning/rewards/30/claim']);
 async function proxy(request: Request, context: Context) {

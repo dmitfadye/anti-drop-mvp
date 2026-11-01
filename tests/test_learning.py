@@ -6,6 +6,8 @@ import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta, timezone
+from contextlib import nullcontext
+from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
@@ -52,6 +54,121 @@ def test_grading_requires_exact_questions_and_real_integer_indices():
     assert error.value.status_code == 422
     with pytest.raises(ValueError):
         learning.CompletionRequest(module_id='safe', format='quiz', answers={'q1': True}, idempotency_key='test')
+
+
+def test_practice_returns_card_feedback_without_storage_or_xp(monkeypatch):
+    course = json.loads(json.dumps(COURSE))
+    course['modules'][0]['cards'][0].update(safe_action='Проверьте канал связи.', danger_sign='Просят код.')
+    monkeypatch.setattr(learning, 'load_course', lambda: course)
+    def no_storage():
+        pytest.fail('Practice must not access storage')
+    monkeypatch.setattr(learning, 'get_engine', no_storage)
+    client = TestClient(app)
+    catalog = client.get('/api/v1/learning/catalog').json()
+    assert catalog['version'] == catalog['course_version'] == COURSE['version']
+    assert 'safe_action' not in catalog['modules'][0]['cards'][0]
+    response = client.post('/api/v1/learning/practice', json={
+        'module_id': 'safe', 'question_id': 'c1', 'answer': 1, 'course_version': COURSE['version']})
+    assert response.status_code == 200
+    assert response.json() == {'course_version': COURSE['version'], 'question_id': 'c1',
+        'correct': False, 'correct_index': 0, 'explanation': course['modules'][0]['cards'][0]['explanation'],
+        'source_needed': False, 'safe_action': 'Проверьте канал связи.', 'danger_sign': 'Просят код.'}
+    assert client.post('/api/v1/learning/practice', json={
+        'module_id': 'safe', 'question_id': 'c1', 'answer': 0}).json()['correct'] is True
+
+
+@pytest.mark.parametrize('updates,status', [
+    ({'question_id': 'q1'}, 404),  # Final quiz questions cannot be practiced.
+    ({'module_id': 'missing'}, 404),
+    ({'answer': -1}, 422), ({'answer': 2}, 422),
+    ({'answer': True}, 422), ({'answer': '0'}, 422),
+    ({'course_version': 'obsolete'}, 409), ({'xp': 100}, 422),
+])
+def test_practice_rejects_invalid_answers_and_stale_content(updates, status):
+    payload = {'module_id': 'safe', 'question_id': 'c1', 'answer': 0, **updates}
+    response = TestClient(app).post('/api/v1/learning/practice', json=payload)
+    assert response.status_code == status
+
+
+def test_new_completion_checks_course_version_but_legacy_request_still_passes(monkeypatch):
+    monkeypatch.setattr(learning, 'mutate', lambda subject, operation, body, action:
+                        action(learning.empty_state(), date(2026, 10, 1)))
+    legacy = learning.CompletionRequest(module_id='safe', format='quiz', answers={'q1': 0}, idempotency_key='legacy')
+    assert 'course_version' not in legacy.model_dump(exclude_none=True)
+    assert learning.complete(legacy, 'sub_12345678')['result']['passed']
+    current = legacy.model_copy(update={'course_version': COURSE['version']})
+    assert learning.complete(current, 'sub_12345678')['course_version'] == COURSE['version']
+    stale = legacy.model_copy(update={'course_version': 'obsolete'})
+    with pytest.raises(Exception) as error:
+        learning.complete(stale, 'sub_12345678')
+    assert error.value.status_code == 409
+
+
+def test_independent_assessment_cannot_be_passed_by_practicing_cards():
+    module = json.loads(json.dumps(COURSE['modules'][0]))
+    module['assessment_independent'] = True
+    module['cards'] = [{**module['cards'][0], 'id': f'practice-{index}'} for index in range(6)]
+    body = learning.CompletionRequest(module_id='safe', format='lesson',
+        answers={**{q['id']: 0 for q in module['cards']}, 'q1': 1}, idempotency_key='assessment')
+    result = learning.grade(module, body)
+    assert result['score'] == 6 and result['total'] == 7
+    assert result['assessment_score'] == 0 and result['assessment_total'] == 1
+    assert result['passed'] is False
+    body.answers['q1'] = 0
+    assert learning.grade(module, body)['passed'] is True
+    module.pop('assessment_independent')
+    body.answers['q1'] = 1
+    assert learning.grade(module, body)['passed'] is True  # Existing module policy is retained.
+
+
+def test_catalog_includes_public_scenario_context_but_not_feedback(monkeypatch):
+    course = json.loads(json.dumps(COURSE))
+    metadata = {'scenario_type': 'message', 'scenario_text': 'Учебное сообщение',
+        'learning_goal': 'Проверка канала', 'difficulty': 'basic', 'source_url': 'https://example.org/',
+        'content_version': 'v1'}
+    course['modules'][0]['assessment_independent'] = True
+    course['modules'][0]['cards'][0].update(**metadata, safe_action='Проверьте канал', danger_sign='Просят код')
+    monkeypatch.setattr(learning, 'load_course', lambda: course)
+    module = learning.catalog()['modules'][0]
+    assert module['assessment_independent'] is True
+    card = module['cards'][0]
+    assert all(card[key] == value for key, value in metadata.items())
+    assert not {'correct', 'explanation', 'safe_action', 'danger_sign'} & card.keys()
+
+
+@pytest.mark.parametrize('course_version', [None, 'test-v1'])
+def test_completion_replay_precedes_catalog_load(monkeypatch, course_version):
+    # Exercise the actual mutate replay branch without an alternative database.
+    import hashlib
+    body = learning.CompletionRequest(module_id='safe', format='quiz', answers={'q1': 0},
+                                      idempotency_key='historical', course_version=course_version)
+    fingerprint = hashlib.sha256(json.dumps({'operation': 'completion',
+        'payload': body.model_dump(exclude={'idempotency_key'}, exclude_none=True)},
+        sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    historical = {'progress': {'xp': 60}, 'result': {'passed': True}}
+    replay = SimpleNamespace(fingerprint=fingerprint, response=historical)
+    class ReplaySession:
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            pass
+        def begin(self):
+            return nullcontext()
+        def execute(self, *args):
+            pass
+        def scalar(self, *args):
+            return replay
+    monkeypatch.setattr(learning, 'get_engine', lambda: None)
+    monkeypatch.setattr(learning, 'Session', lambda engine: ReplaySession())
+    def unavailable_course():
+        pytest.fail('Historical replay must not load the current course')
+    monkeypatch.setattr(learning, 'load_course', unavailable_course)
+    assert learning.complete(body, 'sub_12345678') == historical
+    # Version is part of the fingerprint when supplied, even for historical keys.
+    conflict = body.model_copy(update={'course_version': 'different-version'})
+    with pytest.raises(Exception) as error:
+        learning.complete(conflict, 'sub_12345678')
+    assert error.value.status_code == 409
 
 
 def test_calendar_gap_keeps_xp_and_one_completion_per_day():
@@ -163,6 +280,26 @@ def test_pg_moscow_midnight_replay_and_isolation(db):
     assert client.get('/api/v1/learning/progress').status_code == 401
     failed = complete(db, key='failed', answers={'q1': 1}).json()
     assert failed['result']['passed'] is False and failed['progress']['xp'] == 70
+
+
+def test_pg_completion_replay_survives_catalog_change_and_removal(db, monkeypatch):
+    client, _, headers, _ = db
+    payload = {'module_id': 'safe', 'format': 'quiz', 'answers': {'q1': 0},
+               'course_version': COURSE['version'], 'idempotency_key': 'versioned'}
+    first = client.post('/api/v1/learning/completions', headers=headers[0], json=payload)
+    assert first.status_code == 200
+    changed = json.loads(json.dumps(COURSE))
+    changed['version'] = 'test-v2'
+    changed['modules'][0]['quiz'][0]['id'] = 'replacement'
+    monkeypatch.setattr(learning, 'load_course', lambda: changed)
+    assert client.post('/api/v1/learning/completions', headers=headers[0], json=payload).json() == first.json()
+    stale = client.post('/api/v1/learning/completions', headers=headers[0],
+                        json={**payload, 'idempotency_key': 'new-stale'})
+    assert stale.status_code == 409
+    changed['modules'] = []
+    replay = client.post('/api/v1/learning/completions', headers=headers[0], json=payload)
+    assert replay.status_code == 200 and replay.json() == first.json()
+    assert client.get('/api/v1/learning/progress', headers=headers[0]).json()['xp'] == 60
 
 
 def test_pg_concurrent_completions_award_once(db):

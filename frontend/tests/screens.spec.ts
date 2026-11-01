@@ -4,7 +4,7 @@ const screens = {
   monitoring: 'Мониторинг',
   principles: 'Как это работает',
   protection: 'Сценарии защиты',
-  learning: 'Онбординг + квиз',
+  learning: 'Учитесь замечать главное',
   phone: 'Смена номера',
   knowledge: 'База знаний',
   guides: 'Видео и гайды',

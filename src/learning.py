@@ -27,6 +27,8 @@ CATEGORIES = [{'id': key, 'title': title} for key, title in [
     ('groceries', 'Продукты'), ('transport', 'Транспорт'), ('communication', 'Связь'),
     ('education', 'Образование'), ('health', 'Здоровье')]]
 Category = Literal['groceries', 'transport', 'communication', 'education', 'health']
+CONTENT_TEXT_FIELDS = frozenset({'title', 'summary', 'article', 'prompt', 'options', 'explanation',
+    'scenario_text', 'learning_goal', 'danger_sign', 'safe_action', 'disclaimer', 'adaptation'})
 
 
 def now_utc():
@@ -34,9 +36,22 @@ def now_utc():
     return datetime.now(timezone.utc)
 
 
+def damaged_content(value, human_text=False):
+    """Inspect displayed prose recursively, without treating URLs or IDs as prose."""
+    if isinstance(value, dict):
+        return any(damaged_content(child, human_text or key in CONTENT_TEXT_FIELDS)
+                   for key, child in value.items())
+    if isinstance(value, list):
+        return any(damaged_content(child, human_text) for child in value)
+    return isinstance(value, str) and human_text and ('??' in value or '\ufffd' in value)
+
+
 def load_course():
     try:
-        return json.loads(COURSE_PATH.read_text(encoding='utf-8'))
+        course = json.loads(COURSE_PATH.read_text(encoding='utf-8'))
+        if damaged_content(course):
+            raise ValueError('Invalid learning content')
+        return course
     except (OSError, ValueError):
         raise HTTPException(503, 'Учебные материалы временно недоступны') from None
 
@@ -45,7 +60,15 @@ class CompletionRequest(ClosedModel):
     module_id: str = Field(min_length=1, max_length=80)
     format: Literal['quiz', 'lesson', 'article']
     answers: dict[str, StrictInt] = Field(max_length=100)
+    course_version: str | None = Field(default=None, min_length=1, max_length=80)
     idempotency_key: str = Field(min_length=1, max_length=128, pattern=r'^[A-Za-z0-9._:-]+$')
+
+
+class PracticeRequest(ClosedModel):
+    module_id: str = Field(min_length=1, max_length=80)
+    question_id: str = Field(min_length=1, max_length=80)
+    answer: StrictInt
+    course_version: str | None = Field(default=None, min_length=1, max_length=80)
 
 
 class RewardClaim(ClosedModel):
@@ -117,8 +140,25 @@ def grade(module, body):
         feedback.append({'question_id': q['id'], 'correct': answer == q['correct'],
                          'explanation': q['explanation'], 'source_needed': q.get('source_needed', False)})
     score = sum(item['correct'] for item in feedback)
-    return {'score': score, 'total': len(questions), 'passed': score*100 >= len(questions)*80,
-            'feedback': feedback}
+    result = {'score': score, 'total': len(questions), 'passed': score*100 >= len(questions)*80,
+              'feedback': feedback}
+    if module.get('assessment_independent') and body.format == 'lesson':
+        assessment = module['quiz']
+        if not assessment:
+            raise HTTPException(503, 'Для выбранного формата отсутствует итоговая проверка знаний')
+        assessment_score = sum(body.answers[q['id']] == q['correct'] for q in assessment)
+        result.update(assessment_score=assessment_score, assessment_total=len(assessment),
+                      passed=assessment_score*100 >= len(assessment)*80)
+    return result
+
+
+def current_module(course, module_id, course_version):
+    if course_version is not None and course_version != course['version']:
+        raise HTTPException(409, 'Учебный курс обновился. Загрузите материалы заново.')
+    module = next((m for m in course['modules'] if m['id'] == module_id), None)
+    if module is None:
+        raise HTTPException(404, 'Учебный модуль не найден')
+    return module
 
 
 def apply_completion(state, module_id, format, today):
@@ -185,14 +225,33 @@ def catalog():
     modules = []
     for module in course['modules']:
         public = {key: module[key] for key in ('id', 'title', 'summary', 'minutes', 'article')}
+        if 'assessment_independent' in module:
+            public['assessment_independent'] = module['assessment_independent']
         for kind in ('cards', 'quiz'):
             public[kind] = [{**{key: q[key] for key in ('id', 'prompt', 'options')},
-                             **({'source_needed': q['source_needed']} if 'source_needed' in q else {})}
+                             **{key: q[key] for key in ('source_needed', 'scenario_type', 'scenario_text',
+                                'learning_goal', 'difficulty', 'source_url', 'content_version') if key in q}}
                             for q in module[kind]]
         modules.append(public)
-    return {'version': course['version'], 'modules': modules, 'demo': True,
+    return {'version': course['version'], 'course_version': course['version'], 'modules': modules, 'demo': True,
             'disclaimer': course.get('disclaimer', 'Учебные награды, без начисления денег.'),
             'source': course.get('source', {})}
+
+
+@router.post('/practice')
+def practice(body: PracticeRequest):
+    """Stateless card feedback; quiz answer keys remain outside this endpoint."""
+    course = load_course()
+    module = current_module(course, body.module_id, body.course_version)
+    question = next((q for q in module['cards'] if q['id'] == body.question_id), None)
+    if question is None:
+        raise HTTPException(404, 'Учебная карточка не найдена')
+    if not 0 <= body.answer < len(question['options']):
+        raise HTTPException(422, 'Недопустимый вариант ответа')
+    return {'course_version': course['version'], 'question_id': question['id'],
+            'correct': body.answer == question['correct'], 'correct_index': question['correct'],
+            'explanation': question['explanation'], 'source_needed': question.get('source_needed', False),
+            **{key: question[key] for key in ('safe_action', 'danger_sign') if key in question}}
 
 
 @router.get('/progress')
@@ -204,14 +263,14 @@ def get_progress(subject: str = Depends(trusted_subject)):
 
 @router.post('/completions')
 def complete(body: CompletionRequest, subject: str = Depends(trusted_subject)):
-    module = next((m for m in load_course()['modules'] if m['id'] == body.module_id), None)
-    if module is None:
-        raise HTTPException(404, 'Учебный модуль не найден')
-    result = grade(module, body)
     def action(state, today):
+        # mutate checks the durable replay under lock before consulting live content.
+        course = load_course()
+        module = current_module(course, body.module_id, body.course_version)
+        result = grade(module, body)
         if result['passed']:
             apply_completion(state, body.module_id, body.format, today)
-        return {'progress': progress(state, today), 'result': result}
+        return {'progress': progress(state, today), 'result': result, 'course_version': course['version']}
     return mutate(subject, 'completion', body, action)
 
 

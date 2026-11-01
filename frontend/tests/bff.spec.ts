@@ -1,6 +1,16 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test } from '@playwright/test';
 
+function assertReadableContent(value: unknown, path = 'response') {
+  if (typeof value === 'string') {
+    expect(value, path).not.toMatch(/\?{3,}|\uFFFD/);
+  } else if (Array.isArray(value)) {
+    value.forEach((item, index) => assertReadableContent(item, `${path}[${index}]`));
+  } else if (value && typeof value === 'object') {
+    for (const [key, item] of Object.entries(value)) assertReadableContent(item, `${path}.${key}`);
+  }
+}
+
 test('BFF allows only supported paths, same-origin JSON and bounded bodies', async ({ request, baseURL }) => {
   expect((await request.get('/api/not-an-allowed-route')).status()).toBe(404);
   const foreign = await request.post('/api/demo/sandbox', {
@@ -51,7 +61,11 @@ test('browser receives public questions and progress without server credentials'
   const catalog = await request.get('/api/v1/learning/catalog');
   expect(catalog.status()).toBe(200);
   const data = await catalog.json();
-  expect(data.modules).toHaveLength(7);
+  assertReadableContent(data);
+  expect(data.modules.map((module: { id: string }) => module.id)).toEqual([
+    'm1_safe_transfers', 'm2_asked_forward', 'm3_unexpected', 'm4_normal_vs_suspicious',
+    'm5_bank_warning', 'm6_digital_hygiene', 'm7_contact_bank', 'm8_phone_fraud',
+  ]);
   for (const lesson of data.modules) {
     for (const question of [...lesson.cards, ...lesson.quiz]) {
       expect(question).not.toHaveProperty('correct');
@@ -82,4 +96,38 @@ test('browser receives public questions and progress without server credentials'
       expect(progress.text).not.toContain(secret);
     }
   }
+});
+
+test('actual m8 remote-access and insufficient-information practice remain readable and quiz stays private', async ({ request, baseURL }) => {
+  const catalogResponse = await request.get('/api/v1/learning/catalog');
+  expect(catalogResponse.status()).toBe(200);
+  const catalog = await catalogResponse.json();
+  assertReadableContent(catalog);
+  const topic = catalog.modules.find((item: { id: string }) => item.id === 'm8_phone_fraud');
+  expect(topic).toBeTruthy();
+  const headers = { Origin: new URL(baseURL!).origin };
+  for (const [questionId, correctAnswer] of [['phone_c4_file', 1], ['phone_c5_uncertainty', 2]] as const) {
+    const card = topic.cards.find((item: { id: string }) => item.id === questionId);
+    expect(card).toBeTruthy();
+    expect(card.scenario_text.length).toBeGreaterThan(30);
+    expect(card.prompt.length).toBeGreaterThan(15);
+    for (const answer of [correctAnswer, 0]) {
+      const response = await request.post('/api/v1/learning/practice', { headers, data: { module_id: topic.id, question_id: questionId, answer, course_version: catalog.version } });
+      expect(response.status()).toBe(200);
+      const feedback = await response.json();
+      assertReadableContent(feedback);
+      expect(feedback.question_id).toBe(questionId);
+      expect(feedback.correct_index).toBe(correctAnswer);
+      expect(feedback.correct).toBe(answer === correctAnswer);
+      expect(feedback.explanation.length).toBeGreaterThan(30);
+      expect(feedback.safe_action.length).toBeGreaterThan(20);
+      expect(feedback.danger_sign.length).toBeGreaterThan(20);
+      expect(feedback.course_version).toBe(catalog.version);
+    }
+  }
+  const rejectedQuiz = await request.post('/api/v1/learning/practice', { headers, data: { module_id: topic.id, question_id: topic.quiz[0].id, answer: 0, course_version: catalog.version } });
+  expect(rejectedQuiz.status()).toBe(404);
+  const rejectedBody = await rejectedQuiz.json();
+  expect(rejectedBody).not.toHaveProperty('correct_index');
+  expect(rejectedBody).not.toHaveProperty('explanation');
 });
